@@ -1,15 +1,22 @@
-[![CI Status](https://github.com/se-edu/addressbook-level3/workflows/Java%20CI/badge.svg)](https://github.com/se-edu/addressbook-level3/actions)
+# Roster
+
+[![Java CI](https://github.com/AY2627S1-CS2103T-F12-4/tp/actions/workflows/gradle.yml/badge.svg)](https://github.com/AY2627S1-CS2103T-F12-4/tp/actions/workflows/gradle.yml)
 [![codecov](https://codecov.io/gh/AY2627S1-CS2103T-F12-4/tp/graph/badge.svg?token=81CFRoKpqY)](https://codecov.io/gh/AY2627S1-CS2103T-F12-4/tp)
 
-![Ui](docs/images/Ui.png)
+![Roster user interface](docs/images/Ui.png)
 
-* This is **a sample project for Software Engineering (SE) students**.<br>
-  Example usages:
-  * as a starting point of a course project (as opposed to writing everything from scratch)
-  * as a case study
-* The project simulates an ongoing software project for a desktop application (called _AddressBook_) used for managing contact details.
-  * It is **written in an object-oriented programming (OOP) style** and provides a **reasonably well-written** codebase of about 6 KLoC. It is **larger** than what students typically write in beginner-level software-engineering modules, without being overwhelming.
-  * It comes with a **reasonable level of user and developer documentation**.
-* It is named `AddressBook Level 3` (`AB3` for short) because it was initially created as a part of a series of `AddressBook` projects (`Level 1`, `Level 2`, `Level 3` ...).
-* For the detailed documentation of this project, see the **[Address Book Product Website](https://se-education.org/addressbook-level3)**.
-* This project is a **part of the se-education.org** initiative. If you would like to contribute code to this project, see [se-education.org](https://se-education.org/#contributing-to-se-edu) for more info.
+**Roster is a desktop application that helps teaching assistants manage students across multiple tutorial groups.**
+
+Designed for fast, keyboard-driven use during class, Roster allows TAs to record attendance, track participation and assignment completion, and review student progress without juggling multiple spreadsheets. By keeping each student's information and progress records in one place, Roster helps TAs identify students who may require timely and targeted support.
+
+## Documentation
+
+- Learn how to use Roster in the [User Guide](docs/UserGuide.md).
+- Learn about its design and implementation in the [Developer Guide](docs/DeveloperGuide.md).
+- Meet the development team on the [About Us](docs/AboutUs.md) page.
+
+## Acknowledgements
+
+Roster is based on the [AddressBook Level 3](https://se-education.org/addressbook-level3/) project created by the [SE-EDU initiative](https://se-education.org/).
+
+The project uses [JavaFX](https://openjfx.io/), [Jackson](https://github.com/FasterXML/jackson), and [JUnit 5](https://junit.org/junit5/).
