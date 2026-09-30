@@ -391,7 +391,7 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 **MSS**
 
 1.  TA requests to list students, optionally limited to one tutorial group.
-2.  Roster shows the matching students sorted by name, each with their attendance for every session of their tutorial group.
+2.  Roster shows the matching students sorted by matriculation number, each with their attendance for every session of their tutorial group.
 
     Use case ends.
 
@@ -539,7 +539,7 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 * **Student**: A person enrolled in one of the TA's tutorial groups. Each student belongs to exactly one tutorial group.
 * **Teaching assistant (TA)**: The target user of Roster. A person who conducts tutorials for a module, usually for one to three tutorial groups of around 20 students each.
 * **Teaching week**: One of the 13 weeks of instruction in an NUS semester, numbered 1 to 13. Recess week is not a teaching week.
-* **Tutorial group**: A fixed set of students who meet weekly with a TA. It is identified by a group code made up of `T` followed by two digits from `01` to `99`, e.g. `T09`.
+* **Tutorial group**: A fixed set of students who meet weekly with a TA. It is identified by a group code made up of one or two letters followed by two digits, e.g. `T09`.
 * **Unmarked**: The state of a student at a session for which the TA has not yet recorded present or absent. It is not stored; it is the absence of an attendance record. It is kept distinct from absent so that unprocessed records are never mistaken for absences.
 
 --------------------------------------------------------------------------------------------------------------------
