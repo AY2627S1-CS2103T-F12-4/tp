@@ -54,12 +54,11 @@ You can reach us at the email `seer[at]comp.nus.edu.sg`
 * Role: Developer
 * Responsibilities: Dev Ops + Threading
 
-### James Doe
+### Surya
 
-<img src="images/johndoe.png" width="200px">
+<img src="images/suwi1226.png" width="200px">
 
-[[github](http://github.com/johndoe)]
-[[portfolio](team/johndoe.md)]
+[[github](http://github.com/suwi1226)]
 
 * Role: Developer
-* Responsibilities: UI
+* Responsibilities: Dev Ops
