@@ -276,43 +276,245 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 
 | Priority | As a …​                                    | I want to …​                     | So that I can…​                                                        |
 | -------- | ------------------------------------------ | ------------------------------ | ---------------------------------------------------------------------- |
-| `* * *`  | new user                                   | see usage instructions         | refer to instructions when I forget how to use the App                 |
-| `* * *`  | user                                       | add a new person               |                                                                        |
-| `* * *`  | user                                       | delete a person                | remove entries that I no longer need                                   |
-| `* * *`  | user                                       | find a person by name          | locate details of persons without having to go through the entire list |
-| `* *`    | user                                       | hide private contact details   | minimize chance of someone else seeing them by accident                |
-| `*`      | user with many persons in the address book | sort persons by name           | locate a person easily                                                 |
-
-*{More to be added}*
+| `* * *`  | preoccupied TA | view the students of one tutorial group | confirm that each student is in the correct group |
+| `* * *`  | TA who struggles to manage several tutorial groups | assign each student to exactly one tutorial group | keep students from different groups from being mixed together |
+| `* * *`  | TA | view a student's attendance for every session of their tutorial group | understand the student's attendance pattern over time |
+| `* *`    | new TA unfamiliar with the app | see the app pre-loaded with sample students and attendance records | know what the data should look like before entering my own |
+| `* *`    | new TA | remove all sample data | start with a clean record |
+| `* *`    | cautious TA just starting out | get a warning before permanently deleting a student | avoid losing data from an accidental keystroke |
+| `* *`    | new TA | record whether a student has completed an assignment | monitor assignment progress |
+| `* *`    | TA who occasionally mistypes a command | undo my last action | avoid redoing work after a small mistake |
+| `* *`    | TA | move a student to another tutorial group | keep group changes accurate when a student swaps groups |
+| `* *`    | TA | mark attendance for an entire tutorial group in one action | spend less time recording attendance |
+| `* *`    | experienced TA | find a student by matriculation number | find the right student even when two students share a name |
+| `* *`    | experienced TA | mark a student's attendance by matriculation number | avoid marking the wrong student after the displayed list is filtered |
+| `* *`    | experienced TA | identify students with incomplete assignments | follow up on students who may be falling behind |
+| `* *`    | experienced TA | view a summary of a tutorial group's attendance | identify general trends and students who may need support |
+| `* *`    | experienced TA | export students' attendance records | share or analyse the records outside the app |
+| `* *`    | experienced TA | export attendance with the columns my course coordinator specifies | load the file into the gradebook without editing it first |
+| `* *`    | experienced TA | export attendance keyed by matriculation number | match rows to the official roster even when names are recorded differently |
+| `*`      | TA getting familiar with the app | sort students by attendance percentage | quickly spot who is struggling |
+| `*`      | TA | sort students by participation score | review students in a useful order |
+| `*`      | TA | leave a short comment on a student | remember context about the student for later sessions |
+| `*`      | experienced TA | archive completed tutorial groups | keep old records available without cluttering my active workspace |
+| `*`      | experienced TA | use keyboard shortcuts for common actions | update records without repeatedly using the mouse |
+| `*`      | experienced TA co-teaching a large module | see which TA is responsible for each student | avoid duplicating work across the teaching team |
+| `*`      | experienced TA | review how a tutorial group's attendance and participation change over time | recognise broader changes in the group's engagement |
 
 ### Use cases
 
-(For all use cases below, the **System** is the `AddressBook` and the **Actor** is the `user`, unless specified otherwise)
+(For all use cases below, the **System** is `Roster` and the **Actor** is the `TA`, unless specified otherwise)
 
-**Use case: Delete a person**
+**Use case: UC01 - Create a tutorial group**
 
 **MSS**
 
-1.  User requests to list persons
-2.  AddressBook shows a list of persons
-3.  User requests to delete a specific person in the list
-4.  AddressBook deletes the person
+1.  TA requests to create a tutorial group, giving its group code.
+2.  Roster creates the tutorial group with no students and confirms the creation.
 
     Use case ends.
 
 **Extensions**
 
-* 2a. The list is empty.
+* 1a. The group code is missing or invalid.
+
+    * 1a1. Roster shows an error message.
+
+      Use case ends.
+
+* 1b. A tutorial group with the same group code already exists.
+
+    * 1b1. Roster shows an error message.
+
+      Use case ends.
+
+**Use case: UC02 - Create a session**
+
+**MSS**
+
+1.  TA requests to create a session for a tutorial group, giving the teaching week and date.
+2.  Roster creates the session and confirms the creation. Every student in the tutorial group is now unmarked for that session.
+
+    Use case ends.
+
+**Extensions**
+
+* 1a. A required detail is missing or invalid.
+
+    * 1a1. Roster shows an error message.
+
+      Use case ends.
+
+* 1b. The tutorial group does not exist.
+
+    * 1b1. Roster shows an error message stating that the tutorial group must be created first.
+
+      Use case ends.
+
+* 1c. The tutorial group already has a session for that teaching week.
+
+    * 1c1. Roster shows an error message.
+
+      Use case ends.
+
+**Use case: UC03 - Add a student**
+
+**MSS**
+
+1.  TA requests to add a student, giving the student's name, matriculation number, tutorial group and email.
+2.  Roster adds the student to the tutorial group, with no attendance records, and confirms the addition.
+
+    Use case ends.
+
+**Extensions**
+
+* 1a. A required detail is missing or invalid.
+
+    * 1a1. Roster shows an error message.
+
+      Use case ends.
+
+* 1b. The tutorial group does not exist.
+
+    * 1b1. Roster shows an error message.
+
+      Use case ends.
+
+* 1c. Another student already has the same matriculation number or email.
+
+    * 1c1. Roster shows an error message.
+
+      Use case ends.
+
+**Use case: UC04 - List students**
+
+**MSS**
+
+1.  TA requests to list students, optionally limited to one tutorial group.
+2.  Roster shows the matching students sorted by matriculation number, each with their attendance for every session of their tutorial group.
+
+    Use case ends.
+
+**Extensions**
+
+* 1a. The specified tutorial group does not exist.
+
+    * 1a1. Roster shows an error message.
+
+      Use case ends.
+
+* 2a. There are no students to show.
+
+    * 2a1. Roster shows a message stating that there are no students yet.
+
+      Use case ends.
+
+**Use case: UC05 - Find students by name**
+
+**MSS**
+
+1.  TA requests to find students whose names contain a keyword.
+2.  Roster shows all matching students across all tutorial groups.
+
+    Use case ends.
+
+**Extensions**
+
+* 1a. The keyword is missing or invalid.
+
+    * 1a1. Roster shows an error message.
+
+      Use case ends.
+
+* 2a. No student matches the keyword.
+
+    * 2a1. Roster shows a message stating that no students were found.
+
+      Use case ends.
+
+**Use case: UC06 - Delete a student**
+
+**MSS**
+
+1.  TA <u>lists students (UC04)</u>.
+2.  TA requests to delete a specific student in the list.
+3.  Roster deletes the student and all their attendance records, and confirms the deletion.
+
+    Use case ends.
+
+**Extensions**
+
+* 1a. The list is empty.
 
   Use case ends.
 
-* 3a. The given index is invalid.
+* 2a. The given index is invalid.
 
-    * 3a1. AddressBook shows an error message.
+    * 2a1. Roster shows an error message.
 
       Use case resumes at step 2.
 
-*{More to be added}*
+**Use case: UC07 - Mark a student's attendance**
+
+**MSS**
+
+1.  TA <u>lists students (UC04)</u>.
+2.  TA requests to mark a specific student in the list as present or absent for a teaching week.
+3.  Roster records the attendance and confirms it, naming the student.
+
+    Use case ends.
+
+**Extensions**
+
+* 1a. The list is empty.
+
+  Use case ends.
+
+* 2a. The given index is invalid.
+
+    * 2a1. Roster shows an error message.
+
+      Use case resumes at step 2.
+
+* 2b. The given attendance status is neither present nor absent.
+
+    * 2b1. Roster shows an error message.
+
+      Use case resumes at step 2.
+
+* 2c. The student's tutorial group has no session for that teaching week.
+
+    * 2c1. Roster shows an error message stating that the session must be created first.
+
+      Use case ends.
+
+* 3a. The student already has an attendance record for that session.
+
+    * 3a1. Roster replaces the record and includes the previous status in the confirmation.
+
+      Use case ends.
+
+**Use case: UC08 - Take attendance for a tutorial**
+
+**MSS**
+
+1.  TA <u>creates a session for the tutorial group and teaching week (UC02)</u>.
+2.  TA <u>lists the students of that tutorial group (UC04)</u>.
+3.  TA <u>marks a student's attendance (UC07)</u>.
+
+    Step 3 is repeated until every student in the tutorial group has been marked.
+
+    Use case ends.
+
+**Extensions**
+
+* 1a. The session already exists.
+
+  Use case resumes at step 2.
+
+* 2a. The tutorial group has no students.
+
+  Use case ends.
 
 ### Non-Functional Requirements
 
@@ -335,8 +537,21 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 
 ### Glossary
 
+* **Attendance**: The record that a student was present or absent at one session.
+* **Attendance percentage**: The number of sessions a student was marked present for, divided by the number of sessions the student has been marked for. Unmarked sessions are excluded.
+* **Attendance strip**: The row on a student's entry that shows one cell per session of their tutorial group, in teaching-week order: `P` for present, `A` for absent and `—` for unmarked.
+* **Course coordinator**: The staff member in charge of a module, who collects attendance records from the TAs.
+* **Index**: The one-based position of a student in the currently displayed list. It is not a property of the student: the same student's index changes when the list is filtered.
 * **Mainstream OS**: Windows, Linux, Unix, or macOS
-* **Private contact detail**: A contact detail that is not meant to be shared with others
+* **Matriculation number**: The unique identifier NUS assigns to each student, e.g. `A0287654J`. Roster uses it to tell apart students with the same name.
+* **Participation score**: A measure of how much a student contributed during a session, recorded alongside attendance.
+* **Present / Absent**: The two attendance statuses a TA can record for a student at a session.
+* **Session**: A record that a tutorial group met in a particular teaching week, together with the date of that meeting. A tutorial group has at most one session per teaching week.
+* **Student**: A person enrolled in one of the TA's tutorial groups. Each student belongs to exactly one tutorial group.
+* **Teaching assistant (TA)**: The target user of Roster. A person who conducts tutorials for a module, usually for one to three tutorial groups of around 20 students each.
+* **Teaching week**: One of the 13 weeks of instruction in an NUS semester, numbered 1 to 13. Recess week is not a teaching week.
+* **Tutorial group**: A fixed set of students who meet weekly with a TA. It is identified by a group code made up of one or two letters followed by two digits, e.g. `T09`.
+* **Unmarked**: The state of a student at a session for which the TA has not yet recorded present or absent. It is not stored; it is the absence of an attendance record. It is kept distinct from absent so that unprocessed records are never mistaken for absences.
 
 --------------------------------------------------------------------------------------------------------------------
 
