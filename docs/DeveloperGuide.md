@@ -316,11 +316,22 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 
 ### Non-Functional Requirements
 
-1.  Should work on any _mainstream OS_ as long as it has Java `25` or above installed.
-2.  Should be able to hold up to 1000 persons without noticeable sluggishness in performance for typical usage.
-3.  A user with above average typing speed for regular English text (i.e. not code, not system admin commands) should be able to accomplish most of the tasks faster using commands than using the mouse.
+1. Compatibility: Roster should run on Windows, macOS, and Linux with Java 25 and the required JavaFX runtime, without requiring users to modify or compile its source code.
 
-*{More to be added}*
+2. Offline operation: After installation, users should be able to manage tutorial groups, update student records, and review recorded information without an internet connection.
+
+3. Keyboard usability: Users should be able to perform routine tasks, including adding, listing, finding and deleting students, switching tutorial groups, and recording attendance, through typed commands without requiring mouse interaction.
+
+4. Local storage: Roster should store application data locally in a human-editable text format, without requiring a separate database server or an online account.
+
+5. Data persistence: Following a successful save and normal application shutdown, reopening Roster should restore the saved tutorial groups, student details, and recorded attendance, participation, and assignment-completion information without alteration.
+
+6. Input-error tolerance: Invalid commands or parameter values should not terminate the application or modify existing records. After displaying an error, Roster should remain available for the user to enter another command.
+
+7. Error-message clarity: Input-error messages should identify the invalid or missing input and explain the expected format or accepted values, so that users can correct their commands without interpreting technical exception messages.
+
+8. Terminology consistency: The user interface, command feedback, User Guide, and Developer Guide should use consistent terms for students, tutorial groups, sessions, attendance, participation, and assignment completion.
+
 
 ### Glossary
 
