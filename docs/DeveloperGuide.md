@@ -261,13 +261,20 @@ _{Explain here how the data archiving feature will be implemented}_
 
 **Target user profile**:
 
-* has a need to manage a significant number of contacts
-* prefers desktop apps over other types of applications
-* can type fast
-* prefers typing to mouse interactions
-* is reasonably comfortable using CLI apps
+* is an NUS teaching assistant who manages multiple tutorial groups from a laptop
+* is new to being a TA: forgetful, disorganised, and has a lot on their mind
+* struggles to manage several tutorial groups simultaneously
+* has a technical background
+* needs to take attendance, record participation, track assignment completion and review individual
+  progress during tutorials
+* needs to move between tutorial groups quickly, as routine actions must be fast and require little
+  attention while teaching and interacting with students
+* reviews the collected information after class to identify students who may need additional support
+* prefers typing to mouse interactions and is reasonably comfortable using CLI apps
 
-**Value proposition**: Manage contacts faster than with a typical mouse-driven GUI application.
+**Value proposition**: Maintain and review attendance, participation and assignment-completion records for
+students across multiple tutorial groups in one contact-book-style application, with updates fast enough to
+make during class — faster than managing spreadsheets or a typical mouse-driven GUI application.
 
 
 ### User stories
