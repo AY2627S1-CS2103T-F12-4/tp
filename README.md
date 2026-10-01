@@ -1,6 +1,7 @@
 # Roster
 
-[![Java CI](https://github.com/AY2627S1-CS2103T-F12-4/tp/actions/workflows/gradle.yml/badge.svg)](https://github.com/AY2627S1-CS2103T-F12-4/tp/actions/workflows/gradle.yml)
+[![CI Status](https://github.com/AY2627S1-CS2103T-F12-4/tp/actions/workflows/gradle.yml/badge.svg)](https://github.com/AY2627S1-CS2103T-F12-4/tp/actions/workflows/gradle.yml)
+
 [![codecov](https://codecov.io/gh/AY2627S1-CS2103T-F12-4/tp/graph/badge.svg?token=81CFRoKpqY)](https://codecov.io/gh/AY2627S1-CS2103T-F12-4/tp)
 
 ![Roster user interface](docs/images/Ui.png)
