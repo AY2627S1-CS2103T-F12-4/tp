@@ -27,22 +27,29 @@ You can reach us at the email `seer[at]comp.nus.edu.sg`
 
 * Role: Developer
 * Responsibilities: Code quality (looks after code quality and ensures adherence to coding standards)
+### Yu Yuxin
 
-### Johnny Doe
+<img src="images/yx-0000.png" width="200px">
 
-<img src="images/johndoe.png" width="200px">
-
-[[github](http://github.com/johndoe)] [[portfolio](team/johndoe.md)]
+[[github](http://github.com/yx-0000)]
 
 * Role: Developer
-* Responsibilities: Data
+* Responsibilities: Design the UI/UX.
 
-### Jean Doe
+### Qu Jingran
 
-<img src="images/johndoe.png" width="200px">
+<img src="images/qu-jingran.png" width="200px">
 
-[[github](http://github.com/johndoe)]
-[[portfolio](team/johndoe.md)]
+[[github](https://github.com/Qu-Jingran)]
+
+* Role: Developer
+* Responsibilities: UI
+
+### Tan Khian Yiong Thomas
+
+<img src="images/tkythomas.png" width="200px">
+
+[[github](http://github.com/tkythomas)]
 
 * Role: Developer
 * Responsibilities: Dev Ops + Threading
