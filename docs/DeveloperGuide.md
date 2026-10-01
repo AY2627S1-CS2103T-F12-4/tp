@@ -289,7 +289,7 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 | `* * *`  | new TA | view my students | see who I am responsible for |
 | `* * *`  | forgetful TA | search for a student by name | avoid having to remember which group contains the student |
 | `* * *`  | TA | mark a student present or absent for a session | keep an accurate attendance record |
-| `* * *`  | disorganised TA | distinguish unchecked attendance from confirmed absence | be sure missing records are not mistaken for absences |
+| `* * *`  | disorganised TA | distinguish unmarked attendance from confirmed absence | be sure missing records are not mistaken for absences |
 | `* * *`  | TA | switch between tutorial groups | manage multiple classes without mixing up their records |
 | `* * *`  | new TA| assign each student to exactly one tutorial group | keep students from different groups from being mixed together |
 | `* * *`  | TA | view a student's attendance for every session of their tutorial group | understand the student's attendance pattern over time |
