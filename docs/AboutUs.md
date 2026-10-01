@@ -19,6 +19,11 @@ You can reach us at the email `seer[at]comp.nus.edu.sg`
 
 * Role: Project Advisor
 
+### Myat
+
+<img src="images/my2h.png" width="200px">
+
+[[github](https://github.com/My2h)]
 ### Yu Yuxin
 
 <img src="images/yx-0000.png" width="200px">
