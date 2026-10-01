@@ -276,9 +276,17 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 
 | Priority | As a …​                                    | I want to …​                     | So that I can…​                                                        |
 | -------- | ------------------------------------------ | ------------------------------ | ---------------------------------------------------------------------- |
-| `* * *`  | preoccupied TA | view the students of one tutorial group | confirm that each student is in the correct group |
-| `* * *`  | TA who struggles to manage several tutorial groups | assign each student to exactly one tutorial group | keep students from different groups from being mixed together |
+| `* * *`  | new TA | create a new tutorial group | add students to it |
+| `* * *`  | TA | add a student to a tutorial group | keep a record of everyone I am responsible for |
+| `* * *`  | TA | delete a student from a tutorial group | remove a record entered with wrong details, or a student who dropped the module |
+| `* * *`  | new TA | view my students | see who I am responsible for |
+| `* * *`  | forgetful TA | search for a student by name | avoid having to remember which group contains the student |
+| `* * *`  | TA | mark a student present or absent for a session | keep an accurate attendance record |
+| `* * *`  | disorganised TA | distinguish unchecked attendance from confirmed absence | be sure missing records are not mistaken for absences |
+| `* * *`  | TA | switch between tutorial groups | manage multiple classes without mixing up their records |
+| `* * *`  | new TA| assign each student to exactly one tutorial group | keep students from different groups from being mixed together |
 | `* * *`  | TA | view a student's attendance for every session of their tutorial group | understand the student's attendance pattern over time |
+| `* *`    | TA | edit a student's information | keep their details up to date |
 | `* *`    | new TA unfamiliar with the app | see the app pre-loaded with sample students and attendance records | know what the data should look like before entering my own |
 | `* *`    | new TA | remove all sample data | start with a clean record |
 | `* *`    | cautious TA just starting out | get a warning before permanently deleting a student | avoid losing data from an accidental keystroke |
