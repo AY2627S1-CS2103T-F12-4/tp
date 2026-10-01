@@ -24,25 +24,29 @@ You can reach us at the email `seer[at]comp.nus.edu.sg`
 <img src="images/my2h.png" width="200px">
 
 [[github](https://github.com/My2h)]
+### Yu Yuxin
 
-* Role: Team Lead
-* Responsibilities: UI
+<img src="images/yx-0000.png" width="200px">
 
-### Johnny Doe
-
-<img src="images/johndoe.png" width="200px">
-
-[[github](http://github.com/johndoe)] [[portfolio](team/johndoe.md)]
+[[github](http://github.com/yx-0000)]
 
 * Role: Developer
-* Responsibilities: Data
+* Responsibilities: Design the UI/UX.
 
-### Jean Doe
+### Qu Jingran
 
-<img src="images/johndoe.png" width="200px">
+<img src="images/qu-jingran.png" width="200px">
 
-[[github](http://github.com/johndoe)]
-[[portfolio](team/johndoe.md)]
+[[github](https://github.com/Qu-Jingran)]
+
+* Role: Developer
+* Responsibilities: UI
+
+### Tan Khian Yiong Thomas
+
+<img src="images/tkythomas.png" width="200px">
+
+[[github](http://github.com/tkythomas)]
 
 * Role: Developer
 * Responsibilities: Dev Ops + Threading
