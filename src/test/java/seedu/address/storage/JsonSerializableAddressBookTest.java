@@ -19,6 +19,8 @@ public class JsonSerializableAddressBookTest {
     private static final Path TYPICAL_PERSONS_FILE = TEST_DATA_FOLDER.resolve("typicalPersonsAddressBook.json");
     private static final Path INVALID_PERSON_FILE = TEST_DATA_FOLDER.resolve("invalidPersonAddressBook.json");
     private static final Path DUPLICATE_PERSON_FILE = TEST_DATA_FOLDER.resolve("duplicatePersonAddressBook.json");
+    private static final Path DUPLICATE_SESSION_FILE = TEST_DATA_FOLDER.resolve("duplicateSessionAddressBook.json");
+    private static final Path UNKNOWN_SESSION_FILE = TEST_DATA_FOLDER.resolve("unknownSessionAddressBook.json");
 
     @Test
     public void toModelType_typicalPersonsFile_success() throws Exception {
@@ -41,6 +43,22 @@ public class JsonSerializableAddressBookTest {
         JsonSerializableAddressBook dataFromFile = JsonUtil.readJsonFile(DUPLICATE_PERSON_FILE,
                 JsonSerializableAddressBook.class).get();
         assertThrows(IllegalValueException.class, JsonSerializableAddressBook.MESSAGE_DUPLICATE_PERSON,
+                dataFromFile::toModelType);
+    }
+
+    @Test
+    public void toModelType_duplicateSessions_throwsIllegalValueException() throws Exception {
+        JsonSerializableAddressBook dataFromFile = JsonUtil.readJsonFile(DUPLICATE_SESSION_FILE,
+                JsonSerializableAddressBook.class).get();
+        assertThrows(IllegalValueException.class, JsonSerializableAddressBook.MESSAGE_DUPLICATE_SESSION,
+                dataFromFile::toModelType);
+    }
+
+    @Test
+    public void toModelType_attendanceForUnknownSession_throwsIllegalValueException() throws Exception {
+        JsonSerializableAddressBook dataFromFile = JsonUtil.readJsonFile(UNKNOWN_SESSION_FILE,
+                JsonSerializableAddressBook.class).get();
+        assertThrows(IllegalValueException.class, JsonSerializableAddressBook.MESSAGE_UNKNOWN_SESSION,
                 dataFromFile::toModelType);
     }
 

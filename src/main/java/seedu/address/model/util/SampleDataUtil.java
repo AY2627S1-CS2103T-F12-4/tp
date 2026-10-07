@@ -13,6 +13,9 @@ import seedu.address.model.person.Matric;
 import seedu.address.model.person.Name;
 import seedu.address.model.person.Person;
 import seedu.address.model.person.Phone;
+import seedu.address.model.session.Session;
+import seedu.address.model.session.SessionDate;
+import seedu.address.model.session.Week;
 import seedu.address.model.tag.Tag;
 
 /**
@@ -42,8 +45,26 @@ public class SampleDataUtil {
         };
     }
 
+    /**
+     * Returns sample sessions for the first three teaching weeks of the sample groups, so that attendance can be
+     * marked before any session has been created.
+     */
+    public static Session[] getSampleSessions() {
+        return new Session[] {
+            new Session(new Group("T09"), new Week(1), new SessionDate("2026-08-11")),
+            new Session(new Group("T09"), new Week(2), new SessionDate("2026-08-18")),
+            new Session(new Group("T09"), new Week(3), new SessionDate("2026-08-25")),
+            new Session(new Group("T10"), new Week(1), new SessionDate("2026-08-13")),
+            new Session(new Group("T10"), new Week(2), new SessionDate("2026-08-20")),
+            new Session(new Group("T10"), new Week(3), new SessionDate("2026-08-27"))
+        };
+    }
+
     public static ReadOnlyAddressBook getSampleAddressBook() {
         AddressBook sampleAb = new AddressBook();
+        for (Session sampleSession : getSampleSessions()) {
+            sampleAb.addSession(sampleSession);
+        }
         for (Person samplePerson : getSamplePersons()) {
             sampleAb.addPerson(samplePerson);
         }

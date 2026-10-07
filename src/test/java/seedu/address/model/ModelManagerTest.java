@@ -7,13 +7,17 @@ import static seedu.address.model.Model.PREDICATE_SHOW_ALL_PERSONS;
 import static seedu.address.testutil.Assert.assertThrows;
 import static seedu.address.testutil.TypicalPersons.ALICE;
 import static seedu.address.testutil.TypicalPersons.BENSON;
+import static seedu.address.testutil.TypicalSessions.T09_WEEK_1;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.junit.jupiter.api.Test;
 
 import seedu.address.commons.core.GuiSettings;
+import seedu.address.model.person.Group;
 import seedu.address.model.person.NameContainsKeywordsPredicate;
+import seedu.address.model.session.Week;
 import seedu.address.testutil.AddressBookBuilder;
 
 public class ModelManagerTest {
@@ -60,6 +64,24 @@ public class ModelManagerTest {
     @Test
     public void hasPerson_personNotInAddressBook_returnsFalse() {
         assertFalse(modelManager.hasPerson(ALICE));
+    }
+
+    @Test
+    public void hasSession_nullSession_throwsNullPointerException() {
+        assertThrows(NullPointerException.class, () -> modelManager.hasSession(null));
+    }
+
+    @Test
+    public void addSession_sessionAdded_hasAndFindsSession() {
+        assertFalse(modelManager.hasSession(T09_WEEK_1));
+        modelManager.addSession(T09_WEEK_1);
+        assertTrue(modelManager.hasSession(T09_WEEK_1));
+        assertEquals(Optional.of(T09_WEEK_1), modelManager.findSession(new Group("T09"), new Week(1)));
+    }
+
+    @Test
+    public void findSession_noSuchSession_returnsEmpty() {
+        assertEquals(Optional.empty(), modelManager.findSession(new Group("T09"), new Week(1)));
     }
 
     @Test

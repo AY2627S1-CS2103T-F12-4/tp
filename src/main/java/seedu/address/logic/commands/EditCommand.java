@@ -21,6 +21,7 @@ import seedu.address.commons.util.ToStringBuilder;
 import seedu.address.logic.Messages;
 import seedu.address.logic.commands.exceptions.CommandException;
 import seedu.address.model.Model;
+import seedu.address.model.attendance.Attendance;
 import seedu.address.model.person.Address;
 import seedu.address.model.person.Email;
 import seedu.address.model.person.Group;
@@ -102,11 +103,13 @@ public class EditCommand extends Command {
         Email updatedEmail = editPersonDescriptor.getEmail().orElse(personToEdit.getEmail());
         Address updatedAddress = editPersonDescriptor.getAddress().orElse(personToEdit.getAddress());
         Set<Tag> updatedTags = editPersonDescriptor.getTags().orElse(personToEdit.getTags());
-        // The matriculation number and group cannot be edited with this command, so they are carried over
+        // The matriculation number, group and attendance cannot be edited with this command, so they are carried over
         Matric matric = personToEdit.getMatric();
         Group group = personToEdit.getGroup();
+        Set<Attendance> attendances = personToEdit.getAttendances();
 
-        return new Person(updatedName, updatedPhone, updatedEmail, updatedAddress, matric, group, updatedTags);
+        return new Person(updatedName, updatedPhone, updatedEmail, updatedAddress, matric, group, updatedTags,
+                attendances);
     }
 
     @Override

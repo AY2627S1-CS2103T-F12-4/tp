@@ -12,12 +12,14 @@ import java.util.Set;
 import org.junit.jupiter.api.Test;
 
 import seedu.address.logic.parser.exceptions.ParseException;
+import seedu.address.model.attendance.Status;
 import seedu.address.model.person.Address;
 import seedu.address.model.person.Email;
 import seedu.address.model.person.Group;
 import seedu.address.model.person.Matric;
 import seedu.address.model.person.Name;
 import seedu.address.model.person.Phone;
+import seedu.address.model.session.Week;
 import seedu.address.model.tag.Tag;
 
 public class ParserUtilTest {
@@ -171,6 +173,36 @@ public class ParserUtilTest {
     public void parseMatric_lowerCaseValueWithWhitespace_returnsUpperCaseTrimmedMatric() throws Exception {
         String matricWithWhitespace = WHITESPACE + VALID_MATRIC.toLowerCase() + WHITESPACE;
         assertEquals(new Matric(VALID_MATRIC), ParserUtil.parseMatric(matricWithWhitespace));
+    }
+
+    @Test
+    public void parseWeek_null_throwsNullPointerException() {
+        assertThrows(NullPointerException.class, () -> ParserUtil.parseWeek((String) null));
+    }
+
+    @Test
+    public void parseWeek_invalidValue_throwsParseException() {
+        assertThrows(ParseException.class, Week.MESSAGE_CONSTRAINTS, () -> ParserUtil.parseWeek("14"));
+    }
+
+    @Test
+    public void parseWeek_validValueWithWhitespace_returnsWeek() throws Exception {
+        assertEquals(new Week(5), ParserUtil.parseWeek(WHITESPACE + "5" + WHITESPACE));
+    }
+
+    @Test
+    public void parseStatus_null_throwsNullPointerException() {
+        assertThrows(NullPointerException.class, () -> ParserUtil.parseStatus((String) null));
+    }
+
+    @Test
+    public void parseStatus_invalidValue_throwsParseException() {
+        assertThrows(ParseException.class, Status.MESSAGE_CONSTRAINTS, () -> ParserUtil.parseStatus("late"));
+    }
+
+    @Test
+    public void parseStatus_validValueWithWhitespace_returnsStatus() throws Exception {
+        assertEquals(Status.ABSENT, ParserUtil.parseStatus(WHITESPACE + "Absent" + WHITESPACE));
     }
 
     @Test

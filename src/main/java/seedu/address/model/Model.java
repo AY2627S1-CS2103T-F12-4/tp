@@ -1,10 +1,14 @@
 package seedu.address.model;
 
+import java.util.Optional;
 import java.util.function.Predicate;
 
 import javafx.collections.ObservableList;
 import seedu.address.commons.core.GuiSettings;
+import seedu.address.model.person.Group;
 import seedu.address.model.person.Person;
+import seedu.address.model.session.Session;
+import seedu.address.model.session.Week;
 
 /**
  * The API of the Model component.
@@ -59,6 +63,22 @@ public interface Model {
      * The person identity of {@code editedPerson} must not be the same as another existing person in the address book.
      */
     void setPerson(Person target, Person editedPerson);
+
+    /**
+     * Returns true if the group of {@code session} already has a session in the same week.
+     */
+    boolean hasSession(Session session);
+
+    /**
+     * Adds the given session.
+     * The group of {@code session} must not already have a session in the same week.
+     */
+    void addSession(Session session);
+
+    /**
+     * Returns the session of {@code group} in {@code week}, or an empty {@code Optional} if there is none.
+     */
+    Optional<Session> findSession(Group group, Week week);
 
     /** Returns an unmodifiable view of the filtered person list */
     ObservableList<Person> getFilteredPersonList();

@@ -1,5 +1,18 @@
 {
-  "_comment": "AddressBook save file which contains the same Person values as in TypicalPersons#getTypicalAddressBook()",
+  "_comment": "AddressBook save file which contains the same Person and Session values as in TypicalPersons#getTypicalAddressBook()",
+  "sessions" : [ {
+    "group" : "T09",
+    "week" : "1",
+    "date" : "2026-08-11"
+  }, {
+    "group" : "T09",
+    "week" : "2",
+    "date" : "2026-08-18"
+  }, {
+    "group" : "T10",
+    "week" : "1",
+    "date" : "2026-08-13"
+  } ],
   "persons" : [ {
     "name" : "Alice Pauline",
     "phone" : "94351253",
