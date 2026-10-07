@@ -124,6 +124,11 @@ public class AddressBookTest {
         }
 
         @Override
+        public ObservableList<Group> getGroupList() {
+            return FXCollections.observableArrayList();
+        }
+
+        @Override
         public ObservableList<Person> getPersonList() {
             return persons;
         }

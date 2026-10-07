@@ -33,6 +33,7 @@
       <Label fx:id="email" styleClass="cell_small_label" text="\$email" />
       <Label fx:id="matric" styleClass="cell_small_label" text="\$matric" />
       <Label fx:id="group" styleClass="cell_small_label" text="\$group" />
+      <FlowPane fx:id="attendance" hgap="8" vgap="5" />
     </VBox>
   </GridPane>
 </HBox>

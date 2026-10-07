@@ -1,6 +1,7 @@
 package seedu.address.ui;
 
 import java.util.Comparator;
+import java.util.List;
 
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
@@ -8,6 +9,7 @@ import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Region;
 import seedu.address.model.person.Person;
+import seedu.address.model.session.Session;
 
 /**
  * A UI component that displays information of a {@code Person}.
@@ -44,11 +46,13 @@ public class PersonCard extends UiPart<Region> {
     private Label group;
     @FXML
     private FlowPane tags;
+    @FXML
+    private FlowPane attendance;
 
     /**
      * Creates a {@code PersonCard} with the given {@code Person} and index to display.
      */
-    public PersonCard(Person person, int displayedIndex) {
+    public PersonCard(Person person, int displayedIndex, List<Session> sessions) {
         super(FXML);
         this.person = person;
         id.setText(displayedIndex + ". ");
@@ -58,6 +62,14 @@ public class PersonCard extends UiPart<Region> {
         email.setText(person.getEmail().value);
         matric.setText(person.getMatric().value);
         group.setText(person.getGroup().value);
+        for (AttendanceCell cell : AttendanceCell.forStudent(person, sessions)) {
+            Label label = new Label("W" + cell.week() + ": " + cell.status());
+            label.getStyleClass().add("attendance-cell");
+            attendance.getChildren().add(label);
+        }
+        if (attendance.getChildren().isEmpty()) {
+            attendance.getChildren().add(new Label("No sessions yet"));
+        }
         person.getTags().stream()
                 .sorted(Comparator.comparing(tag -> tag.tagName))
                 .forEach(tag -> tags.getChildren().add(new Label(tag.tagName)));

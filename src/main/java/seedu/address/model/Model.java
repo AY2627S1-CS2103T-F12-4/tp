@@ -3,6 +3,7 @@ package seedu.address.model;
 import java.util.Optional;
 import java.util.function.Predicate;
 
+import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.collections.ObservableList;
 import seedu.address.commons.core.GuiSettings;
 import seedu.address.model.person.Group;
@@ -79,6 +80,18 @@ public interface Model {
      * Returns the session of {@code group} in {@code week}, or an empty {@code Optional} if there is none.
      */
     Optional<Session> findSession(Group group, Week week);
+
+    /** Registers an empty tutorial group. */
+    void addGroup(Group group);
+
+    /** Returns whether a tutorial group is registered. */
+    boolean hasGroup(Group group);
+
+    /** Selects a registered group and shows only its students. */
+    void showGroup(Group group);
+
+    /** Returns the active group, or null when viewing across all groups. */
+    ReadOnlyObjectProperty<Group> activeGroupProperty();
 
     /** Returns an unmodifiable view of the filtered person list */
     ObservableList<Person> getFilteredPersonList();

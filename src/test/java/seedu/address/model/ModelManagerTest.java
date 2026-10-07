@@ -25,6 +25,23 @@ public class ModelManagerTest {
     private ModelManager modelManager = new ModelManager();
 
     @Test
+    public void registeredGroup_survivesLastStudentDeletion() {
+        modelManager.addPerson(ALICE);
+        modelManager.deletePerson(ALICE);
+        assertTrue(modelManager.hasGroup(ALICE.getGroup()));
+        assertThrows(UnsupportedOperationException.class, () -> modelManager.getAddressBook().getGroupList().clear());
+    }
+
+    @Test
+    public void setAddressBook_clearsActiveGroupAndReplacesRegistry() {
+        modelManager.addPerson(ALICE);
+        modelManager.showGroup(ALICE.getGroup());
+        modelManager.setAddressBook(new AddressBook());
+        assertEquals(null, modelManager.activeGroupProperty().get());
+        assertFalse(modelManager.hasGroup(ALICE.getGroup()));
+    }
+
+    @Test
     public void constructor() {
         assertEquals(new UserPrefs(), modelManager.getUserPrefs());
         assertEquals(new GuiSettings(), modelManager.getGuiSettings());

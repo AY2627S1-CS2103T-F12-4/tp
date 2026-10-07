@@ -1,11 +1,14 @@
 package seedu.address.logic;
 
+import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.collections.ObservableList;
 import seedu.address.commons.core.GuiSettings;
 import seedu.address.logic.commands.CommandResult;
 import seedu.address.logic.commands.exceptions.CommandException;
 import seedu.address.logic.parser.exceptions.ParseException;
+import seedu.address.model.person.Group;
 import seedu.address.model.person.Person;
+import seedu.address.model.session.Session;
 
 /**
  * API of the Logic component
@@ -22,6 +25,12 @@ public interface Logic {
 
     /** Returns an unmodifiable view of the filtered list of persons */
     ObservableList<Person> getFilteredPersonList();
+
+    /** Returns the active group, or null for a view across all groups. */
+    ReadOnlyObjectProperty<Group> activeGroupProperty();
+
+    /** Returns an unmodifiable observable view of all tutorial sessions. */
+    ObservableList<Session> getSessionList();
 
     /**
      * Returns the user prefs' GUI settings.

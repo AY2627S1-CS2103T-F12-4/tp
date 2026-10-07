@@ -42,7 +42,7 @@ public class ListCommandTest {
     public void execute_emptyRoster_showsEmptyMessage() {
         model = new ModelManager();
         expectedModel = new ModelManager();
-        assertCommandSuccess(new ListCommand(), model, "No students in Roster.", expectedModel);
+        assertCommandSuccess(new ListCommand(), model, ListCommand.MESSAGE_EMPTY, expectedModel);
     }
 
     @Test

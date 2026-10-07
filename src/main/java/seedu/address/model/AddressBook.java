@@ -2,10 +2,12 @@ package seedu.address.model;
 
 import static java.util.Objects.requireNonNull;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
+import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import seedu.address.commons.util.ToStringBuilder;
 import seedu.address.model.person.Group;
@@ -21,6 +23,7 @@ import seedu.address.model.session.Week;
  */
 public class AddressBook implements ReadOnlyAddressBook {
 
+    private final ObservableList<Group> groups = FXCollections.observableArrayList();
     private final UniquePersonList persons = new UniquePersonList();
     private final UniqueSessionList sessions = new UniqueSessionList();
 
@@ -42,6 +45,7 @@ public class AddressBook implements ReadOnlyAddressBook {
      */
     public void setPersons(List<Person> persons) {
         this.persons.setPersons(persons);
+        persons.forEach(person -> registerReferencedGroup(person.getGroup()));
     }
 
     /**
@@ -50,6 +54,7 @@ public class AddressBook implements ReadOnlyAddressBook {
      */
     public void setSessions(List<Session> sessions) {
         this.sessions.setSessions(sessions);
+        sessions.forEach(session -> registerReferencedGroup(session.getGroup()));
     }
 
     /**
@@ -58,8 +63,43 @@ public class AddressBook implements ReadOnlyAddressBook {
     public void resetData(ReadOnlyAddressBook newData) {
         requireNonNull(newData);
 
+        groups.setAll(newData.getGroupList());
         setPersons(newData.getPersonList());
         setSessions(newData.getSessionList());
+    }
+
+    /**
+     * Registers an empty tutorial group, independently of students and sessions.
+     *
+     * @throws IllegalArgumentException if the group is already registered.
+     */
+    public void addGroup(Group group) {
+        requireNonNull(group);
+        if (hasGroup(group)) {
+            throw new IllegalArgumentException("This tutorial group already exists: " + group);
+        }
+        groups.add(group);
+    }
+
+    /**
+     * Returns whether a group has been registered, even when it has no students or sessions.
+     */
+    public boolean hasGroup(Group group) {
+        requireNonNull(group);
+        return groups.contains(group);
+    }
+
+    // Keeps the existing add/session model APIs compatible with pre-registry callers.
+    // Command-level checks for creating groups belong to the init/add/session features.
+    private void registerReferencedGroup(Group group) {
+        if (!hasGroup(group)) {
+            groups.add(group);
+        }
+    }
+
+    @Override
+    public ObservableList<Group> getGroupList() {
+        return FXCollections.unmodifiableObservableList(groups);
     }
 
     //// person-level operations
@@ -78,6 +118,7 @@ public class AddressBook implements ReadOnlyAddressBook {
      */
     public void addPerson(Person p) {
         persons.add(p);
+        registerReferencedGroup(p.getGroup());
     }
 
     /**
@@ -89,6 +130,7 @@ public class AddressBook implements ReadOnlyAddressBook {
         requireNonNull(editedPerson);
 
         persons.setPerson(target, editedPerson);
+        registerReferencedGroup(editedPerson.getGroup());
     }
 
     /**
@@ -115,6 +157,7 @@ public class AddressBook implements ReadOnlyAddressBook {
      */
     public void addSession(Session session) {
         sessions.add(session);
+        registerReferencedGroup(session.getGroup());
     }
 
     /**
@@ -155,12 +198,13 @@ public class AddressBook implements ReadOnlyAddressBook {
             return false;
         }
 
-        return persons.equals(otherAddressBook.persons)
+        return new HashSet<>(groups).equals(new HashSet<>(otherAddressBook.groups))
+                && persons.equals(otherAddressBook.persons)
                 && sessions.equals(otherAddressBook.sessions);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(persons, sessions);
+        return Objects.hash(new HashSet<>(groups), persons, sessions);
     }
 }

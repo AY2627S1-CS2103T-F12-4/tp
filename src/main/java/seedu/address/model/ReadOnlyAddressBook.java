@@ -1,6 +1,7 @@
 package seedu.address.model;
 
 import javafx.collections.ObservableList;
+import seedu.address.model.person.Group;
 import seedu.address.model.person.Person;
 import seedu.address.model.session.Session;
 
@@ -8,6 +9,9 @@ import seedu.address.model.session.Session;
  * Unmodifiable view of an address book
  */
 public interface ReadOnlyAddressBook {
+
+    /** Returns the registered groups, including those with no students or sessions. */
+    ObservableList<Group> getGroupList();
 
     /**
      * Returns an unmodifiable view of the persons list.

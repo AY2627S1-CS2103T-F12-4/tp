@@ -3,12 +3,17 @@ package seedu.address.model;
 import static java.util.Objects.requireNonNull;
 import static seedu.address.commons.util.CollectionUtil.requireAllNonNull;
 
+import java.util.Comparator;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.logging.Logger;
 
+import javafx.beans.property.ReadOnlyObjectProperty;
+import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
+import javafx.collections.transformation.SortedList;
 import seedu.address.commons.core.GuiSettings;
 import seedu.address.commons.core.LogsCenter;
 import seedu.address.model.person.Group;
@@ -25,6 +30,8 @@ public class ModelManager implements Model {
     private final AddressBook addressBook;
     private final UserPrefs userPrefs;
     private final FilteredList<Person> filteredPersons;
+    private final SortedList<Person> sortedPersons;
+    private final ReadOnlyObjectWrapper<Group> activeGroup = new ReadOnlyObjectWrapper<>();
 
     /**
      * Initializes a ModelManager with the given addressBook and userPrefs.
@@ -37,6 +44,7 @@ public class ModelManager implements Model {
         this.addressBook = new AddressBook(addressBook);
         this.userPrefs = new UserPrefs(userPrefs);
         filteredPersons = new FilteredList<>(this.addressBook.getPersonList());
+        sortedPersons = new SortedList<>(filteredPersons, Comparator.comparing(person -> person.getMatric().value));
     }
 
     public ModelManager() {
@@ -66,6 +74,7 @@ public class ModelManager implements Model {
     @Override
     public void setAddressBook(ReadOnlyAddressBook addressBook) {
         this.addressBook.resetData(addressBook);
+        updateFilteredPersonList(PREDICATE_SHOW_ALL_PERSONS);
     }
 
     @Override
@@ -87,7 +96,6 @@ public class ModelManager implements Model {
     @Override
     public void addPerson(Person person) {
         addressBook.addPerson(person);
-        updateFilteredPersonList(PREDICATE_SHOW_ALL_PERSONS);
     }
 
     @Override
@@ -122,13 +130,39 @@ public class ModelManager implements Model {
      */
     @Override
     public ObservableList<Person> getFilteredPersonList() {
-        return filteredPersons;
+        return sortedPersons;
     }
 
     @Override
     public void updateFilteredPersonList(Predicate<Person> predicate) {
         requireNonNull(predicate);
         filteredPersons.setPredicate(predicate);
+        activeGroup.set(null);
+    }
+
+    @Override
+    public void addGroup(Group group) {
+        addressBook.addGroup(group);
+    }
+
+    @Override
+    public boolean hasGroup(Group group) {
+        return addressBook.hasGroup(group);
+    }
+
+    @Override
+    public void showGroup(Group group) {
+        requireNonNull(group);
+        if (!addressBook.hasGroup(group)) {
+            throw new IllegalArgumentException("Unknown tutorial group: " + group);
+        }
+        filteredPersons.setPredicate(person -> person.getGroup().equals(group));
+        activeGroup.set(group);
+    }
+
+    @Override
+    public ReadOnlyObjectProperty<Group> activeGroupProperty() {
+        return activeGroup.getReadOnlyProperty();
     }
 
     @Override
@@ -144,7 +178,8 @@ public class ModelManager implements Model {
 
         return addressBook.equals(otherModelManager.addressBook)
                 && userPrefs.equals(otherModelManager.userPrefs)
-                && filteredPersons.equals(otherModelManager.filteredPersons);
+                && filteredPersons.equals(otherModelManager.filteredPersons)
+                && Objects.equals(activeGroup.get(), otherModelManager.activeGroup.get());
     }
 
 }
