@@ -3,33 +3,51 @@ package seedu.address.logic.commands;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static seedu.address.commons.util.CollectionUtil.requireAllNonNull;
 import static seedu.address.logic.commands.CommandTestUtil.assertCommandFailure;
 import static seedu.address.logic.commands.CommandTestUtil.assertCommandSuccess;
 import static seedu.address.logic.commands.CommandTestUtil.showPersonAtIndex;
+import static seedu.address.testutil.Assert.assertThrows;
 import static seedu.address.testutil.TypicalIndexes.INDEX_FIRST_PERSON;
 import static seedu.address.testutil.TypicalIndexes.INDEX_SECOND_PERSON;
+import static seedu.address.testutil.TypicalPersons.ALICE;
+import static seedu.address.testutil.TypicalPersons.BENSON;
+import static seedu.address.testutil.TypicalPersons.ELLE;
 import static seedu.address.testutil.TypicalPersons.getTypicalAddressBook;
 import static seedu.address.testutil.TypicalSessions.T09_WEEK_1;
 import static seedu.address.testutil.TypicalSessions.T10_WEEK_1;
 import static seedu.address.testutil.TypicalSessions.getTypicalSessions;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+
 import org.junit.jupiter.api.Test;
 
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import seedu.address.commons.core.index.Index;
 import seedu.address.logic.Messages;
+import seedu.address.logic.commands.exceptions.CommandException;
 import seedu.address.model.AddressBook;
 import seedu.address.model.Model;
 import seedu.address.model.ModelManager;
 import seedu.address.model.UserPrefs;
+import seedu.address.model.attendance.Attendance;
 import seedu.address.model.attendance.Status;
+import seedu.address.model.person.Group;
 import seedu.address.model.person.Person;
+import seedu.address.model.session.Session;
 import seedu.address.model.session.Week;
+import seedu.address.testutil.ModelStub;
 import seedu.address.testutil.PersonBuilder;
 
 /**
  * Contains integration tests (interaction with the Model) and unit tests for {@code MarkCommand}.
  * In the typical address book, ALICE (index 1) to CARL are in T09 and DANIEL (index 4) onwards are in T10;
  * the typical sessions are added to it, so T09 has sessions in weeks 1 and 2, and T10 only in week 1.
+ * The tests with a stub model check only the command's own behavior, without a real model.
  */
 public class MarkCommandTest {
 
@@ -150,6 +168,68 @@ public class MarkCommandTest {
     }
 
     @Test
+    public void execute_firstMarkWithStubModel_recordsAttendanceForThatStudentOnly() throws Exception {
+        ModelStubWithStudentsAndSessions modelStub =
+                new ModelStubWithStudentsAndSessions(List.of(ALICE, BENSON), List.of(T09_WEEK_1));
+
+        CommandResult result = new MarkCommand(INDEX_SECOND_PERSON, new Week(1), Status.PRESENT).execute(modelStub);
+
+        assertEquals("Marked Benson Meier as PRESENT for T09 week 1.", result.getFeedbackToUser());
+        assertEquals(List.of(BENSON), modelStub.replacedPersons);
+        assertEquals(List.of(new PersonBuilder(BENSON).withAttendance(T09_WEEK_1, Status.PRESENT).build()),
+                modelStub.replacementPersons);
+    }
+
+    @Test
+    public void execute_remarkWithStubModel_replacesRecordAndNamesPreviousStatus() throws Exception {
+        Person bensonPresent = new PersonBuilder(BENSON).withAttendance(T09_WEEK_1, Status.PRESENT).build();
+        ModelStubWithStudentsAndSessions modelStub =
+                new ModelStubWithStudentsAndSessions(List.of(bensonPresent), List.of(T09_WEEK_1));
+
+        CommandResult result = new MarkCommand(INDEX_FIRST_PERSON, new Week(1), Status.ABSENT).execute(modelStub);
+
+        assertEquals("Marked Benson Meier as ABSENT for T09 week 1 (was PRESENT).", result.getFeedbackToUser());
+        Person bensonAbsent = modelStub.replacementPersons.get(0);
+        assertEquals(Set.of(new Attendance(T09_WEEK_1, Status.ABSENT)), bensonAbsent.getAttendances());
+    }
+
+    @Test
+    public void execute_listSpanningGroupsWithStubModel_usesEachStudentsOwnGroup() throws Exception {
+        // ALICE is in T09 and ELLE in T10, and both groups have a week 1 session
+        ModelStubWithStudentsAndSessions modelStub =
+                new ModelStubWithStudentsAndSessions(List.of(ALICE, ELLE), List.of(T09_WEEK_1, T10_WEEK_1));
+
+        new MarkCommand(INDEX_SECOND_PERSON, new Week(1), Status.PRESENT).execute(modelStub);
+
+        assertEquals(Set.of(new Attendance(T10_WEEK_1, Status.PRESENT)),
+                modelStub.replacementPersons.get(0).getAttendances());
+    }
+
+    @Test
+    public void execute_noSessionForOwnGroupWithStubModel_throwsCommandExceptionAndChangesNothing() {
+        // Only T09 has a week 1 session, but ELLE is in T10
+        ModelStubWithStudentsAndSessions modelStub =
+                new ModelStubWithStudentsAndSessions(List.of(ELLE), List.of(T09_WEEK_1));
+        MarkCommand markCommand = new MarkCommand(INDEX_FIRST_PERSON, new Week(1), Status.PRESENT);
+
+        assertThrows(CommandException.class,
+                "T10 has no session for week 1. Create it first with: session grp/T10 w/1 d/YYYY-MM-DD", () ->
+                markCommand.execute(modelStub));
+        assertTrue(modelStub.replacedPersons.isEmpty());
+    }
+
+    @Test
+    public void execute_indexOutOfRangeWithStubModel_throwsCommandExceptionAndChangesNothing() {
+        ModelStubWithStudentsAndSessions modelStub =
+                new ModelStubWithStudentsAndSessions(List.of(ALICE), List.of(T09_WEEK_1));
+        MarkCommand markCommand = new MarkCommand(INDEX_SECOND_PERSON, new Week(1), Status.PRESENT);
+
+        assertThrows(CommandException.class, Messages.MESSAGE_INVALID_PERSON_DISPLAYED_INDEX, () ->
+                markCommand.execute(modelStub));
+        assertTrue(modelStub.replacedPersons.isEmpty());
+    }
+
+    @Test
     public void equals() {
         final MarkCommand standardCommand = new MarkCommand(INDEX_FIRST_PERSON, new Week(1), Status.PRESENT);
 
@@ -181,5 +261,38 @@ public class MarkCommandTest {
         String expected = MarkCommand.class.getCanonicalName() + "{index=" + INDEX_FIRST_PERSON
                 + ", week=5, status=ABSENT}";
         assertEquals(expected, markCommand.toString());
+    }
+
+    /**
+     * A Model stub that displays a fixed list of persons, holds a fixed list of sessions, and records the persons
+     * replaced in it. Any other call to the model, including changing the displayed list's filter, fails the test.
+     */
+    private static class ModelStubWithStudentsAndSessions extends ModelStub {
+        private final ObservableList<Person> displayedPersons;
+        private final List<Session> sessions;
+        private final List<Person> replacedPersons = new ArrayList<>();
+        private final List<Person> replacementPersons = new ArrayList<>();
+
+        ModelStubWithStudentsAndSessions(List<Person> displayedPersons, List<Session> sessions) {
+            this.displayedPersons = FXCollections.observableArrayList(displayedPersons);
+            this.sessions = sessions;
+        }
+
+        @Override
+        public ObservableList<Person> getFilteredPersonList() {
+            return FXCollections.unmodifiableObservableList(displayedPersons);
+        }
+
+        @Override
+        public Optional<Session> findSession(Group group, Week week) {
+            return sessions.stream().filter(session -> session.isFor(group, week)).findFirst();
+        }
+
+        @Override
+        public void setPerson(Person target, Person editedPerson) {
+            requireAllNonNull(target, editedPerson);
+            replacedPersons.add(target);
+            replacementPersons.add(editedPerson);
+        }
     }
 }
