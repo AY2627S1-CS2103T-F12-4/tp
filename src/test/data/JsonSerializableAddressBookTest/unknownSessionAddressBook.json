@@ -1,0 +1,24 @@
+{
+  "groups": [ "T09" ],
+  "sessions": [ {
+    "group": "T09",
+    "week": "1",
+    "date": "2026-08-11"
+  } ],
+  "persons": [ {
+    "name": "Alice Pauline",
+    "phone": "94351253",
+    "email": "alice@example.com",
+    "address": "123, Jurong West Ave 6, #08-111",
+    "matric": "A0000001A",
+    "group": "T09",
+    "attendances": [ {
+      "session": {
+        "group": "T09",
+        "week": "2",
+        "date": "2026-08-18"
+      },
+      "status": "PRESENT"
+    } ]
+  } ]
+}

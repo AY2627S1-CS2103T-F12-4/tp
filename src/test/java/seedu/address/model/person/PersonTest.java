@@ -15,9 +15,16 @@ import static seedu.address.logic.commands.CommandTestUtil.VALID_TAG_HUSBAND;
 import static seedu.address.testutil.Assert.assertThrows;
 import static seedu.address.testutil.TypicalPersons.ALICE;
 import static seedu.address.testutil.TypicalPersons.BOB;
+import static seedu.address.testutil.TypicalSessions.T09_WEEK_1;
+import static seedu.address.testutil.TypicalSessions.T09_WEEK_2;
+import static seedu.address.testutil.TypicalSessions.T10_WEEK_1;
+
+import java.util.Optional;
 
 import org.junit.jupiter.api.Test;
 
+import seedu.address.model.attendance.Attendance;
+import seedu.address.model.attendance.Status;
 import seedu.address.testutil.PersonBuilder;
 
 public class PersonTest {
@@ -96,11 +103,52 @@ public class PersonTest {
     }
 
     @Test
+    public void constructor_attendanceForOtherGroup_throwsIllegalArgumentException() {
+        // ALICE is in T09
+        assertThrows(IllegalArgumentException.class, Person.MESSAGE_INVALID_ATTENDANCES, () ->
+                new PersonBuilder(ALICE).withAttendance(T10_WEEK_1, Status.PRESENT).build());
+    }
+
+    @Test
+    public void getAttendance() {
+        Person alicePresent = new PersonBuilder(ALICE).withAttendance(T09_WEEK_1, Status.PRESENT).build();
+
+        // marked session -> returns the attendance
+        assertEquals(Optional.of(new Attendance(T09_WEEK_1, Status.PRESENT)),
+                alicePresent.getAttendance(T09_WEEK_1));
+
+        // unmarked session -> returns empty
+        assertEquals(Optional.empty(), alicePresent.getAttendance(T09_WEEK_2));
+    }
+
+    @Test
+    public void withAttendance() {
+        // first mark -> attendance added, original unchanged
+        Person alicePresent = ALICE.withAttendance(new Attendance(T09_WEEK_1, Status.PRESENT));
+        assertEquals(new PersonBuilder(ALICE).withAttendance(T09_WEEK_1, Status.PRESENT).build(), alicePresent);
+        assertTrue(ALICE.getAttendances().isEmpty());
+
+        // second mark for the same session -> attendance replaced, not added
+        Person aliceAbsent = alicePresent.withAttendance(new Attendance(T09_WEEK_1, Status.ABSENT));
+        assertEquals(new PersonBuilder(ALICE).withAttendance(T09_WEEK_1, Status.ABSENT).build(), aliceAbsent);
+
+        // mark for another session -> both kept
+        Person aliceTwoWeeks = aliceAbsent.withAttendance(new Attendance(T09_WEEK_2, Status.PRESENT));
+        assertEquals(2, aliceTwoWeeks.getAttendances().size());
+    }
+
+    @Test
+    public void equals_differentAttendance_returnsFalse() {
+        Person alicePresent = new PersonBuilder(ALICE).withAttendance(T09_WEEK_1, Status.PRESENT).build();
+        assertFalse(ALICE.equals(alicePresent));
+    }
+
+    @Test
     public void toStringMethod() {
         String expected = Person.class.getCanonicalName() + "{name=" + ALICE.getName() + ", phone=" + ALICE.getPhone()
                 + ", email=" + ALICE.getEmail() + ", address=" + ALICE.getAddress()
                 + ", matric=" + ALICE.getMatric() + ", group=" + ALICE.getGroup()
-                + ", tags=" + ALICE.getTags() + "}";
+                + ", tags=" + ALICE.getTags() + ", attendances=" + ALICE.getAttendances() + "}";
         assertEquals(expected, ALICE.toString());
     }
 }
