@@ -10,8 +10,11 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import seedu.address.commons.exceptions.IllegalValueException;
+import seedu.address.model.attendance.Attendance;
 import seedu.address.model.person.Address;
 import seedu.address.model.person.Email;
+import seedu.address.model.person.Group;
+import seedu.address.model.person.Matric;
 import seedu.address.model.person.Name;
 import seedu.address.model.person.Person;
 import seedu.address.model.person.Phone;
@@ -28,7 +31,10 @@ class JsonAdaptedPerson {
     private final String phone;
     private final String email;
     private final String address;
+    private final String matric;
+    private final String group;
     private final List<JsonAdaptedTag> tags = new ArrayList<>();
+    private final List<JsonAdaptedAttendance> attendances = new ArrayList<>();
 
     /**
      * Constructs a {@code JsonAdaptedPerson} with the given person details.
@@ -36,13 +42,20 @@ class JsonAdaptedPerson {
     @JsonCreator
     public JsonAdaptedPerson(@JsonProperty("name") String name, @JsonProperty("phone") String phone,
             @JsonProperty("email") String email, @JsonProperty("address") String address,
-            @JsonProperty("tags") List<JsonAdaptedTag> tags) {
+            @JsonProperty("matric") String matric, @JsonProperty("group") String group,
+            @JsonProperty("tags") List<JsonAdaptedTag> tags,
+            @JsonProperty("attendances") List<JsonAdaptedAttendance> attendances) {
         this.name = name;
         this.phone = phone;
         this.email = email;
         this.address = address;
+        this.matric = matric;
+        this.group = group;
         if (tags != null) {
             this.tags.addAll(tags);
+        }
+        if (attendances != null) {
+            this.attendances.addAll(attendances);
         }
     }
 
@@ -54,8 +67,13 @@ class JsonAdaptedPerson {
         phone = source.getPhone().value;
         email = source.getEmail().value;
         address = source.getAddress().value;
+        matric = source.getMatric().value;
+        group = source.getGroup().value;
         tags.addAll(source.getTags().stream()
                 .map(JsonAdaptedTag::new)
+                .collect(Collectors.toList()));
+        attendances.addAll(source.getAttendances().stream()
+                .map(JsonAdaptedAttendance::new)
                 .collect(Collectors.toList()));
     }
 
@@ -102,8 +120,34 @@ class JsonAdaptedPerson {
         }
         final Address modelAddress = new Address(address);
 
+        if (matric == null) {
+            throw new IllegalValueException(String.format(MISSING_FIELD_MESSAGE_FORMAT, Matric.class.getSimpleName()));
+        }
+        if (!Matric.isValidMatric(matric)) {
+            throw new IllegalValueException(Matric.MESSAGE_CONSTRAINTS);
+        }
+        final Matric modelMatric = new Matric(matric);
+
+        if (group == null) {
+            throw new IllegalValueException(String.format(MISSING_FIELD_MESSAGE_FORMAT, Group.class.getSimpleName()));
+        }
+        if (!Group.isValidGroup(group)) {
+            throw new IllegalValueException(Group.MESSAGE_CONSTRAINTS);
+        }
+        final Group modelGroup = new Group(group);
+
         final Set<Tag> modelTags = new HashSet<>(personTags);
-        return new Person(modelName, modelPhone, modelEmail, modelAddress, modelTags);
+
+        final Set<Attendance> modelAttendances = new HashSet<>();
+        for (JsonAdaptedAttendance attendance : attendances) {
+            modelAttendances.add(attendance.toModelType());
+        }
+        if (!Person.areValidAttendances(modelGroup, modelAttendances)) {
+            throw new IllegalValueException(Person.MESSAGE_INVALID_ATTENDANCES);
+        }
+
+        return new Person(modelName, modelPhone, modelEmail, modelAddress, modelMatric, modelGroup, modelTags,
+                modelAttendances);
     }
 
 }

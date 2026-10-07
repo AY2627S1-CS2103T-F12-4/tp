@@ -3,6 +3,7 @@ package seedu.address.model;
 import static java.util.Objects.requireNonNull;
 import static seedu.address.commons.util.CollectionUtil.requireAllNonNull;
 
+import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.logging.Logger;
 
@@ -10,7 +11,10 @@ import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
 import seedu.address.commons.core.GuiSettings;
 import seedu.address.commons.core.LogsCenter;
+import seedu.address.model.person.Group;
 import seedu.address.model.person.Person;
+import seedu.address.model.session.Session;
+import seedu.address.model.session.Week;
 
 /**
  * Represents the in-memory model of the address book data.
@@ -91,6 +95,23 @@ public class ModelManager implements Model {
         requireAllNonNull(target, editedPerson);
 
         addressBook.setPerson(target, editedPerson);
+    }
+
+    @Override
+    public boolean hasSession(Session session) {
+        requireNonNull(session);
+        return addressBook.hasSession(session);
+    }
+
+    @Override
+    public void addSession(Session session) {
+        addressBook.addSession(session);
+    }
+
+    @Override
+    public Optional<Session> findSession(Group group, Week week) {
+        requireAllNonNull(group, week);
+        return addressBook.findSession(group, week);
     }
 
     //=========== Filtered Person List Accessors =============================================================

@@ -21,9 +21,12 @@ import seedu.address.logic.commands.ExitCommand;
 import seedu.address.logic.commands.FindCommand;
 import seedu.address.logic.commands.HelpCommand;
 import seedu.address.logic.commands.ListCommand;
+import seedu.address.logic.commands.MarkCommand;
 import seedu.address.logic.parser.exceptions.ParseException;
+import seedu.address.model.attendance.Status;
 import seedu.address.model.person.NameContainsKeywordsPredicate;
 import seedu.address.model.person.Person;
+import seedu.address.model.session.Week;
 import seedu.address.testutil.EditPersonDescriptorBuilder;
 import seedu.address.testutil.PersonBuilder;
 import seedu.address.testutil.PersonUtil;
@@ -93,6 +96,13 @@ public class AddressBookParserTest {
         for (String arguments : List.of("3", "John", "n/John", "grp/T09", "grp/")) {
             assertThrows(ParseException.class, expectedMessage, () -> parser.parseCommand("list " + arguments));
         }
+    }
+
+    @Test
+    public void parseCommand_mark() throws Exception {
+        MarkCommand command = (MarkCommand) parser.parseCommand(MarkCommand.COMMAND_WORD + " "
+                + INDEX_FIRST_PERSON.getOneBased() + " w/5 s/absent");
+        assertEquals(new MarkCommand(INDEX_FIRST_PERSON, new Week(5), Status.ABSENT), command);
     }
 
     @Test

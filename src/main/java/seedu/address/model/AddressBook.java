@@ -3,24 +3,31 @@ package seedu.address.model;
 import static java.util.Objects.requireNonNull;
 
 import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 
 import javafx.collections.ObservableList;
 import seedu.address.commons.util.ToStringBuilder;
+import seedu.address.model.person.Group;
 import seedu.address.model.person.Person;
 import seedu.address.model.person.UniquePersonList;
+import seedu.address.model.session.Session;
+import seedu.address.model.session.UniqueSessionList;
+import seedu.address.model.session.Week;
 
 /**
  * Wraps all data at the address-book level.
- * Duplicates are not allowed (by .isSamePerson comparison).
+ * Duplicates are not allowed (by .isSamePerson comparison for persons, and .isSameSession for sessions).
  */
 public class AddressBook implements ReadOnlyAddressBook {
 
     private final UniquePersonList persons = new UniquePersonList();
+    private final UniqueSessionList sessions = new UniqueSessionList();
 
     public AddressBook() {}
 
     /**
-     * Creates an AddressBook using the Persons in the {@code toBeCopied}
+     * Creates an AddressBook using the Persons and Sessions in the {@code toBeCopied}
      */
     public AddressBook(ReadOnlyAddressBook toBeCopied) {
         this();
@@ -38,12 +45,21 @@ public class AddressBook implements ReadOnlyAddressBook {
     }
 
     /**
+     * Replaces the contents of the session list with {@code sessions}.
+     * {@code sessions} must not contain duplicate sessions.
+     */
+    public void setSessions(List<Session> sessions) {
+        this.sessions.setSessions(sessions);
+    }
+
+    /**
      * Resets the existing data of this {@code AddressBook} with {@code newData}.
      */
     public void resetData(ReadOnlyAddressBook newData) {
         requireNonNull(newData);
 
         setPersons(newData.getPersonList());
+        setSessions(newData.getSessionList());
     }
 
     //// person-level operations
@@ -83,18 +99,49 @@ public class AddressBook implements ReadOnlyAddressBook {
         persons.remove(key);
     }
 
+    //// session-level operations
+
+    /**
+     * Returns true if the group of {@code session} already has a session in the same week.
+     */
+    public boolean hasSession(Session session) {
+        requireNonNull(session);
+        return sessions.contains(session);
+    }
+
+    /**
+     * Adds a session to the address book.
+     * The group must not already have a session in the same week.
+     */
+    public void addSession(Session session) {
+        sessions.add(session);
+    }
+
+    /**
+     * Returns the session of {@code group} in {@code week}, if there is one.
+     */
+    public Optional<Session> findSession(Group group, Week week) {
+        return sessions.find(group, week);
+    }
+
     //// util methods
 
     @Override
     public String toString() {
         return new ToStringBuilder(this)
                 .add("persons", persons)
+                .add("sessions", sessions)
                 .toString();
     }
 
     @Override
     public ObservableList<Person> getPersonList() {
         return persons.asUnmodifiableObservableList();
+    }
+
+    @Override
+    public ObservableList<Session> getSessionList() {
+        return sessions.asUnmodifiableObservableList();
     }
 
     @Override
@@ -108,11 +155,12 @@ public class AddressBook implements ReadOnlyAddressBook {
             return false;
         }
 
-        return persons.equals(otherAddressBook.persons);
+        return persons.equals(otherAddressBook.persons)
+                && sessions.equals(otherAddressBook.sessions);
     }
 
     @Override
     public int hashCode() {
-        return persons.hashCode();
+        return Objects.hash(persons, sessions);
     }
 }

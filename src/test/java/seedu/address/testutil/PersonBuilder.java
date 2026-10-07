@@ -3,11 +3,16 @@ package seedu.address.testutil;
 import java.util.HashSet;
 import java.util.Set;
 
+import seedu.address.model.attendance.Attendance;
+import seedu.address.model.attendance.Status;
 import seedu.address.model.person.Address;
 import seedu.address.model.person.Email;
+import seedu.address.model.person.Group;
+import seedu.address.model.person.Matric;
 import seedu.address.model.person.Name;
 import seedu.address.model.person.Person;
 import seedu.address.model.person.Phone;
+import seedu.address.model.session.Session;
 import seedu.address.model.tag.Tag;
 import seedu.address.model.util.SampleDataUtil;
 
@@ -20,12 +25,17 @@ public class PersonBuilder {
     public static final String DEFAULT_PHONE = "85355255";
     public static final String DEFAULT_EMAIL = "amy@gmail.com";
     public static final String DEFAULT_ADDRESS = "123, Jurong West Ave 6, #08-111";
+    public static final String DEFAULT_MATRIC = "A0123456X";
+    public static final String DEFAULT_GROUP = "T09";
 
     private Name name;
     private Phone phone;
     private Email email;
     private Address address;
+    private Matric matric;
+    private Group group;
     private Set<Tag> tags;
+    private Set<Attendance> attendances;
 
     /**
      * Creates a {@code PersonBuilder} with the default details.
@@ -35,7 +45,10 @@ public class PersonBuilder {
         phone = new Phone(DEFAULT_PHONE);
         email = new Email(DEFAULT_EMAIL);
         address = new Address(DEFAULT_ADDRESS);
+        matric = new Matric(DEFAULT_MATRIC);
+        group = new Group(DEFAULT_GROUP);
         tags = new HashSet<>();
+        attendances = new HashSet<>();
     }
 
     /**
@@ -46,7 +59,10 @@ public class PersonBuilder {
         phone = personToCopy.getPhone();
         email = personToCopy.getEmail();
         address = personToCopy.getAddress();
+        matric = personToCopy.getMatric();
+        group = personToCopy.getGroup();
         tags = new HashSet<>(personToCopy.getTags());
+        attendances = new HashSet<>(personToCopy.getAttendances());
     }
 
     /**
@@ -89,8 +105,34 @@ public class PersonBuilder {
         return this;
     }
 
+    /**
+     * Sets the {@code Matric} of the {@code Person} that we are building.
+     */
+    public PersonBuilder withMatric(String matric) {
+        this.matric = new Matric(matric);
+        return this;
+    }
+
+    /**
+     * Sets the {@code Group} of the {@code Person} that we are building.
+     */
+    public PersonBuilder withGroup(String group) {
+        this.group = new Group(group);
+        return this;
+    }
+
+    /**
+     * Records {@code status} for {@code session} on the {@code Person} that we are building,
+     * replacing any earlier attendance for the same session.
+     */
+    public PersonBuilder withAttendance(Session session, Status status) {
+        attendances.removeIf(attendance -> attendance.isForSession(session));
+        attendances.add(new Attendance(session, status));
+        return this;
+    }
+
     public Person build() {
-        return new Person(name, phone, email, address, tags);
+        return new Person(name, phone, email, address, matric, group, tags, attendances);
     }
 
 }

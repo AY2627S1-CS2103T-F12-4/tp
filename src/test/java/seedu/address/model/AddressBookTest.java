@@ -8,16 +8,21 @@ import static seedu.address.logic.commands.CommandTestUtil.VALID_TAG_HUSBAND;
 import static seedu.address.testutil.Assert.assertThrows;
 import static seedu.address.testutil.TypicalPersons.ALICE;
 import static seedu.address.testutil.TypicalPersons.getTypicalAddressBook;
+import static seedu.address.testutil.TypicalSessions.T09_WEEK_1;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 
 import org.junit.jupiter.api.Test;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import seedu.address.model.person.Group;
 import seedu.address.model.person.Person;
 import seedu.address.model.person.exceptions.DuplicatePersonException;
+import seedu.address.model.session.Session;
+import seedu.address.model.session.Week;
 import seedu.address.testutil.PersonBuilder;
 
 public class AddressBookTest {
@@ -82,8 +87,29 @@ public class AddressBookTest {
     }
 
     @Test
+    public void hasSession_sessionNotInAddressBook_returnsFalse() {
+        assertFalse(addressBook.hasSession(T09_WEEK_1));
+    }
+
+    @Test
+    public void addSession_sessionAdded_hasAndFindsSession() {
+        addressBook.addSession(T09_WEEK_1);
+        assertTrue(addressBook.hasSession(T09_WEEK_1));
+        assertEquals(Optional.of(T09_WEEK_1), addressBook.findSession(new Group("T09"), new Week(1)));
+        assertEquals(Optional.empty(), addressBook.findSession(new Group("T09"), new Week(2)));
+    }
+
+    @Test
+    public void resetData_withSessions_copiesSessions() {
+        AddressBook newData = getTypicalAddressBook();
+        addressBook.resetData(newData);
+        assertEquals(newData.getSessionList(), addressBook.getSessionList());
+    }
+
+    @Test
     public void toStringMethod() {
-        String expected = AddressBook.class.getCanonicalName() + "{persons=" + addressBook.getPersonList() + "}";
+        String expected = AddressBook.class.getCanonicalName() + "{persons=" + addressBook.getPersonList()
+                + ", sessions=" + addressBook.getSessionList() + "}";
         assertEquals(expected, addressBook.toString());
     }
 
@@ -100,6 +126,11 @@ public class AddressBookTest {
         @Override
         public ObservableList<Person> getPersonList() {
             return persons;
+        }
+
+        @Override
+        public ObservableList<Session> getSessionList() {
+            return FXCollections.observableArrayList();
         }
     }
 
