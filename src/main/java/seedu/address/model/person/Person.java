@@ -20,20 +20,25 @@ public class Person {
     private final Name name;
     private final Phone phone;
     private final Email email;
+    private final Matric matric;
 
     // Data fields
     private final Address address;
+    private final Group group;
     private final Set<Tag> tags = new HashSet<>();
 
     /**
      * Every field must be present and not null.
      */
-    public Person(Name name, Phone phone, Email email, Address address, Set<Tag> tags) {
-        requireAllNonNull(name, phone, email, address, tags);
+    public Person(Name name, Phone phone, Email email, Address address, Matric matric, Group group,
+            Set<Tag> tags) {
+        requireAllNonNull(name, phone, email, address, matric, group, tags);
         this.name = name;
         this.phone = phone;
         this.email = email;
         this.address = address;
+        this.matric = matric;
+        this.group = group;
         this.tags.addAll(tags);
     }
 
@@ -51,6 +56,14 @@ public class Person {
 
     public Address getAddress() {
         return address;
+    }
+
+    public Matric getMatric() {
+        return matric;
+    }
+
+    public Group getGroup() {
+        return group;
     }
 
     /**
@@ -93,13 +106,15 @@ public class Person {
                 && phone.equals(otherPerson.phone)
                 && email.equals(otherPerson.email)
                 && address.equals(otherPerson.address)
+                && matric.equals(otherPerson.matric)
+                && group.equals(otherPerson.group)
                 && tags.equals(otherPerson.tags);
     }
 
     @Override
     public int hashCode() {
         // use this method for custom fields hashing instead of implementing your own
-        return Objects.hash(name, phone, email, address, tags);
+        return Objects.hash(name, phone, email, address, matric, group, tags);
     }
 
     @Override
@@ -109,6 +124,8 @@ public class Person {
                 .add("phone", phone)
                 .add("email", email)
                 .add("address", address)
+                .add("matric", matric)
+                .add("group", group)
                 .add("tags", tags)
                 .toString();
     }
