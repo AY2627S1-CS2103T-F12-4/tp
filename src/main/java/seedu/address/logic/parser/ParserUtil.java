@@ -13,6 +13,7 @@ import seedu.address.logic.parser.exceptions.ParseException;
 import seedu.address.model.person.Address;
 import seedu.address.model.person.Email;
 import seedu.address.model.person.Group;
+import seedu.address.model.person.Matric;
 import seedu.address.model.person.Name;
 import seedu.address.model.person.Phone;
 import seedu.address.model.session.SessionDate;
@@ -85,18 +86,35 @@ public class ParserUtil {
     }
 
     /**
-     * Parses a {@code String email} into an {@code Email}.
+     * Parses a {@code String matric} into a {@code Matric}.
      * Leading and trailing whitespaces will be trimmed.
+     *
+     * @throws ParseException if the given {@code matric} is invalid.
+     */
+    public static Matric parseMatric(String matric) throws ParseException {
+        requireNonNull(matric);
+        String normalizedMatric = matric.trim().toUpperCase(Locale.ROOT);
+        if (!Matric.isValidMatric(normalizedMatric)) {
+            throw new ParseException(Matric.MESSAGE_CONSTRAINTS);
+        }
+        return new Matric(normalizedMatric);
+    }
+
+
+    /**
+     * Parses a {@code String email} into an {@code Email}.
+     * Leading and trailing whitespaces will be trimmed, and the address is lowercased so that
+     * the same address entered with different casing is stored and compared identically.
      *
      * @throws ParseException if the given {@code email} is invalid.
      */
     public static Email parseEmail(String email) throws ParseException {
         requireNonNull(email);
-        String trimmedEmail = email.trim();
-        if (!Email.isValidEmail(trimmedEmail)) {
+        String normalizedEmail = email.trim().toLowerCase(Locale.ROOT);
+        if (!Email.isValidEmail(normalizedEmail)) {
             throw new ParseException(Email.MESSAGE_CONSTRAINTS);
         }
-        return new Email(trimmedEmail);
+        return new Email(normalizedEmail);
     }
 
     /**

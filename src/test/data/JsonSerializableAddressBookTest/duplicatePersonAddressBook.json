@@ -1,14 +1,19 @@
 {
+  "groups": [ "T09", "T10" ],
   "persons": [ {
     "name": "Alice Pauline",
     "phone": "94351253",
     "email": "alice@example.com",
     "address": "123, Jurong West Ave 6, #08-111",
+    "matric": "A0000001A",
+    "group": "T09",
     "tags": [ "friends" ]
   }, {
-    "name": "Alice Pauline",
+    "name": "Alicia Pauline",
     "phone": "94351253",
     "email": "pauline@example.com",
-    "address": "4th street"
+    "address": "4th street",
+    "matric": "A0000001A",
+    "group": "T10"
   } ]
 }

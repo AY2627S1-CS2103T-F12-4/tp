@@ -26,12 +26,12 @@ import seedu.address.testutil.PersonBuilder;
  * Contains integration tests (interaction with the Model) for {@code FindCommand}.
  */
 public class FindCommandTest {
-    private final Person johnny = new PersonBuilder().withName("Johnny Lim").build();
-    private final Person johnTan = new PersonBuilder().withName("John Tan").build();
-    private final Person johnson = new PersonBuilder().withName("Johnson Ng").build();
-    private final Person johnLim = new PersonBuilder().withName("John Lim").build();
-    private final Person johnTanner = new PersonBuilder().withName("John Tanner").build();
-    private final Person meiTan = new PersonBuilder().withName("Mei Tan").build();
+    private final Person johnny = new PersonBuilder().withName("Johnny Lim").withMatric("A0000011A").build();
+    private final Person johnTan = new PersonBuilder().withName("John Tan").withMatric("A0000012B").build();
+    private final Person johnson = new PersonBuilder().withName("Johnson Ng").withMatric("A0000013C").build();
+    private final Person johnLim = new PersonBuilder().withName("John Lim").withMatric("A0000014D").build();
+    private final Person johnTanner = new PersonBuilder().withName("John Tanner").withMatric("A0000015E").build();
+    private final Person meiTan = new PersonBuilder().withName("Mei Tan").withMatric("A0000016F").build();
     private final AddressBook roster = new AddressBookBuilder().withPerson(johnny).withPerson(johnTan)
             .withPerson(johnson).withPerson(johnLim).withPerson(johnTanner).withPerson(meiTan).build();
     private final Model model = new ModelManager(roster, new UserPrefs());
@@ -155,7 +155,9 @@ public class FindCommandTest {
         parser.parseCommand("edit 1 n/Jack Tan").execute(model);
         Person edited = new PersonBuilder(johnTan).withName("Jack Tan").build();
 
-        assertFalse(model.hasPerson(johnTan));
+        // The student keeps their matriculation number, so they remain the same student.
+        // What is gone is the record carrying the old name.
+        assertFalse(model.getAddressBook().getPersonList().contains(johnTan));
         assertTrue(model.hasPerson(johnny));
         assertEquals(List.of(johnny, edited, johnson, johnLim, johnTanner, meiTan), model.getFilteredPersonList());
     }
