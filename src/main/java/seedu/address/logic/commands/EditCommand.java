@@ -101,7 +101,9 @@ public class EditCommand extends Command {
         Address updatedAddress = editPersonDescriptor.getAddress().orElse(personToEdit.getAddress());
         Set<Tag> updatedTags = editPersonDescriptor.getTags().orElse(personToEdit.getTags());
 
-        return new Person(updatedName, updatedPhone, updatedEmail, updatedAddress, updatedTags);
+        // Matriculation number and tutorial group are carried over unchanged: editing them is not in scope yet.
+        return new Person(updatedName, updatedPhone, updatedEmail, updatedAddress,
+                personToEdit.getMatric(), personToEdit.getGroup(), updatedTags);
     }
 
     @Override
