@@ -8,7 +8,6 @@ import static seedu.address.testutil.Assert.assertThrows;
 import static seedu.address.testutil.TypicalIndexes.INDEX_FIRST_PERSON;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.Test;
 
@@ -20,10 +19,16 @@ import seedu.address.logic.commands.EditCommand.EditPersonDescriptor;
 import seedu.address.logic.commands.ExitCommand;
 import seedu.address.logic.commands.FindCommand;
 import seedu.address.logic.commands.HelpCommand;
+import seedu.address.logic.commands.InitCommand;
 import seedu.address.logic.commands.ListCommand;
+import seedu.address.logic.commands.SessionCommand;
 import seedu.address.logic.parser.exceptions.ParseException;
-import seedu.address.model.person.NameContainsKeywordsPredicate;
+import seedu.address.model.person.Group;
+import seedu.address.model.person.NameContainsQueryPredicate;
 import seedu.address.model.person.Person;
+import seedu.address.model.session.Session;
+import seedu.address.model.session.SessionDate;
+import seedu.address.model.session.Week;
 import seedu.address.testutil.EditPersonDescriptorBuilder;
 import seedu.address.testutil.PersonBuilder;
 import seedu.address.testutil.PersonUtil;
@@ -69,10 +74,8 @@ public class AddressBookParserTest {
 
     @Test
     public void parseCommand_find() throws Exception {
-        List<String> keywords = List.of("foo", "bar", "baz");
-        FindCommand command = (FindCommand) parser.parseCommand(
-                FindCommand.COMMAND_WORD + " " + keywords.stream().collect(Collectors.joining(" ")));
-        assertEquals(new FindCommand(new NameContainsKeywordsPredicate(keywords)), command);
+        FindCommand command = (FindCommand) parser.parseCommand(FindCommand.COMMAND_WORD + " n/John Tan");
+        assertEquals(new FindCommand(new NameContainsQueryPredicate("John Tan")), command);
     }
 
     @Test
@@ -93,6 +96,20 @@ public class AddressBookParserTest {
         for (String arguments : List.of("3", "John", "n/John", "grp/T09", "grp/")) {
             assertThrows(ParseException.class, expectedMessage, () -> parser.parseCommand("list " + arguments));
         }
+    }
+
+    @Test
+    public void parseCommand_init() throws Exception {
+        InitCommand command = (InitCommand) parser.parseCommand("init grp/t09");
+        assertEquals(new InitCommand(new Group("T09")), command);
+    }
+
+    @Test
+    public void parseCommand_session() throws Exception {
+        SessionCommand command = (SessionCommand) parser.parseCommand(
+                "session grp/T09 w/5 d/2026-09-15");
+        Session expectedSession = new Session(new Group("T09"), new Week(5), new SessionDate("2026-09-15"));
+        assertEquals(new SessionCommand(expectedSession), command);
     }
 
     @Test

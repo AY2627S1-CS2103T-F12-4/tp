@@ -4,6 +4,7 @@ import static java.util.Objects.requireNonNull;
 
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Locale;
 import java.util.Set;
 
 import seedu.address.commons.core.index.Index;
@@ -11,8 +12,11 @@ import seedu.address.commons.util.StringUtil;
 import seedu.address.logic.parser.exceptions.ParseException;
 import seedu.address.model.person.Address;
 import seedu.address.model.person.Email;
+import seedu.address.model.person.Group;
 import seedu.address.model.person.Name;
 import seedu.address.model.person.Phone;
+import seedu.address.model.session.SessionDate;
+import seedu.address.model.session.Week;
 import seedu.address.model.tag.Tag;
 
 /**
@@ -120,5 +124,43 @@ public class ParserUtil {
             tagSet.add(parseTag(tagName));
         }
         return tagSet;
+    }
+
+    /**
+     * Parses and normalizes a tutorial group code.
+     *
+     * @throws ParseException if the given {@code group} is invalid.
+     */
+    public static Group parseGroup(String group) throws ParseException {
+        requireNonNull(group);
+        String normalizedGroup = group.trim().toUpperCase(Locale.ROOT);
+        if (!Group.isValidGroup(normalizedGroup)) {
+            throw new ParseException(Group.MESSAGE_CONSTRAINTS);
+        }
+        return new Group(normalizedGroup);
+    }
+
+    /**
+     * Parses a teaching week from 1 to 13.
+     */
+    public static Week parseWeek(String week) throws ParseException {
+        requireNonNull(week);
+        String trimmedWeek = week.trim();
+        if (!Week.isValidWeek(trimmedWeek)) {
+            throw new ParseException(Week.MESSAGE_CONSTRAINTS);
+        }
+        return new Week(Integer.parseInt(trimmedWeek));
+    }
+
+    /**
+     * Parses a session date in YYYY-MM-DD format.
+     */
+    public static SessionDate parseSessionDate(String date) throws ParseException {
+        requireNonNull(date);
+        String trimmedDate = date.trim();
+        if (!SessionDate.isValidSessionDate(trimmedDate)) {
+            throw new ParseException(SessionDate.MESSAGE_CONSTRAINTS);
+        }
+        return new SessionDate(trimmedDate);
     }
 }

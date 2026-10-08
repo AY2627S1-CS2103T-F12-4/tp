@@ -3,14 +3,21 @@ package seedu.address.model;
 import static java.util.Objects.requireNonNull;
 import static seedu.address.commons.util.CollectionUtil.requireAllNonNull;
 
+import java.util.Comparator;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.logging.Logger;
 
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
+import javafx.collections.transformation.SortedList;
 import seedu.address.commons.core.GuiSettings;
 import seedu.address.commons.core.LogsCenter;
+import seedu.address.model.person.Group;
 import seedu.address.model.person.Person;
+import seedu.address.model.session.Session;
+import seedu.address.model.session.Week;
 
 /**
  * Represents the in-memory model of the address book data.
@@ -21,6 +28,8 @@ public class ModelManager implements Model {
     private final AddressBook addressBook;
     private final UserPrefs userPrefs;
     private final FilteredList<Person> filteredPersons;
+    private final SortedList<Person> displayedPersons;
+    private Group activeGroup;
 
     /**
      * Initializes a ModelManager with the given addressBook and userPrefs.
@@ -33,6 +42,7 @@ public class ModelManager implements Model {
         this.addressBook = new AddressBook(addressBook);
         this.userPrefs = new UserPrefs(userPrefs);
         filteredPersons = new FilteredList<>(this.addressBook.getPersonList());
+        displayedPersons = new SortedList<>(filteredPersons);
     }
 
     public ModelManager() {
@@ -62,6 +72,7 @@ public class ModelManager implements Model {
     @Override
     public void setAddressBook(ReadOnlyAddressBook addressBook) {
         this.addressBook.resetData(addressBook);
+        activeGroup = null;
     }
 
     @Override
@@ -93,6 +104,54 @@ public class ModelManager implements Model {
         addressBook.setPerson(target, editedPerson);
     }
 
+    //=========== Tutorial Groups and Sessions ===============================================================
+
+    @Override
+    public boolean hasGroup(Group group) {
+        requireNonNull(group);
+        return addressBook.hasGroup(group);
+    }
+
+    @Override
+    public void addGroup(Group group) {
+        addressBook.addGroup(group);
+    }
+
+    @Override
+    public ObservableList<Group> getGroupList() {
+        return addressBook.getGroupList();
+    }
+
+    @Override
+    public void setActiveGroup(Group group) {
+        requireNonNull(group);
+        if (!hasGroup(group)) {
+            throw new IllegalArgumentException("Active tutorial group must be registered");
+        }
+        activeGroup = group;
+    }
+
+    @Override
+    public Optional<Group> getActiveGroup() {
+        return Optional.ofNullable(activeGroup);
+    }
+
+    @Override
+    public Optional<Session> findSession(Group group, Week week) {
+        return addressBook.findSession(group, week);
+    }
+
+    @Override
+    public void addSession(Session session) {
+        requireNonNull(session);
+        addressBook.addSession(session);
+    }
+
+    @Override
+    public ObservableList<Session> getSessionList() {
+        return addressBook.getSessionList();
+    }
+
     //=========== Filtered Person List Accessors =============================================================
 
     /**
@@ -101,13 +160,19 @@ public class ModelManager implements Model {
      */
     @Override
     public ObservableList<Person> getFilteredPersonList() {
-        return filteredPersons;
+        return displayedPersons;
     }
 
     @Override
     public void updateFilteredPersonList(Predicate<Person> predicate) {
+        updateFilteredPersonList(predicate, null);
+    }
+
+    @Override
+    public void updateFilteredPersonList(Predicate<Person> predicate, Comparator<Person> comparator) {
         requireNonNull(predicate);
         filteredPersons.setPredicate(predicate);
+        displayedPersons.setComparator(comparator);
     }
 
     @Override
@@ -123,7 +188,8 @@ public class ModelManager implements Model {
 
         return addressBook.equals(otherModelManager.addressBook)
                 && userPrefs.equals(otherModelManager.userPrefs)
-                && filteredPersons.equals(otherModelManager.filteredPersons);
+                && Objects.equals(activeGroup, otherModelManager.activeGroup)
+                && displayedPersons.equals(otherModelManager.displayedPersons);
     }
 
 }
