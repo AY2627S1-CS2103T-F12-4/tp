@@ -1,10 +1,12 @@
 package seedu.address.model;
 
 import java.util.Comparator;
+import java.util.Optional;
 import java.util.function.Predicate;
 
 import javafx.collections.ObservableList;
 import seedu.address.commons.core.GuiSettings;
+import seedu.address.model.person.Group;
 import seedu.address.model.person.Person;
 
 /**
@@ -13,6 +15,8 @@ import seedu.address.model.person.Person;
 public interface Model {
     /** {@code Predicate} that always evaluates to true */
     Predicate<Person> PREDICATE_SHOW_ALL_PERSONS = unused -> true;
+    /** {@code Predicate} that always evaluates to false. */
+    Predicate<Person> PREDICATE_SHOW_NO_PERSONS = unused -> false;
 
     /**
      * Returns the user prefs.
@@ -60,6 +64,21 @@ public interface Model {
      * The person identity of {@code editedPerson} must not be the same as another existing person in the address book.
      */
     void setPerson(Person target, Person editedPerson);
+
+    /** Returns true if the tutorial group is registered. */
+    boolean hasGroup(Group group);
+
+    /** Registers a tutorial group. */
+    void addGroup(Group group);
+
+    /** Returns an unmodifiable view of the registered tutorial groups. */
+    ObservableList<Group> getGroupList();
+
+    /** Sets the active tutorial group. */
+    void setActiveGroup(Group group);
+
+    /** Returns the active tutorial group, if any. */
+    Optional<Group> getActiveGroup();
 
     /** Returns an unmodifiable view of the filtered person list */
     ObservableList<Person> getFilteredPersonList();
