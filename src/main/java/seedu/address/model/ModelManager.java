@@ -3,6 +3,8 @@ package seedu.address.model;
 import static java.util.Objects.requireNonNull;
 import static seedu.address.commons.util.CollectionUtil.requireAllNonNull;
 
+import java.util.Objects;
+import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.logging.Logger;
 
@@ -10,6 +12,7 @@ import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
 import seedu.address.commons.core.GuiSettings;
 import seedu.address.commons.core.LogsCenter;
+import seedu.address.model.person.Group;
 import seedu.address.model.person.Person;
 
 /**
@@ -21,6 +24,7 @@ public class ModelManager implements Model {
     private final AddressBook addressBook;
     private final UserPrefs userPrefs;
     private final FilteredList<Person> filteredPersons;
+    private Group activeGroup;
 
     /**
      * Initializes a ModelManager with the given addressBook and userPrefs.
@@ -62,6 +66,7 @@ public class ModelManager implements Model {
     @Override
     public void setAddressBook(ReadOnlyAddressBook addressBook) {
         this.addressBook.resetData(addressBook);
+        activeGroup = null;
     }
 
     @Override
@@ -91,6 +96,38 @@ public class ModelManager implements Model {
         requireAllNonNull(target, editedPerson);
 
         addressBook.setPerson(target, editedPerson);
+    }
+
+    //=========== Tutorial Groups ============================================================================
+
+    @Override
+    public boolean hasGroup(Group group) {
+        requireNonNull(group);
+        return addressBook.hasGroup(group);
+    }
+
+    @Override
+    public void addGroup(Group group) {
+        addressBook.addGroup(group);
+    }
+
+    @Override
+    public ObservableList<Group> getGroupList() {
+        return addressBook.getGroupList();
+    }
+
+    @Override
+    public void setActiveGroup(Group group) {
+        requireNonNull(group);
+        if (!hasGroup(group)) {
+            throw new IllegalArgumentException("Active tutorial group must be registered");
+        }
+        activeGroup = group;
+    }
+
+    @Override
+    public Optional<Group> getActiveGroup() {
+        return Optional.ofNullable(activeGroup);
     }
 
     //=========== Filtered Person List Accessors =============================================================
@@ -123,6 +160,7 @@ public class ModelManager implements Model {
 
         return addressBook.equals(otherModelManager.addressBook)
                 && userPrefs.equals(otherModelManager.userPrefs)
+                && Objects.equals(activeGroup, otherModelManager.activeGroup)
                 && filteredPersons.equals(otherModelManager.filteredPersons);
     }
 

@@ -16,7 +16,9 @@ import org.junit.jupiter.api.Test;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import seedu.address.model.person.Group;
 import seedu.address.model.person.Person;
+import seedu.address.model.person.exceptions.DuplicateGroupException;
 import seedu.address.model.person.exceptions.DuplicatePersonException;
 import seedu.address.testutil.PersonBuilder;
 
@@ -77,13 +79,23 @@ public class AddressBookTest {
     }
 
     @Test
+    public void addGroup_duplicateGroup_throwsDuplicateGroupException() {
+        Group group = new Group("T09");
+        addressBook.addGroup(group);
+
+        assertThrows(DuplicateGroupException.class, () ->
+                addressBook.addGroup(new Group("T09")));
+    }
+
+    @Test
     public void getPersonList_modifyList_throwsUnsupportedOperationException() {
         assertThrows(UnsupportedOperationException.class, () -> addressBook.getPersonList().remove(0));
     }
 
     @Test
     public void toStringMethod() {
-        String expected = AddressBook.class.getCanonicalName() + "{persons=" + addressBook.getPersonList() + "}";
+        String expected = AddressBook.class.getCanonicalName() + "{persons=" + addressBook.getPersonList()
+                + ", groups=[]}";
         assertEquals(expected, addressBook.toString());
     }
 
@@ -101,6 +113,12 @@ public class AddressBookTest {
         public ObservableList<Person> getPersonList() {
             return persons;
         }
+
+        @Override
+        public ObservableList<Group> getGroupList() {
+            return FXCollections.emptyObservableList();
+        }
+
     }
 
 }
