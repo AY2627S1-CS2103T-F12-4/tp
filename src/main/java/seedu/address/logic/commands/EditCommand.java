@@ -23,6 +23,7 @@ import seedu.address.commons.util.ToStringBuilder;
 import seedu.address.logic.Messages;
 import seedu.address.logic.commands.exceptions.CommandException;
 import seedu.address.model.Model;
+import seedu.address.model.attendance.Attendance;
 import seedu.address.model.person.Address;
 import seedu.address.model.person.Email;
 import seedu.address.model.person.Group;
@@ -108,9 +109,14 @@ public class EditCommand extends Command {
         Matric updatedMatric = editPersonDescriptor.getMatric().orElse(personToEdit.getMatric());
         Group updatedGroup = editPersonDescriptor.getGroup().orElse(personToEdit.getGroup());
         Set<Tag> updatedTags = editPersonDescriptor.getTags().orElse(personToEdit.getTags());
+        // Attendance cannot be edited with this command. Each record belongs to a session of the student's group,
+        // so the records are carried over only if the student stays in the same group.
+        Set<Attendance> updatedAttendances = updatedGroup.equals(personToEdit.getGroup())
+                ? personToEdit.getAttendances()
+                : Set.of();
 
         return new Person(updatedName, updatedPhone, updatedEmail, updatedAddress,
-                updatedMatric, updatedGroup, updatedTags);
+                updatedMatric, updatedGroup, updatedTags, updatedAttendances);
     }
 
     @Override

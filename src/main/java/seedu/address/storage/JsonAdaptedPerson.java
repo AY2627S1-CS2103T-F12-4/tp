@@ -10,6 +10,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import seedu.address.commons.exceptions.IllegalValueException;
+import seedu.address.model.attendance.Attendance;
 import seedu.address.model.person.Address;
 import seedu.address.model.person.Email;
 import seedu.address.model.person.Group;
@@ -33,6 +34,7 @@ class JsonAdaptedPerson {
     private final String matric;
     private final String group;
     private final List<JsonAdaptedTag> tags = new ArrayList<>();
+    private final List<JsonAdaptedAttendance> attendances = new ArrayList<>();
 
     /**
      * Constructs a {@code JsonAdaptedPerson} with the given person details.
@@ -41,7 +43,8 @@ class JsonAdaptedPerson {
     public JsonAdaptedPerson(@JsonProperty("name") String name, @JsonProperty("phone") String phone,
             @JsonProperty("email") String email, @JsonProperty("address") String address,
             @JsonProperty("matric") String matric, @JsonProperty("group") String group,
-            @JsonProperty("tags") List<JsonAdaptedTag> tags) {
+            @JsonProperty("tags") List<JsonAdaptedTag> tags,
+            @JsonProperty("attendances") List<JsonAdaptedAttendance> attendances) {
         this.name = name;
         this.phone = phone;
         this.email = email;
@@ -50,6 +53,9 @@ class JsonAdaptedPerson {
         this.group = group;
         if (tags != null) {
             this.tags.addAll(tags);
+        }
+        if (attendances != null) {
+            this.attendances.addAll(attendances);
         }
     }
 
@@ -65,6 +71,9 @@ class JsonAdaptedPerson {
         group = source.getGroup().value;
         tags.addAll(source.getTags().stream()
                 .map(JsonAdaptedTag::new)
+                .collect(Collectors.toList()));
+        attendances.addAll(source.getAttendances().stream()
+                .map(JsonAdaptedAttendance::new)
                 .collect(Collectors.toList()));
     }
 
@@ -128,7 +137,17 @@ class JsonAdaptedPerson {
         final Group modelGroup = new Group(group);
 
         final Set<Tag> modelTags = new HashSet<>(personTags);
-        return new Person(modelName, modelPhone, modelEmail, modelAddress, modelMatric, modelGroup, modelTags);
+
+        final Set<Attendance> modelAttendances = new HashSet<>();
+        for (JsonAdaptedAttendance attendance : attendances) {
+            modelAttendances.add(attendance.toModelType());
+        }
+        if (!Person.areValidAttendances(modelGroup, modelAttendances)) {
+            throw new IllegalValueException(Person.MESSAGE_INVALID_ATTENDANCES);
+        }
+
+        return new Person(modelName, modelPhone, modelEmail, modelAddress, modelMatric, modelGroup, modelTags,
+                modelAttendances);
     }
 
 }

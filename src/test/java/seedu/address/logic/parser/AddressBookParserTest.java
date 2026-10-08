@@ -21,8 +21,10 @@ import seedu.address.logic.commands.FindCommand;
 import seedu.address.logic.commands.HelpCommand;
 import seedu.address.logic.commands.InitCommand;
 import seedu.address.logic.commands.ListCommand;
+import seedu.address.logic.commands.MarkCommand;
 import seedu.address.logic.commands.SessionCommand;
 import seedu.address.logic.parser.exceptions.ParseException;
+import seedu.address.model.attendance.Status;
 import seedu.address.model.person.Group;
 import seedu.address.model.person.NameContainsQueryPredicate;
 import seedu.address.model.person.Person;
@@ -110,6 +112,13 @@ public class AddressBookParserTest {
                 "session grp/T09 w/5 d/2026-09-15");
         Session expectedSession = new Session(new Group("T09"), new Week(5), new SessionDate("2026-09-15"));
         assertEquals(new SessionCommand(expectedSession), command);
+    }
+
+    @Test
+    public void parseCommand_mark() throws Exception {
+        MarkCommand command = (MarkCommand) parser.parseCommand(MarkCommand.COMMAND_WORD + " "
+                + INDEX_FIRST_PERSON.getOneBased() + " w/5 s/absent");
+        assertEquals(new MarkCommand(INDEX_FIRST_PERSON, new Week(5), Status.ABSENT), command);
     }
 
     @Test
