@@ -10,28 +10,28 @@ import static seedu.address.commons.util.AppUtil.checkArgument;
 public class Matric {
 
     public static final String MESSAGE_CONSTRAINTS =
-            "Matriculation numbers should start with a letter, followed by seven digits and one final letter, "
+            "Matriculation numbers should start with A, followed by seven digits and one final letter, "
                     + "e.g. A0123456X";
-    public static final String VALIDATION_REGEX = "[A-Za-z]\\d{7}[A-Za-z]";
+    public static final String VALIDATION_REGEX = "A\\d{7}[A-Z]";
 
     public final String value;
 
     /**
      * Constructs a {@code Matric}.
      *
-     * @param matric A valid matriculation number.
+     * @param matric A valid, normalized matriculation number.
      */
     public Matric(String matric) {
         requireNonNull(matric);
         checkArgument(isValidMatric(matric), MESSAGE_CONSTRAINTS);
-        value = matric.toUpperCase();
+        value = matric;
     }
 
     /**
-     * Returns true if a given string is a valid matriculation number.
+     * Returns true if {@code test} is a valid normalized matriculation number.
      */
     public static boolean isValidMatric(String test) {
-        return test.matches(VALIDATION_REGEX);
+        return test != null && test.matches(VALIDATION_REGEX);
     }
 
     @Override

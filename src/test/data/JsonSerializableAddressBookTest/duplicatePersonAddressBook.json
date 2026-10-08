@@ -1,4 +1,5 @@
 {
+  "groups": [ "T09", "T10" ],
   "persons": [ {
     "name": "Alice Pauline",
     "phone": "94351253",

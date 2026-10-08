@@ -10,7 +10,6 @@ import static seedu.address.logic.parser.CliSyntax.PREFIX_PHONE;
 import static seedu.address.logic.parser.CliSyntax.PREFIX_TAG;
 
 import seedu.address.commons.util.ToStringBuilder;
-import seedu.address.logic.Messages;
 import seedu.address.logic.commands.exceptions.CommandException;
 import seedu.address.model.Model;
 import seedu.address.model.person.Person;
@@ -41,8 +40,11 @@ public class AddCommand extends Command {
             + PREFIX_TAG + "friends "
             + PREFIX_TAG + "owesMoney";
 
-    public static final String MESSAGE_SUCCESS = "New person added: %1$s";
-    public static final String MESSAGE_DUPLICATE_PERSON = "This person already exists in the address book.";
+    public static final String MESSAGE_SUCCESS = "Added %1$s (%2$s) to tutorial group %3$s.";
+    public static final String MESSAGE_DUPLICATE_PERSON =
+            "A student with matriculation number %1$s already exists.";
+    public static final String MESSAGE_UNKNOWN_GROUP =
+            "Tutorial group %1$s does not exist. Create it first with the init command.";
 
     private final Person toAdd;
 
@@ -58,12 +60,17 @@ public class AddCommand extends Command {
     public CommandResult execute(Model model) throws CommandException {
         requireNonNull(model);
 
+        if (!model.hasGroup(toAdd.getGroup())) {
+            throw new CommandException(String.format(MESSAGE_UNKNOWN_GROUP, toAdd.getGroup()));
+        }
+
         if (model.hasPerson(toAdd)) {
-            throw new CommandException(MESSAGE_DUPLICATE_PERSON);
+            throw new CommandException(String.format(MESSAGE_DUPLICATE_PERSON, toAdd.getMatric()));
         }
 
         model.addPerson(toAdd);
-        return new CommandResult(String.format(MESSAGE_SUCCESS, Messages.format(toAdd)));
+        return new CommandResult(String.format(MESSAGE_SUCCESS,
+                toAdd.getName(), toAdd.getMatric(), toAdd.getGroup()));
     }
 
     @Override

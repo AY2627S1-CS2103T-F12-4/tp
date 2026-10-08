@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static seedu.address.logic.commands.CommandTestUtil.VALID_ADDRESS_BOB;
 import static seedu.address.logic.commands.CommandTestUtil.VALID_EMAIL_AMY;
 import static seedu.address.logic.commands.CommandTestUtil.VALID_EMAIL_BOB;
+import static seedu.address.logic.commands.CommandTestUtil.VALID_GROUP_AMY;
 import static seedu.address.logic.commands.CommandTestUtil.VALID_GROUP_BOB;
 import static seedu.address.logic.commands.CommandTestUtil.VALID_MATRIC_BOB;
 import static seedu.address.logic.commands.CommandTestUtil.VALID_NAME_BOB;
@@ -50,8 +51,8 @@ public class PersonTest {
         Person otherAlice = new PersonBuilder(ALICE).withEmail(VALID_EMAIL_AMY).build();
         assertFalse(otherAlice.isSamePerson(editedAlice));
 
-        // matriculation number differs in case -> returns true, as it is stored uppercased
-        Person editedBob = new PersonBuilder(BOB).withMatric(VALID_MATRIC_BOB.toLowerCase()).build();
+        // same matriculation number, different tutorial group -> returns true
+        Person editedBob = new PersonBuilder(BOB).withGroup(VALID_GROUP_AMY).build();
         assertTrue(BOB.isSamePerson(editedBob));
     }
 

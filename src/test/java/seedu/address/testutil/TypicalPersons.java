@@ -80,6 +80,9 @@ public class TypicalPersons {
     public static AddressBook getTypicalAddressBook() {
         AddressBook ab = new AddressBook();
         for (Person person : getTypicalPersons()) {
+            if (!ab.hasGroup(person.getGroup())) {
+                ab.addGroup(person.getGroup());
+            }
             ab.addPerson(person);
         }
         return ab;
