@@ -4,17 +4,13 @@ import static java.util.Objects.requireNonNull;
 import static seedu.address.commons.util.AppUtil.checkArgument;
 
 /**
- * Represents the tutorial group a Person belongs to in the address book.
- * Guarantees: immutable; is valid as declared in {@link #isValidGroup(String)}
+ * Represents a tutorial group code.
+ * Guarantees: immutable; is valid as declared in {@link #isValidGroup(String)}.
  */
 public class Group {
 
     public static final String MESSAGE_CONSTRAINTS =
             "Group codes should be one or two letters followed by two digits, e.g. T09.";
-
-    /*
-     * Letters are expected in uppercase: user input is converted to uppercase before it is validated.
-     */
     public static final String VALIDATION_REGEX = "[A-Z]{1,2}\\d{2}";
 
     public final String value;
@@ -22,7 +18,7 @@ public class Group {
     /**
      * Constructs a {@code Group}.
      *
-     * @param group A valid group code.
+     * @param group A valid, normalized group code.
      */
     public Group(String group) {
         requireNonNull(group);
@@ -31,10 +27,10 @@ public class Group {
     }
 
     /**
-     * Returns true if a given string is a valid group code.
+     * Returns true if {@code test} is a valid normalized tutorial group code.
      */
     public static boolean isValidGroup(String test) {
-        return test.matches(VALIDATION_REGEX);
+        return test != null && test.matches(VALIDATION_REGEX);
     }
 
     @Override
@@ -44,21 +40,12 @@ public class Group {
 
     @Override
     public boolean equals(Object other) {
-        if (other == this) {
-            return true;
-        }
-
-        // instanceof handles nulls
-        if (!(other instanceof Group otherGroup)) {
-            return false;
-        }
-
-        return value.equals(otherGroup.value);
+        return other == this
+                || (other instanceof Group otherGroup && value.equals(otherGroup.value));
     }
 
     @Override
     public int hashCode() {
         return value.hashCode();
     }
-
 }

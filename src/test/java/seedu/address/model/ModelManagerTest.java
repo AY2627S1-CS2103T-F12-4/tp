@@ -2,6 +2,7 @@ package seedu.address.model;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static seedu.address.model.Model.PREDICATE_SHOW_ALL_PERSONS;
 import static seedu.address.testutil.Assert.assertThrows;
@@ -9,16 +10,20 @@ import static seedu.address.testutil.TypicalPersons.ALICE;
 import static seedu.address.testutil.TypicalPersons.BENSON;
 import static seedu.address.testutil.TypicalSessions.T09_WEEK_1;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
 import org.junit.jupiter.api.Test;
 
+import javafx.collections.ObservableList;
 import seedu.address.commons.core.GuiSettings;
 import seedu.address.model.person.Group;
 import seedu.address.model.person.NameContainsKeywordsPredicate;
+import seedu.address.model.person.Person;
 import seedu.address.model.session.Week;
 import seedu.address.testutil.AddressBookBuilder;
+import seedu.address.testutil.PersonBuilder;
 
 public class ModelManagerTest {
 
@@ -26,6 +31,7 @@ public class ModelManagerTest {
 
     @Test
     public void registeredGroup_survivesLastStudentDeletion() {
+        modelManager.addGroup(ALICE.getGroup());
         modelManager.addPerson(ALICE);
         modelManager.deletePerson(ALICE);
         assertTrue(modelManager.hasGroup(ALICE.getGroup()));
@@ -34,6 +40,7 @@ public class ModelManagerTest {
 
     @Test
     public void setAddressBook_clearsActiveGroupAndReplacesRegistry() {
+        modelManager.addGroup(ALICE.getGroup());
         modelManager.addPerson(ALICE);
         modelManager.showGroup(ALICE.getGroup());
         modelManager.setAddressBook(new AddressBook());
@@ -91,6 +98,7 @@ public class ModelManagerTest {
     @Test
     public void addSession_sessionAdded_hasAndFindsSession() {
         assertFalse(modelManager.hasSession(T09_WEEK_1));
+        modelManager.addGroup(T09_WEEK_1.getGroup());
         modelManager.addSession(T09_WEEK_1);
         assertTrue(modelManager.hasSession(T09_WEEK_1));
         assertEquals(Optional.of(T09_WEEK_1), modelManager.findSession(new Group("T09"), new Week(1)));
@@ -103,6 +111,7 @@ public class ModelManagerTest {
 
     @Test
     public void hasPerson_personInAddressBook_returnsTrue() {
+        modelManager.addGroup(ALICE.getGroup());
         modelManager.addPerson(ALICE);
         assertTrue(modelManager.hasPerson(ALICE));
     }
@@ -110,6 +119,64 @@ public class ModelManagerTest {
     @Test
     public void getFilteredPersonList_modifyList_throwsUnsupportedOperationException() {
         assertThrows(UnsupportedOperationException.class, () -> modelManager.getFilteredPersonList().remove(0));
+    }
+
+    @Test
+    public void updateFilteredPersonList_comparator_changesDisplayWithoutChangingRoster() {
+        modelManager = new ModelManager(new AddressBookBuilder().withPerson(ALICE).withPerson(BENSON).build(),
+                new UserPrefs());
+        ObservableList<Person> displayed = modelManager.getFilteredPersonList();
+        modelManager.updateFilteredPersonList(PREDICATE_SHOW_ALL_PERSONS,
+                Comparator.comparing((Person person) -> person.getName().fullName).reversed());
+
+        assertSame(displayed, modelManager.getFilteredPersonList());
+        assertEquals(List.of(BENSON, ALICE), displayed);
+        assertEquals(List.of(ALICE, BENSON), modelManager.getAddressBook().getPersonList());
+        assertThrows(UnsupportedOperationException.class, () -> displayed.add(ALICE));
+
+        modelManager.updateFilteredPersonList(PREDICATE_SHOW_ALL_PERSONS);
+        assertEquals(List.of(ALICE, BENSON), displayed);
+    }
+
+    @Test
+    public void updateFilteredPersonList_nullPredicate_preservesCurrentView() {
+        modelManager = new ModelManager(new AddressBookBuilder().withPerson(ALICE).withPerson(BENSON).build(),
+                new UserPrefs());
+        modelManager.updateFilteredPersonList(person -> person.equals(BENSON),
+                Comparator.comparing(person -> person.getName().fullName));
+
+        assertThrows(NullPointerException.class, () -> modelManager.updateFilteredPersonList(null));
+        assertThrows(NullPointerException.class, () -> modelManager.updateFilteredPersonList(null, null));
+        assertEquals(List.of(BENSON), modelManager.getFilteredPersonList());
+    }
+
+    @Test
+    public void setPerson_sortedView_updatesLiveOrder() {
+        modelManager = new ModelManager(new AddressBookBuilder().withPerson(ALICE).withPerson(BENSON).build(),
+                new UserPrefs());
+        ObservableList<Person> displayed = modelManager.getFilteredPersonList();
+        modelManager.updateFilteredPersonList(PREDICATE_SHOW_ALL_PERSONS,
+                Comparator.comparing(person -> person.getName().fullName));
+        Person renamedAlice = new PersonBuilder(ALICE).withName("Zoe").build();
+        modelManager.setPerson(ALICE, renamedAlice);
+
+        assertEquals(List.of(BENSON, renamedAlice), displayed);
+        assertEquals(List.of(renamedAlice, BENSON), modelManager.getAddressBook().getPersonList());
+        modelManager.deletePerson(BENSON);
+        assertEquals(List.of(renamedAlice), displayed);
+    }
+
+    @Test
+    public void equals_differentDisplayOrder_returnsFalse() {
+        AddressBook addressBook = new AddressBookBuilder().withPerson(ALICE).withPerson(BENSON).build();
+        modelManager = new ModelManager(addressBook, new UserPrefs());
+        ModelManager sortedModel = new ModelManager(addressBook, new UserPrefs());
+        sortedModel.updateFilteredPersonList(PREDICATE_SHOW_ALL_PERSONS,
+                Comparator.comparing((Person person) -> person.getName().fullName).reversed());
+
+        assertFalse(modelManager.equals(sortedModel));
+        sortedModel.updateFilteredPersonList(PREDICATE_SHOW_ALL_PERSONS);
+        assertTrue(modelManager.equals(sortedModel));
     }
 
     @Test

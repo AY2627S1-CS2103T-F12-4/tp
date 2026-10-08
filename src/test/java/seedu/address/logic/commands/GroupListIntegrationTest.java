@@ -14,6 +14,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import seedu.address.logic.commands.exceptions.CommandException;
+import seedu.address.logic.parser.AddressBookParser;
 import seedu.address.logic.parser.ListCommandParser;
 import seedu.address.logic.parser.exceptions.ParseException;
 import seedu.address.model.AddressBook;
@@ -21,7 +22,7 @@ import seedu.address.model.ModelManager;
 import seedu.address.model.UserPrefs;
 import seedu.address.model.attendance.Status;
 import seedu.address.model.person.Group;
-import seedu.address.model.person.NameContainsKeywordsPredicate;
+import seedu.address.model.person.NameContainsQueryPredicate;
 import seedu.address.model.person.Person;
 import seedu.address.model.session.Session;
 import seedu.address.model.session.SessionDate;
@@ -45,12 +46,73 @@ public class GroupListIntegrationTest {
     @BeforeEach
     public void setUp() {
         AddressBook book = new AddressBook();
+        book.addGroup(group);
+        book.addGroup(new Group("T10"));
         book.addPerson(later);
         book.addPerson(otherGroup);
         book.addPerson(earlier);
         book.addGroup(new Group("T11"));
         book.addSession(T09_WEEK_1);
         model = new ModelManager(book, new UserPrefs());
+    }
+
+    @Test
+    public void execute_findThenList_restoresMatricOrderAndSharesGroupState() throws Exception {
+        AddressBookParser parser = new AddressBookParser();
+        parser.parseCommand("list grp/T09").execute(model);
+        assertEquals(group, model.getActiveGroup().orElseThrow());
+        assertEquals(group, model.activeGroupProperty().get());
+
+        parser.parseCommand("find n/Student").execute(model);
+        assertEquals(List.of(later, otherGroup, earlier), model.getFilteredPersonList());
+        assertTrue(model.getActiveGroup().isEmpty());
+        assertNull(model.activeGroupProperty().get());
+
+        parser.parseCommand("mark 1 w/1 s/present").execute(model);
+        Person marked = model.getFilteredPersonList().getFirst();
+        assertEquals(later.getMatric(), marked.getMatric());
+        assertEquals(List.of(new AttendanceCell(1, "P")),
+                AttendanceCell.forStudent(marked, model.getSessionList()));
+
+        parser.parseCommand("list grp/T09").execute(model);
+        assertEquals(List.of(earlier, marked), model.getFilteredPersonList());
+        assertEquals(group, model.getActiveGroup().orElseThrow());
+        parser.parseCommand("list").execute(model);
+        assertEquals(List.of(otherGroup, earlier, marked), model.getFilteredPersonList());
+        assertTrue(model.getActiveGroup().isEmpty());
+    }
+
+    @Test
+    public void execute_initThenFind_preservesOrClearsScopeAsAppropriate() throws Exception {
+        AddressBookParser parser = new AddressBookParser();
+        Group empty = new Group("T12");
+        parser.parseCommand("init grp/T12").execute(model);
+        assertEquals(empty, model.getActiveGroup().orElseThrow());
+        assertEquals(empty, model.activeGroupProperty().get());
+        assertTrue(model.getFilteredPersonList().isEmpty());
+
+        assertThrows(ParseException.class, () -> parser.parseCommand("find n/"));
+        assertEquals(empty, model.getActiveGroup().orElseThrow());
+        assertTrue(model.getFilteredPersonList().isEmpty());
+
+        parser.parseCommand("find n/Missing").execute(model);
+        assertTrue(model.getActiveGroup().isEmpty());
+        assertNull(model.activeGroupProperty().get());
+        parser.parseCommand("list grp/T12").execute(model);
+        parser.parseCommand("find n/Other").execute(model);
+        assertEquals(List.of(otherGroup), model.getFilteredPersonList());
+        assertTrue(model.getActiveGroup().isEmpty());
+    }
+
+    @Test
+    public void execute_sessionCreation_refreshesCellsWithoutChangingGroupView() throws Exception {
+        AddressBookParser parser = new AddressBookParser();
+        parser.parseCommand("list grp/T09").execute(model);
+        parser.parseCommand("session grp/T09 w/2 d/2026-08-18").execute(model);
+        assertEquals(List.of(earlier, later), model.getFilteredPersonList());
+        assertEquals(group, model.activeGroupProperty().get());
+        assertEquals(List.of(new AttendanceCell(1, "\u2014"), new AttendanceCell(2, "\u2014")),
+                AttendanceCell.forStudent(earlier, model.getSessionList()));
     }
 
     @Test
@@ -90,7 +152,7 @@ public class GroupListIntegrationTest {
     @Test
     public void execute_findSearchesAllGroups_andClearsActiveGroup() throws Exception {
         new ListCommand(group).execute(model);
-        new FindCommand(new NameContainsKeywordsPredicate(List.of("Other"))).execute(model);
+        new FindCommand(new NameContainsQueryPredicate("Other")).execute(model);
         assertNull(model.activeGroupProperty().get());
         assertEquals(List.of(otherGroup), model.getFilteredPersonList());
     }

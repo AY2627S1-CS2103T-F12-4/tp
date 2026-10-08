@@ -17,6 +17,7 @@ import seedu.address.model.person.Group;
 import seedu.address.model.person.Matric;
 import seedu.address.model.person.Name;
 import seedu.address.model.person.Phone;
+import seedu.address.model.session.SessionDate;
 import seedu.address.model.session.Week;
 import seedu.address.model.tag.Tag;
 
@@ -101,66 +102,6 @@ public class ParserUtil {
     }
 
     /**
-     * Parses a {@code String matric} into a {@code Matric}.
-     * Leading and trailing whitespaces will be trimmed, and letters converted to uppercase.
-     *
-     * @throws ParseException if the given {@code matric} is invalid.
-     */
-    public static Matric parseMatric(String matric) throws ParseException {
-        requireNonNull(matric);
-        String normalisedMatric = matric.trim().toUpperCase(Locale.ROOT);
-        if (!Matric.isValidMatric(normalisedMatric)) {
-            throw new ParseException(Matric.MESSAGE_CONSTRAINTS);
-        }
-        return new Matric(normalisedMatric);
-    }
-
-    /**
-     * Parses a {@code String group} into a {@code Group}.
-     * Leading and trailing whitespaces will be trimmed, and letters converted to uppercase.
-     *
-     * @throws ParseException if the given {@code group} is invalid.
-     */
-    public static Group parseGroup(String group) throws ParseException {
-        requireNonNull(group);
-        String normalisedGroup = group.trim().toUpperCase(Locale.ROOT);
-        if (!Group.isValidGroup(normalisedGroup)) {
-            throw new ParseException(Group.MESSAGE_CONSTRAINTS);
-        }
-        return new Group(normalisedGroup);
-    }
-
-    /**
-     * Parses a {@code String week} into a {@code Week}.
-     * Leading and trailing whitespaces will be trimmed.
-     *
-     * @throws ParseException if the given {@code week} is invalid.
-     */
-    public static Week parseWeek(String week) throws ParseException {
-        requireNonNull(week);
-        String trimmedWeek = week.trim();
-        if (!Week.isValidWeek(trimmedWeek)) {
-            throw new ParseException(Week.MESSAGE_CONSTRAINTS);
-        }
-        return new Week(Integer.parseInt(trimmedWeek));
-    }
-
-    /**
-     * Parses a {@code String status} into a {@code Status}, ignoring letter case.
-     * Leading and trailing whitespaces will be trimmed.
-     *
-     * @throws ParseException if the given {@code status} is invalid.
-     */
-    public static Status parseStatus(String status) throws ParseException {
-        requireNonNull(status);
-        String trimmedStatus = status.trim();
-        if (!Status.isValidStatus(trimmedStatus)) {
-            throw new ParseException(Status.MESSAGE_CONSTRAINTS);
-        }
-        return Status.fromString(trimmedStatus);
-    }
-
-    /**
      * Parses a {@code String tag} into a {@code Tag}.
      * Leading and trailing whitespaces will be trimmed.
      *
@@ -186,4 +127,72 @@ public class ParserUtil {
         }
         return tagSet;
     }
+
+    /**
+     * Parses and normalizes a tutorial group code.
+     *
+     * @throws ParseException if the given {@code group} is invalid.
+     */
+    public static Group parseGroup(String group) throws ParseException {
+        requireNonNull(group);
+        String normalizedGroup = group.trim().toUpperCase(Locale.ROOT);
+        if (!Group.isValidGroup(normalizedGroup)) {
+            throw new ParseException(Group.MESSAGE_CONSTRAINTS);
+        }
+        return new Group(normalizedGroup);
+    }
+
+    /**
+     * Parses a teaching week from 1 to 13.
+     */
+    public static Week parseWeek(String week) throws ParseException {
+        requireNonNull(week);
+        String trimmedWeek = week.trim();
+        if (!Week.isValidWeek(trimmedWeek)) {
+            throw new ParseException(Week.MESSAGE_CONSTRAINTS);
+        }
+        return new Week(Integer.parseInt(trimmedWeek));
+    }
+
+    /**
+     * Parses a session date in YYYY-MM-DD format.
+     */
+    public static SessionDate parseSessionDate(String date) throws ParseException {
+        requireNonNull(date);
+        String trimmedDate = date.trim();
+        if (!SessionDate.isValidSessionDate(trimmedDate)) {
+            throw new ParseException(SessionDate.MESSAGE_CONSTRAINTS);
+        }
+        return new SessionDate(trimmedDate);
+    }
+    /**
+     * Parses a {@code String matric} into a {@code Matric}.
+     * Leading and trailing whitespaces will be trimmed, and letters converted to uppercase.
+     *
+     * @throws ParseException if the given {@code matric} is invalid.
+     */
+    public static Matric parseMatric(String matric) throws ParseException {
+        requireNonNull(matric);
+        String normalisedMatric = matric.trim().toUpperCase(Locale.ROOT);
+        if (!Matric.isValidMatric(normalisedMatric)) {
+            throw new ParseException(Matric.MESSAGE_CONSTRAINTS);
+        }
+        return new Matric(normalisedMatric);
+    }
+
+    /**
+     * Parses a {@code String status} into a {@code Status}, ignoring letter case.
+     * Leading and trailing whitespaces will be trimmed.
+     *
+     * @throws ParseException if the given {@code status} is invalid.
+     */
+    public static Status parseStatus(String status) throws ParseException {
+        requireNonNull(status);
+        String trimmedStatus = status.trim();
+        if (!Status.isValidStatus(trimmedStatus)) {
+            throw new ParseException(Status.MESSAGE_CONSTRAINTS);
+        }
+        return Status.fromString(trimmedStatus);
+    }
+
 }

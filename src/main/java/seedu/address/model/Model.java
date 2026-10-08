@@ -1,5 +1,6 @@
 package seedu.address.model;
 
+import java.util.Comparator;
 import java.util.Optional;
 import java.util.function.Predicate;
 
@@ -17,6 +18,8 @@ import seedu.address.model.session.Week;
 public interface Model {
     /** {@code Predicate} that always evaluates to true */
     Predicate<Person> PREDICATE_SHOW_ALL_PERSONS = unused -> true;
+    /** {@code Predicate} that always evaluates to false. */
+    Predicate<Person> PREDICATE_SHOW_NO_PERSONS = unused -> false;
 
     /**
      * Returns the user prefs.
@@ -65,40 +68,52 @@ public interface Model {
      */
     void setPerson(Person target, Person editedPerson);
 
-    /**
-     * Returns true if the group of {@code session} already has a session in the same week.
-     */
-    boolean hasSession(Session session);
-
-    /**
-     * Adds the given session.
-     * The group of {@code session} must not already have a session in the same week.
-     */
-    void addSession(Session session);
-
-    /**
-     * Returns the session of {@code group} in {@code week}, or an empty {@code Optional} if there is none.
-     */
-    Optional<Session> findSession(Group group, Week week);
-
-    /** Registers an empty tutorial group. */
-    void addGroup(Group group);
-
-    /** Returns whether a tutorial group is registered. */
+    /** Returns true if the tutorial group is registered. */
     boolean hasGroup(Group group);
 
-    /** Selects a registered group and shows only its students. */
+    /** Registers a tutorial group. */
+    void addGroup(Group group);
+
+    /** Returns an unmodifiable view of the registered tutorial groups. */
+    ObservableList<Group> getGroupList();
+
+    /** Sets the active tutorial group. */
+    void setActiveGroup(Group group);
+
+    /** Returns the active tutorial group, if any. */
+    Optional<Group> getActiveGroup();
+
+    /** Returns the session for a tutorial group and week, if it exists. */
+    Optional<Session> findSession(Group group, Week week);
+
+    /** Adds a tutorial session. */
+    void addSession(Session session);
+
+    /** Returns an unmodifiable view of the tutorial sessions. */
+    ObservableList<Session> getSessionList();
+
+    /** Selects a registered group and displays its students in matric order. */
     void showGroup(Group group);
 
-    /** Returns the active group, or null when viewing across all groups. */
+    /** Returns the observable active group, or null for all groups. */
     ReadOnlyObjectProperty<Group> activeGroupProperty();
+
+    /** Returns whether a group/week session already exists. */
+    boolean hasSession(Session session);
 
     /** Returns an unmodifiable view of the filtered person list */
     ObservableList<Person> getFilteredPersonList();
 
     /**
-     * Updates the filter of the filtered person list to filter by the given {@code predicate}.
+     * Updates the displayed filter, restores matric order, and clears the active group.
      * @throws NullPointerException if {@code predicate} is null.
      */
     void updateFilteredPersonList(Predicate<Person> predicate);
+
+    /**
+     * Updates the displayed list's filter and order, clearing the active group without changing the stored roster.
+     * A null comparator restores the roster's original order.
+     * @throws NullPointerException if {@code predicate} is null.
+     */
+    void updateFilteredPersonList(Predicate<Person> predicate, Comparator<Person> comparator);
 }

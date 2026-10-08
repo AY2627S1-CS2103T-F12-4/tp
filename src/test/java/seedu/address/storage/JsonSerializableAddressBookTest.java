@@ -42,9 +42,9 @@ public class JsonSerializableAddressBookTest {
     @Test
     public void toModelType_invalidGroups_rejectsMalformedOrDuplicateCodes() {
         assertThrows(IllegalValueException.class, () ->
-                new JsonSerializableAddressBook(List.of(), List.of(), List.of("T9")).toModelType());
+                new JsonSerializableAddressBook(List.of(), List.of("T9"), List.of()).toModelType());
         assertThrows(IllegalValueException.class, () ->
-                new JsonSerializableAddressBook(List.of(), List.of(), List.of("T09", "t09")).toModelType());
+                new JsonSerializableAddressBook(List.of(), List.of("T09", "t09"), List.of()).toModelType());
     }
 
     @Test

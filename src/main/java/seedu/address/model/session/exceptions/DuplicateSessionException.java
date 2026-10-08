@@ -1,11 +1,10 @@
 package seedu.address.model.session.exceptions;
 
 /**
- * Signals that the operation will result in duplicate Sessions (Sessions are considered duplicates if they have the
- * same group and week).
+ * Signals that an operation would result in duplicate tutorial sessions.
  */
 public class DuplicateSessionException extends RuntimeException {
     public DuplicateSessionException() {
-        super("Operation would result in duplicate sessions");
+        super("Operation would result in duplicate tutorial sessions");
     }
 }

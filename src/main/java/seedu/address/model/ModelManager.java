@@ -27,10 +27,12 @@ import seedu.address.model.session.Week;
 public class ModelManager implements Model {
     private static final Logger logger = LogsCenter.getLogger(ModelManager.class);
 
+    private static final Comparator<Person> MATRIC_ORDER = Comparator.comparing(person -> person.getMatric().value);
+
     private final AddressBook addressBook;
     private final UserPrefs userPrefs;
     private final FilteredList<Person> filteredPersons;
-    private final SortedList<Person> sortedPersons;
+    private final SortedList<Person> displayedPersons;
     private final ReadOnlyObjectWrapper<Group> activeGroup = new ReadOnlyObjectWrapper<>();
 
     /**
@@ -44,7 +46,7 @@ public class ModelManager implements Model {
         this.addressBook = new AddressBook(addressBook);
         this.userPrefs = new UserPrefs(userPrefs);
         filteredPersons = new FilteredList<>(this.addressBook.getPersonList());
-        sortedPersons = new SortedList<>(filteredPersons, Comparator.comparing(person -> person.getMatric().value));
+        displayedPersons = new SortedList<>(filteredPersons, MATRIC_ORDER);
     }
 
     public ModelManager() {
@@ -105,21 +107,69 @@ public class ModelManager implements Model {
         addressBook.setPerson(target, editedPerson);
     }
 
+    //=========== Tutorial Groups and Sessions ===============================================================
+
     @Override
-    public boolean hasSession(Session session) {
-        requireNonNull(session);
-        return addressBook.hasSession(session);
+    public boolean hasGroup(Group group) {
+        requireNonNull(group);
+        return addressBook.hasGroup(group);
     }
 
     @Override
-    public void addSession(Session session) {
-        addressBook.addSession(session);
+    public void addGroup(Group group) {
+        addressBook.addGroup(group);
+    }
+
+    @Override
+    public ObservableList<Group> getGroupList() {
+        return addressBook.getGroupList();
+    }
+
+    @Override
+    public void setActiveGroup(Group group) {
+        requireNonNull(group);
+        if (!hasGroup(group)) {
+            throw new IllegalArgumentException("Active tutorial group must be registered");
+        }
+        activeGroup.set(group);
+    }
+
+    @Override
+    public Optional<Group> getActiveGroup() {
+        return Optional.ofNullable(activeGroup.get());
     }
 
     @Override
     public Optional<Session> findSession(Group group, Week week) {
-        requireAllNonNull(group, week);
         return addressBook.findSession(group, week);
+    }
+
+    @Override
+    public void addSession(Session session) {
+        requireNonNull(session);
+        addressBook.addSession(session);
+    }
+
+    @Override
+    public ObservableList<Session> getSessionList() {
+        return addressBook.getSessionList();
+    }
+
+    @Override
+    public boolean hasSession(Session session) {
+        return addressBook.hasSession(session);
+    }
+
+    @Override
+    public void showGroup(Group group) {
+        setActiveGroup(group);
+        filteredPersons.setPredicate(person -> person.getGroup().equals(group));
+        displayedPersons.setComparator(MATRIC_ORDER);
+    }
+
+    @Override
+    public ReadOnlyObjectProperty<Group> activeGroupProperty() {
+        return activeGroup.getReadOnlyProperty();
     }
 
     //=========== Filtered Person List Accessors =============================================================
@@ -130,39 +180,20 @@ public class ModelManager implements Model {
      */
     @Override
     public ObservableList<Person> getFilteredPersonList() {
-        return sortedPersons;
+        return displayedPersons;
     }
 
     @Override
     public void updateFilteredPersonList(Predicate<Person> predicate) {
+        updateFilteredPersonList(predicate, MATRIC_ORDER);
+    }
+
+    @Override
+    public void updateFilteredPersonList(Predicate<Person> predicate, Comparator<Person> comparator) {
         requireNonNull(predicate);
         filteredPersons.setPredicate(predicate);
+        displayedPersons.setComparator(comparator);
         activeGroup.set(null);
-    }
-
-    @Override
-    public void addGroup(Group group) {
-        addressBook.addGroup(group);
-    }
-
-    @Override
-    public boolean hasGroup(Group group) {
-        return addressBook.hasGroup(group);
-    }
-
-    @Override
-    public void showGroup(Group group) {
-        requireNonNull(group);
-        if (!addressBook.hasGroup(group)) {
-            throw new IllegalArgumentException("Unknown tutorial group: " + group);
-        }
-        filteredPersons.setPredicate(person -> person.getGroup().equals(group));
-        activeGroup.set(group);
-    }
-
-    @Override
-    public ReadOnlyObjectProperty<Group> activeGroupProperty() {
-        return activeGroup.getReadOnlyProperty();
     }
 
     @Override
@@ -178,8 +209,8 @@ public class ModelManager implements Model {
 
         return addressBook.equals(otherModelManager.addressBook)
                 && userPrefs.equals(otherModelManager.userPrefs)
-                && filteredPersons.equals(otherModelManager.filteredPersons)
-                && Objects.equals(activeGroup.get(), otherModelManager.activeGroup.get());
+                && Objects.equals(activeGroup.get(), otherModelManager.activeGroup.get())
+                && displayedPersons.equals(otherModelManager.displayedPersons);
     }
 
 }

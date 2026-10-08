@@ -62,6 +62,8 @@ public class SampleDataUtil {
 
     public static ReadOnlyAddressBook getSampleAddressBook() {
         AddressBook sampleAb = new AddressBook();
+        sampleAb.addGroup(new Group("T09"));
+        sampleAb.addGroup(new Group("T10"));
         for (Session sampleSession : getSampleSessions()) {
             sampleAb.addSession(sampleSession);
         }

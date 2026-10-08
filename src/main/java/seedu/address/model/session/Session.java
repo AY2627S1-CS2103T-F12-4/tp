@@ -8,20 +8,16 @@ import seedu.address.commons.util.ToStringBuilder;
 import seedu.address.model.person.Group;
 
 /**
- * Represents a meeting of a tutorial group in one teaching week.
- * Guarantees: details are present and not null, field values are validated, immutable.
+ * Represents a tutorial session, uniquely identified by its group and teaching week.
  */
 public class Session {
 
-    // Identity fields
     private final Group group;
     private final Week week;
-
-    // Data fields
     private final SessionDate date;
 
     /**
-     * Every field must be present and not null.
+     * Constructs a {@code Session}.
      */
     public Session(Group group, Week week, SessionDate date) {
         requireAllNonNull(group, week, date);
@@ -43,18 +39,12 @@ public class Session {
     }
 
     /**
-     * Returns true if both sessions belong to the same group and week.
-     * The date is not compared, as a group meets at most once per teaching week.
-     * This defines a weaker notion of equality between two sessions.
+     * Returns true if both sessions belong to the same group and teaching week.
      */
     public boolean isSameSession(Session otherSession) {
-        if (otherSession == this) {
-            return true;
-        }
-
         return otherSession != null
-                && otherSession.group.equals(group)
-                && otherSession.week.equals(week);
+                && group.equals(otherSession.group)
+                && week.equals(otherSession.week);
     }
 
     /**
@@ -62,31 +52,6 @@ public class Session {
      */
     public boolean isFor(Group group, Week week) {
         return this.group.equals(group) && this.week.equals(week);
-    }
-
-    /**
-     * Returns true if both sessions have the same group, week and date.
-     * This defines a stronger notion of equality between two sessions.
-     */
-    @Override
-    public boolean equals(Object other) {
-        if (other == this) {
-            return true;
-        }
-
-        // instanceof handles nulls
-        if (!(other instanceof Session otherSession)) {
-            return false;
-        }
-
-        return group.equals(otherSession.group)
-                && week.equals(otherSession.week)
-                && date.equals(otherSession.date);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(group, week, date);
     }
 
     @Override
@@ -98,4 +63,17 @@ public class Session {
                 .toString();
     }
 
+    @Override
+    public boolean equals(Object other) {
+        return other == this
+                || (other instanceof Session otherSession
+                && group.equals(otherSession.group)
+                && week.equals(otherSession.week)
+                && date.equals(otherSession.date));
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(group, week, date);
+    }
 }

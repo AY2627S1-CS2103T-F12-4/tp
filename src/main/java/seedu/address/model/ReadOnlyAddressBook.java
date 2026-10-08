@@ -10,9 +10,6 @@ import seedu.address.model.session.Session;
  */
 public interface ReadOnlyAddressBook {
 
-    /** Returns the registered groups, including those with no students or sessions. */
-    ObservableList<Group> getGroupList();
-
     /**
      * Returns an unmodifiable view of the persons list.
      * This list will not contain any duplicate persons.
@@ -20,8 +17,12 @@ public interface ReadOnlyAddressBook {
     ObservableList<Person> getPersonList();
 
     /**
-     * Returns an unmodifiable view of the sessions list.
-     * This list will not contain two sessions of the same group in the same week.
+     * Returns an unmodifiable view of the registered tutorial groups.
+     */
+    ObservableList<Group> getGroupList();
+
+    /**
+     * Returns an unmodifiable view of the tutorial sessions, sorted by group and week.
      */
     ObservableList<Session> getSessionList();
 

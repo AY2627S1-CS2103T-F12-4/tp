@@ -1,5 +1,6 @@
 package seedu.address.testutil;
 
+import java.util.Comparator;
 import java.util.Optional;
 import java.util.function.Predicate;
 
@@ -71,6 +72,26 @@ public class ModelStub implements Model {
     }
 
     @Override
+    public ObservableList<Group> getGroupList() {
+        throw new AssertionError("This method should not be called.");
+    }
+
+    @Override
+    public void setActiveGroup(Group group) {
+        throw new AssertionError("This method should not be called.");
+    }
+
+    @Override
+    public Optional<Group> getActiveGroup() {
+        throw new AssertionError("This method should not be called.");
+    }
+
+    @Override
+    public ObservableList<Session> getSessionList() {
+        throw new AssertionError("This method should not be called.");
+    }
+
+    @Override
     public boolean hasPerson(Person person) {
         throw new AssertionError("This method should not be called.");
     }
@@ -87,6 +108,11 @@ public class ModelStub implements Model {
 
     @Override
     public ObservableList<Person> getFilteredPersonList() {
+        throw new AssertionError("This method should not be called.");
+    }
+
+    @Override
+    public void updateFilteredPersonList(Predicate<Person> predicate, Comparator<Person> comparator) {
         throw new AssertionError("This method should not be called.");
     }
 

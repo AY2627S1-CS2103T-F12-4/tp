@@ -31,6 +31,8 @@ public interface Logic {
 
     /** Returns an unmodifiable observable view of all tutorial sessions. */
     ObservableList<Session> getSessionList();
+    /** Returns the registered tutorial groups. */
+    ObservableList<Group> getGroupList();
 
     /**
      * Returns the user prefs' GUI settings.

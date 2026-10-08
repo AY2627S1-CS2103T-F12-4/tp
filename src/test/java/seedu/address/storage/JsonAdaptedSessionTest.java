@@ -1,7 +1,6 @@
 package seedu.address.storage;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static seedu.address.storage.JsonAdaptedSession.MISSING_FIELD_MESSAGE_FORMAT;
 import static seedu.address.testutil.Assert.assertThrows;
 import static seedu.address.testutil.TypicalSessions.T09_WEEK_1;
 
@@ -32,7 +31,7 @@ public class JsonAdaptedSessionTest {
     @Test
     public void toModelType_nullGroup_throwsIllegalValueException() {
         JsonAdaptedSession session = new JsonAdaptedSession(null, VALID_WEEK, VALID_DATE);
-        String expectedMessage = String.format(MISSING_FIELD_MESSAGE_FORMAT, Group.class.getSimpleName());
+        String expectedMessage = Group.MESSAGE_CONSTRAINTS;
         assertThrows(IllegalValueException.class, expectedMessage, session::toModelType);
     }
 
@@ -45,7 +44,7 @@ public class JsonAdaptedSessionTest {
     @Test
     public void toModelType_nullWeek_throwsIllegalValueException() {
         JsonAdaptedSession session = new JsonAdaptedSession(VALID_GROUP, null, VALID_DATE);
-        String expectedMessage = String.format(MISSING_FIELD_MESSAGE_FORMAT, Week.class.getSimpleName());
+        String expectedMessage = Week.MESSAGE_CONSTRAINTS;
         assertThrows(IllegalValueException.class, expectedMessage, session::toModelType);
     }
 
@@ -58,7 +57,7 @@ public class JsonAdaptedSessionTest {
     @Test
     public void toModelType_nullDate_throwsIllegalValueException() {
         JsonAdaptedSession session = new JsonAdaptedSession(VALID_GROUP, VALID_WEEK, null);
-        String expectedMessage = String.format(MISSING_FIELD_MESSAGE_FORMAT, SessionDate.class.getSimpleName());
+        String expectedMessage = SessionDate.MESSAGE_CONSTRAINTS;
         assertThrows(IllegalValueException.class, expectedMessage, session::toModelType);
     }
 }

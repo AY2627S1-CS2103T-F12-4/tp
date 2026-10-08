@@ -2,7 +2,6 @@ package seedu.address.model;
 
 import static java.util.Objects.requireNonNull;
 
-import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -13,24 +12,27 @@ import seedu.address.commons.util.ToStringBuilder;
 import seedu.address.model.person.Group;
 import seedu.address.model.person.Person;
 import seedu.address.model.person.UniquePersonList;
+import seedu.address.model.person.exceptions.DuplicateGroupException;
 import seedu.address.model.session.Session;
 import seedu.address.model.session.UniqueSessionList;
 import seedu.address.model.session.Week;
 
 /**
  * Wraps all data at the address-book level.
- * Duplicates are not allowed (by .isSamePerson comparison for persons, and .isSameSession for sessions).
+ * Duplicates are not allowed (by .isSamePerson comparison).
  */
 public class AddressBook implements ReadOnlyAddressBook {
 
-    private final ObservableList<Group> groups = FXCollections.observableArrayList();
     private final UniquePersonList persons = new UniquePersonList();
+    private final ObservableList<Group> groups = FXCollections.observableArrayList();
     private final UniqueSessionList sessions = new UniqueSessionList();
+    private final ObservableList<Group> unmodifiableGroups =
+            FXCollections.unmodifiableObservableList(groups);
 
     public AddressBook() {}
 
     /**
-     * Creates an AddressBook using the Persons and Sessions in the {@code toBeCopied}
+     * Creates an AddressBook using the Persons in the {@code toBeCopied}
      */
     public AddressBook(ReadOnlyAddressBook toBeCopied) {
         this();
@@ -45,16 +47,23 @@ public class AddressBook implements ReadOnlyAddressBook {
      */
     public void setPersons(List<Person> persons) {
         this.persons.setPersons(persons);
-        persons.forEach(person -> registerReferencedGroup(person.getGroup()));
     }
 
     /**
-     * Replaces the contents of the session list with {@code sessions}.
-     * {@code sessions} must not contain duplicate sessions.
+     * Replaces the registered tutorial groups.
+     */
+    public void setGroups(List<Group> groups) {
+        this.groups.clear();
+        for (Group group : groups) {
+            addGroup(group);
+        }
+    }
+
+    /**
+     * Replaces the tutorial sessions.
      */
     public void setSessions(List<Session> sessions) {
         this.sessions.setSessions(sessions);
-        sessions.forEach(session -> registerReferencedGroup(session.getGroup()));
     }
 
     /**
@@ -63,43 +72,9 @@ public class AddressBook implements ReadOnlyAddressBook {
     public void resetData(ReadOnlyAddressBook newData) {
         requireNonNull(newData);
 
-        groups.setAll(newData.getGroupList());
         setPersons(newData.getPersonList());
+        setGroups(newData.getGroupList());
         setSessions(newData.getSessionList());
-    }
-
-    /**
-     * Registers an empty tutorial group, independently of students and sessions.
-     *
-     * @throws IllegalArgumentException if the group is already registered.
-     */
-    public void addGroup(Group group) {
-        requireNonNull(group);
-        if (hasGroup(group)) {
-            throw new IllegalArgumentException("This tutorial group already exists: " + group);
-        }
-        groups.add(group);
-    }
-
-    /**
-     * Returns whether a group has been registered, even when it has no students or sessions.
-     */
-    public boolean hasGroup(Group group) {
-        requireNonNull(group);
-        return groups.contains(group);
-    }
-
-    // Keeps the existing add/session model APIs compatible with pre-registry callers.
-    // Command-level checks for creating groups belong to the init/add/session features.
-    private void registerReferencedGroup(Group group) {
-        if (!hasGroup(group)) {
-            groups.add(group);
-        }
-    }
-
-    @Override
-    public ObservableList<Group> getGroupList() {
-        return FXCollections.unmodifiableObservableList(groups);
     }
 
     //// person-level operations
@@ -118,7 +93,6 @@ public class AddressBook implements ReadOnlyAddressBook {
      */
     public void addPerson(Person p) {
         persons.add(p);
-        registerReferencedGroup(p.getGroup());
     }
 
     /**
@@ -130,7 +104,6 @@ public class AddressBook implements ReadOnlyAddressBook {
         requireNonNull(editedPerson);
 
         persons.setPerson(target, editedPerson);
-        registerReferencedGroup(editedPerson.getGroup());
     }
 
     /**
@@ -141,10 +114,38 @@ public class AddressBook implements ReadOnlyAddressBook {
         persons.remove(key);
     }
 
-    //// session-level operations
+    //// tutorial-group operations
 
     /**
-     * Returns true if the group of {@code session} already has a session in the same week.
+     * Returns true if {@code group} is registered.
+     */
+    public boolean hasGroup(Group group) {
+        requireNonNull(group);
+        return groups.contains(group);
+    }
+
+    /**
+     * Registers a tutorial group.
+     */
+    public void addGroup(Group group) {
+        requireNonNull(group);
+        if (hasGroup(group)) {
+            throw new DuplicateGroupException();
+        }
+        groups.add(group);
+    }
+
+    //// session operations
+
+    /**
+     * Returns the session for {@code group} and {@code week}, if it exists.
+     */
+    public Optional<Session> findSession(Group group, Week week) {
+        return sessions.find(group, week);
+    }
+
+    /**
+     * Returns true if a session with the same group and week exists.
      */
     public boolean hasSession(Session session) {
         requireNonNull(session);
@@ -152,19 +153,14 @@ public class AddressBook implements ReadOnlyAddressBook {
     }
 
     /**
-     * Adds a session to the address book.
-     * The group must not already have a session in the same week.
+     * Adds a tutorial session and maintains group/week display order.
      */
     public void addSession(Session session) {
+        requireNonNull(session);
+        if (!hasGroup(session.getGroup())) {
+            throw new IllegalArgumentException("Session tutorial group must be registered");
+        }
         sessions.add(session);
-        registerReferencedGroup(session.getGroup());
-    }
-
-    /**
-     * Returns the session of {@code group} in {@code week}, if there is one.
-     */
-    public Optional<Session> findSession(Group group, Week week) {
-        return sessions.find(group, week);
     }
 
     //// util methods
@@ -173,6 +169,7 @@ public class AddressBook implements ReadOnlyAddressBook {
     public String toString() {
         return new ToStringBuilder(this)
                 .add("persons", persons)
+                .add("groups", groups)
                 .add("sessions", sessions)
                 .toString();
     }
@@ -180,6 +177,11 @@ public class AddressBook implements ReadOnlyAddressBook {
     @Override
     public ObservableList<Person> getPersonList() {
         return persons.asUnmodifiableObservableList();
+    }
+
+    @Override
+    public ObservableList<Group> getGroupList() {
+        return unmodifiableGroups;
     }
 
     @Override
@@ -198,13 +200,13 @@ public class AddressBook implements ReadOnlyAddressBook {
             return false;
         }
 
-        return new HashSet<>(groups).equals(new HashSet<>(otherAddressBook.groups))
-                && persons.equals(otherAddressBook.persons)
+        return persons.equals(otherAddressBook.persons)
+                && groups.equals(otherAddressBook.groups)
                 && sessions.equals(otherAddressBook.sessions);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(new HashSet<>(groups), persons, sessions);
+        return Objects.hash(persons, groups, sessions);
     }
 }

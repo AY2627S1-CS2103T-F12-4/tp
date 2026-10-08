@@ -2,7 +2,6 @@ package seedu.address.storage;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -25,24 +24,28 @@ import seedu.address.model.session.Session;
 class JsonSerializableAddressBook {
 
     public static final String MESSAGE_DUPLICATE_PERSON = "Persons list contains duplicate person(s).";
+    public static final String MESSAGE_DUPLICATE_GROUP = "Tutorial groups list contains duplicate group(s).";
     public static final String MESSAGE_DUPLICATE_SESSION = "Sessions list contains duplicate session(s).";
+    public static final String MESSAGE_SESSION_GROUP_NOT_FOUND =
+            "A session refers to a tutorial group that is not registered.";
+
     public static final String MESSAGE_UNKNOWN_SESSION =
             "Attendance records refer to a session that is not in the sessions list.";
 
-    private final List<String> groups = new ArrayList<>();
-
     private final List<JsonAdaptedPerson> persons = new ArrayList<>();
+    private final List<String> groups = new ArrayList<>();
     private final List<JsonAdaptedSession> sessions = new ArrayList<>();
 
     /**
-     * Constructs a {@code JsonSerializableAddressBook} with the given persons, sessions and group registry.
-     * Missing session lists are read as empty. Missing group registries are reconstructed from existing records.
+     * Constructs a {@code JsonSerializableAddressBook} with the given persons.
      */
     @JsonCreator
     public JsonSerializableAddressBook(@JsonProperty("persons") List<JsonAdaptedPerson> persons,
-            @JsonProperty("sessions") List<JsonAdaptedSession> sessions,
-            @JsonProperty("groups") List<String> groups) {
-        this.persons.addAll(persons);
+            @JsonProperty("groups") List<String> groups,
+            @JsonProperty("sessions") List<JsonAdaptedSession> sessions) {
+        if (persons != null) {
+            this.persons.addAll(persons);
+        }
         if (groups != null) {
             this.groups.addAll(groups);
         }
@@ -57,8 +60,8 @@ class JsonSerializableAddressBook {
      * @param source future changes to this will not affect the created {@code JsonSerializableAddressBook}.
      */
     public JsonSerializableAddressBook(ReadOnlyAddressBook source) {
-        groups.addAll(source.getGroupList().stream().map(group -> group.value).toList());
         persons.addAll(source.getPersonList().stream().map(JsonAdaptedPerson::new).collect(Collectors.toList()));
+        groups.addAll(source.getGroupList().stream().map(Group::toString).collect(Collectors.toList()));
         sessions.addAll(source.getSessionList().stream().map(JsonAdaptedSession::new).collect(Collectors.toList()));
     }
 
@@ -69,26 +72,26 @@ class JsonSerializableAddressBook {
      */
     public AddressBook toModelType() throws IllegalValueException {
         AddressBook addressBook = new AddressBook();
-        for (String value : groups) {
-            if (value == null || !Group.isValidGroup(value.trim().toUpperCase(Locale.ROOT))) {
+        for (String groupCode : groups) {
+            if (!Group.isValidGroup(groupCode)) {
                 throw new IllegalValueException(Group.MESSAGE_CONSTRAINTS);
             }
-            Group group = new Group(value.trim().toUpperCase(Locale.ROOT));
+            Group group = new Group(groupCode);
             if (addressBook.hasGroup(group)) {
-                throw new IllegalValueException("Groups list contains duplicate tutorial groups.");
+                throw new IllegalValueException(MESSAGE_DUPLICATE_GROUP);
             }
             addressBook.addGroup(group);
         }
-        // Older data has no registry; adding its sessions/students retains their groups.
-        // Sessions are added first, so that each attendance record can be checked against them
         for (JsonAdaptedSession jsonAdaptedSession : sessions) {
             Session session = jsonAdaptedSession.toModelType();
+            if (!addressBook.hasGroup(session.getGroup())) {
+                throw new IllegalValueException(MESSAGE_SESSION_GROUP_NOT_FOUND);
+            }
             if (addressBook.hasSession(session)) {
                 throw new IllegalValueException(MESSAGE_DUPLICATE_SESSION);
             }
             addressBook.addSession(session);
         }
-
         for (JsonAdaptedPerson jsonAdaptedPerson : persons) {
             Person person = jsonAdaptedPerson.toModelType();
             if (addressBook.hasPerson(person)) {

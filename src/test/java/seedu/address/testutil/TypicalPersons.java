@@ -20,6 +20,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import seedu.address.model.AddressBook;
+import seedu.address.model.person.Group;
 import seedu.address.model.person.Person;
 import seedu.address.model.session.Session;
 
@@ -78,6 +79,8 @@ public class TypicalPersons {
      */
     public static AddressBook getTypicalAddressBook() {
         AddressBook ab = new AddressBook();
+        ab.addGroup(new Group("T09"));
+        ab.addGroup(new Group("T10"));
         for (Session session : TypicalSessions.getTypicalSessions()) {
             ab.addSession(session);
         }
