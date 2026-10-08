@@ -3,6 +3,7 @@ package seedu.address.model;
 import static java.util.Objects.requireNonNull;
 import static seedu.address.commons.util.CollectionUtil.requireAllNonNull;
 
+import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.logging.Logger;
@@ -159,7 +160,7 @@ public class ModelManager implements Model {
 
         return addressBook.equals(otherModelManager.addressBook)
                 && userPrefs.equals(otherModelManager.userPrefs)
-                && java.util.Objects.equals(activeGroup, otherModelManager.activeGroup)
+                && Objects.equals(activeGroup, otherModelManager.activeGroup)
                 && filteredPersons.equals(otherModelManager.filteredPersons);
     }
 

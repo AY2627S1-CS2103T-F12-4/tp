@@ -126,6 +126,8 @@ public class ParserUtil {
 
     /**
      * Parses and normalizes a tutorial group code.
+     *
+     * @throws ParseException if the given {@code group} is invalid.
      */
     public static Group parseGroup(String group) throws ParseException {
         requireNonNull(group);
