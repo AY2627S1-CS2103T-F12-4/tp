@@ -47,6 +47,13 @@ public class Session {
                 && week.equals(otherSession.week);
     }
 
+    /**
+     * Returns true if this session belongs to {@code group} and falls in {@code week}.
+     */
+    public boolean isFor(Group group, Week week) {
+        return this.group.equals(group) && this.week.equals(week);
+    }
+
     @Override
     public String toString() {
         return new ToStringBuilder(this)

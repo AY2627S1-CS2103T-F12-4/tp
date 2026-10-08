@@ -13,8 +13,8 @@ import seedu.address.model.group.exceptions.DuplicateGroupException;
 import seedu.address.model.person.Person;
 import seedu.address.model.person.UniquePersonList;
 import seedu.address.model.session.Session;
+import seedu.address.model.session.UniqueSessionList;
 import seedu.address.model.session.Week;
-import seedu.address.model.session.exceptions.DuplicateSessionException;
 
 /**
  * Wraps all data at the address-book level.
@@ -24,9 +24,9 @@ public class AddressBook implements ReadOnlyAddressBook {
 
     private final UniquePersonList persons = new UniquePersonList();
     private final ObservableList<Group> groups = FXCollections.observableArrayList();
-    private final ObservableList<Session> sessions = FXCollections.observableArrayList();
-    private final ObservableList<Group> unmodifiableGroups = FXCollections.unmodifiableObservableList(groups);
-    private final ObservableList<Session> unmodifiableSessions = FXCollections.unmodifiableObservableList(sessions);
+    private final UniqueSessionList sessions = new UniqueSessionList();
+    private final ObservableList<Group> unmodifiableGroups =
+            FXCollections.unmodifiableObservableList(groups);
 
     public AddressBook() {}
 
@@ -62,10 +62,7 @@ public class AddressBook implements ReadOnlyAddressBook {
      * Replaces the tutorial sessions.
      */
     public void setSessions(List<Session> sessions) {
-        this.sessions.clear();
-        for (Session session : sessions) {
-            addSession(session);
-        }
+        this.sessions.setSessions(sessions);
     }
 
     /**
@@ -142,12 +139,8 @@ public class AddressBook implements ReadOnlyAddressBook {
     /**
      * Returns the session for {@code group} and {@code week}, if it exists.
      */
-    public Optional<Session> getSession(Group group, Week week) {
-        requireNonNull(group);
-        requireNonNull(week);
-        return sessions.stream()
-                .filter(session -> session.getGroup().equals(group) && session.getWeek().equals(week))
-                .findFirst();
+    public Optional<Session> findSession(Group group, Week week) {
+        return sessions.find(group, week);
     }
 
     /**
@@ -155,7 +148,7 @@ public class AddressBook implements ReadOnlyAddressBook {
      */
     public boolean hasSession(Session session) {
         requireNonNull(session);
-        return sessions.stream().anyMatch(session::isSameSession);
+        return sessions.contains(session);
     }
 
     /**
@@ -166,14 +159,7 @@ public class AddressBook implements ReadOnlyAddressBook {
         if (!hasGroup(session.getGroup())) {
             throw new IllegalArgumentException("Session tutorial group must be registered");
         }
-        if (hasSession(session)) {
-            throw new DuplicateSessionException();
-        }
         sessions.add(session);
-        FXCollections.sort(sessions, (first, second) -> {
-            int groupComparison = first.getGroup().code.compareTo(second.getGroup().code);
-            return groupComparison != 0 ? groupComparison : first.getWeek().compareTo(second.getWeek());
-        });
     }
 
     //// util methods
@@ -199,7 +185,7 @@ public class AddressBook implements ReadOnlyAddressBook {
 
     @Override
     public ObservableList<Session> getSessionList() {
-        return unmodifiableSessions;
+        return sessions.asUnmodifiableObservableList();
     }
 
     @Override

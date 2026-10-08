@@ -132,8 +132,8 @@ public class ModelManager implements Model {
     }
 
     @Override
-    public Optional<Session> getSession(Group group, Week week) {
-        return addressBook.getSession(group, week);
+    public Optional<Session> findSession(Group group, Week week) {
+        return addressBook.findSession(group, week);
     }
 
     @Override

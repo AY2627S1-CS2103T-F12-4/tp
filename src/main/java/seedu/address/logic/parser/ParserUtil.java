@@ -143,15 +143,10 @@ public class ParserUtil {
     public static Week parseWeek(String week) throws ParseException {
         requireNonNull(week);
         String trimmedWeek = week.trim();
-        try {
-            int weekNumber = Integer.parseInt(trimmedWeek);
-            if (!Week.isValidWeek(weekNumber)) {
-                throw new ParseException(Week.MESSAGE_CONSTRAINTS);
-            }
-            return new Week(weekNumber);
-        } catch (NumberFormatException e) {
+        if (!Week.isValidWeek(trimmedWeek)) {
             throw new ParseException(Week.MESSAGE_CONSTRAINTS);
         }
+        return new Week(Integer.parseInt(trimmedWeek));
     }
 
     /**
@@ -160,7 +155,7 @@ public class ParserUtil {
     public static SessionDate parseSessionDate(String date) throws ParseException {
         requireNonNull(date);
         String trimmedDate = date.trim();
-        if (!SessionDate.isValidDate(trimmedDate)) {
+        if (!SessionDate.isValidSessionDate(trimmedDate)) {
             throw new ParseException(SessionDate.MESSAGE_CONSTRAINTS);
         }
         return new SessionDate(trimmedDate);

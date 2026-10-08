@@ -28,14 +28,14 @@ public class SessionDate {
     public SessionDate(String date) {
         requireNonNull(date);
         String trimmedDate = date.trim();
-        checkArgument(isValidDate(trimmedDate), MESSAGE_CONSTRAINTS);
+        checkArgument(isValidSessionDate(trimmedDate), MESSAGE_CONSTRAINTS);
         value = LocalDate.parse(trimmedDate, FORMATTER);
     }
 
     /**
      * Returns true if {@code test} is a real calendar date in YYYY-MM-DD format.
      */
-    public static boolean isValidDate(String test) {
+    public static boolean isValidSessionDate(String test) {
         if (test == null || !test.trim().matches(VALIDATION_REGEX)) {
             return false;
         }

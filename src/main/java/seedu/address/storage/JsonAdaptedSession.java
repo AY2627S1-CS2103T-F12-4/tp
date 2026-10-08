@@ -68,7 +68,7 @@ class JsonAdaptedSession {
             throw new IllegalValueException(Week.MESSAGE_CONSTRAINTS);
         }
 
-        if (!SessionDate.isValidDate(date)) {
+        if (!SessionDate.isValidSessionDate(date)) {
             throw new IllegalValueException(SessionDate.MESSAGE_CONSTRAINTS);
         }
 

@@ -47,7 +47,7 @@ public class SessionCommand extends Command {
             throw new CommandException(String.format(MESSAGE_GROUP_NOT_FOUND, group));
         }
 
-        Session existingSession = model.getSession(group, session.getWeek()).orElse(null);
+        Session existingSession = model.findSession(group, session.getWeek()).orElse(null);
         if (existingSession != null) {
             throw new CommandException(String.format(MESSAGE_DUPLICATE_SESSION, group,
                     existingSession.getWeek(), existingSession.getDate()));

@@ -162,7 +162,7 @@ public class AddCommandTest {
         }
 
         @Override
-        public Optional<Session> getSession(Group group, Week week) {
+        public Optional<Session> findSession(Group group, Week week) {
             throw new AssertionError("This method should not be called.");
         }
 

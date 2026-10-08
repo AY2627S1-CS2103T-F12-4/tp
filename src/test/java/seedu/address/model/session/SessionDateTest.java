@@ -20,12 +20,12 @@ public class SessionDateTest {
     }
 
     @Test
-    public void isValidDate() {
-        assertFalse(SessionDate.isValidDate(null));
-        assertFalse(SessionDate.isValidDate("2026-2-03"));
-        assertFalse(SessionDate.isValidDate("2026-02-30"));
-        assertTrue(SessionDate.isValidDate("2026-09-15"));
-        assertTrue(SessionDate.isValidDate(" 2024-02-29 "));
+    public void isValidSessionDate() {
+        assertFalse(SessionDate.isValidSessionDate(null));
+        assertFalse(SessionDate.isValidSessionDate("2026-2-03"));
+        assertFalse(SessionDate.isValidSessionDate("2026-02-30"));
+        assertTrue(SessionDate.isValidSessionDate("2026-09-15"));
+        assertTrue(SessionDate.isValidSessionDate(" 2024-02-29 "));
     }
 
     @Test

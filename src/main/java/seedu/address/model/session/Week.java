@@ -1,5 +1,6 @@
 package seedu.address.model.session;
 
+import static java.util.Objects.requireNonNull;
 import static seedu.address.commons.util.AppUtil.checkArgument;
 
 import java.util.Objects;
@@ -9,7 +10,11 @@ import java.util.Objects;
  */
 public class Week implements Comparable<Week> {
 
-    public static final String MESSAGE_CONSTRAINTS = "Week should be an integer from 1 to 13.";
+    public static final int FIRST_WEEK = 1;
+    public static final int LAST_WEEK = 13;
+    public static final String MESSAGE_CONSTRAINTS =
+            "Week should be a whole number from " + FIRST_WEEK + " to " + LAST_WEEK + ".";
+    private static final String VALIDATION_REGEX = "[1-9]\\d?";
 
     public final int value;
 
@@ -25,7 +30,15 @@ public class Week implements Comparable<Week> {
      * Returns true if {@code value} is a valid teaching week.
      */
     public static boolean isValidWeek(int value) {
-        return value >= 1 && value <= 13;
+        return value >= FIRST_WEEK && value <= LAST_WEEK;
+    }
+
+    /**
+     * Returns true if {@code value} is a valid teaching week without a leading zero.
+     */
+    public static boolean isValidWeek(String value) {
+        requireNonNull(value);
+        return value.matches(VALIDATION_REGEX) && isValidWeek(Integer.parseInt(value));
     }
 
     @Override

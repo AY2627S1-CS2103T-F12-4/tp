@@ -20,5 +20,7 @@ public class WeekTest {
         assertFalse(Week.isValidWeek(14));
         assertTrue(Week.isValidWeek(1));
         assertTrue(Week.isValidWeek(13));
+        assertFalse(Week.isValidWeek("05"));
+        assertTrue(Week.isValidWeek("5"));
     }
 }

@@ -82,7 +82,7 @@ public interface Model {
     Optional<Group> getActiveGroup();
 
     /** Returns the session for a tutorial group and week, if it exists. */
-    Optional<Session> getSession(Group group, Week week);
+    Optional<Session> findSession(Group group, Week week);
 
     /** Adds a tutorial session. */
     void addSession(Session session);
