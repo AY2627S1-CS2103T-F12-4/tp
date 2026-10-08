@@ -1,4 +1,4 @@
-package seedu.address.model.group.exceptions;
+package seedu.address.model.person.exceptions;
 
 /**
  * Signals that an operation would result in duplicate tutorial groups.

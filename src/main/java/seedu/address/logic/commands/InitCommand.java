@@ -6,7 +6,7 @@ import static seedu.address.logic.parser.CliSyntax.PREFIX_GROUP;
 import seedu.address.commons.util.ToStringBuilder;
 import seedu.address.logic.commands.exceptions.CommandException;
 import seedu.address.model.Model;
-import seedu.address.model.group.Group;
+import seedu.address.model.person.Group;
 
 /**
  * Registers a new tutorial group.

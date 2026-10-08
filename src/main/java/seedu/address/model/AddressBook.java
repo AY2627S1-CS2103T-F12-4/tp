@@ -7,10 +7,10 @@ import java.util.List;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import seedu.address.commons.util.ToStringBuilder;
-import seedu.address.model.group.Group;
-import seedu.address.model.group.exceptions.DuplicateGroupException;
+import seedu.address.model.person.Group;
 import seedu.address.model.person.Person;
 import seedu.address.model.person.UniquePersonList;
+import seedu.address.model.person.exceptions.DuplicateGroupException;
 
 /**
  * Wraps all data at the address-book level.
