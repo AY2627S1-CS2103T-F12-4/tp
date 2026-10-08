@@ -12,10 +12,14 @@ import java.util.Set;
 import org.junit.jupiter.api.Test;
 
 import seedu.address.logic.parser.exceptions.ParseException;
+import seedu.address.model.attendance.Status;
 import seedu.address.model.person.Address;
 import seedu.address.model.person.Email;
+import seedu.address.model.person.Group;
+import seedu.address.model.person.Matric;
 import seedu.address.model.person.Name;
 import seedu.address.model.person.Phone;
+import seedu.address.model.session.Week;
 import seedu.address.model.tag.Tag;
 
 public class ParserUtilTest {
@@ -23,12 +27,16 @@ public class ParserUtilTest {
     private static final String INVALID_PHONE = "+651234";
     private static final String INVALID_ADDRESS = " ";
     private static final String INVALID_EMAIL = "example.com";
+    private static final String INVALID_MATRIC = "A12345";
+    private static final String INVALID_GROUP = "T9";
     private static final String INVALID_TAG = "#friend";
 
     private static final String VALID_NAME = "Rachel Walker";
     private static final String VALID_PHONE = "123456";
     private static final String VALID_ADDRESS = "123 Main Street #0505";
     private static final String VALID_EMAIL = "rachel@example.com";
+    private static final String VALID_MATRIC = "A0287654J";
+    private static final String VALID_GROUP = "T09";
     private static final String VALID_TAG_1 = "friend";
     private static final String VALID_TAG_2 = "neighbour";
 
@@ -144,6 +152,78 @@ public class ParserUtilTest {
         String emailWithWhitespace = WHITESPACE + VALID_EMAIL + WHITESPACE;
         Email expectedEmail = new Email(VALID_EMAIL);
         assertEquals(expectedEmail, ParserUtil.parseEmail(emailWithWhitespace));
+    }
+
+    @Test
+    public void parseMatric_null_throwsNullPointerException() {
+        assertThrows(NullPointerException.class, () -> ParserUtil.parseMatric((String) null));
+    }
+
+    @Test
+    public void parseMatric_invalidValue_throwsParseException() {
+        assertThrows(ParseException.class, () -> ParserUtil.parseMatric(INVALID_MATRIC));
+    }
+
+    @Test
+    public void parseMatric_validValueWithoutWhitespace_returnsMatric() throws Exception {
+        assertEquals(new Matric(VALID_MATRIC), ParserUtil.parseMatric(VALID_MATRIC));
+    }
+
+    @Test
+    public void parseMatric_lowerCaseValueWithWhitespace_returnsUpperCaseTrimmedMatric() throws Exception {
+        String matricWithWhitespace = WHITESPACE + VALID_MATRIC.toLowerCase() + WHITESPACE;
+        assertEquals(new Matric(VALID_MATRIC), ParserUtil.parseMatric(matricWithWhitespace));
+    }
+
+    @Test
+    public void parseWeek_null_throwsNullPointerException() {
+        assertThrows(NullPointerException.class, () -> ParserUtil.parseWeek((String) null));
+    }
+
+    @Test
+    public void parseWeek_invalidValue_throwsParseException() {
+        assertThrows(ParseException.class, Week.MESSAGE_CONSTRAINTS, () -> ParserUtil.parseWeek("14"));
+    }
+
+    @Test
+    public void parseWeek_validValueWithWhitespace_returnsWeek() throws Exception {
+        assertEquals(new Week(5), ParserUtil.parseWeek(WHITESPACE + "5" + WHITESPACE));
+    }
+
+    @Test
+    public void parseStatus_null_throwsNullPointerException() {
+        assertThrows(NullPointerException.class, () -> ParserUtil.parseStatus((String) null));
+    }
+
+    @Test
+    public void parseStatus_invalidValue_throwsParseException() {
+        assertThrows(ParseException.class, Status.MESSAGE_CONSTRAINTS, () -> ParserUtil.parseStatus("late"));
+    }
+
+    @Test
+    public void parseStatus_validValueWithWhitespace_returnsStatus() throws Exception {
+        assertEquals(Status.ABSENT, ParserUtil.parseStatus(WHITESPACE + "Absent" + WHITESPACE));
+    }
+
+    @Test
+    public void parseGroup_null_throwsNullPointerException() {
+        assertThrows(NullPointerException.class, () -> ParserUtil.parseGroup((String) null));
+    }
+
+    @Test
+    public void parseGroup_invalidValue_throwsParseException() {
+        assertThrows(ParseException.class, () -> ParserUtil.parseGroup(INVALID_GROUP));
+    }
+
+    @Test
+    public void parseGroup_validValueWithoutWhitespace_returnsGroup() throws Exception {
+        assertEquals(new Group(VALID_GROUP), ParserUtil.parseGroup(VALID_GROUP));
+    }
+
+    @Test
+    public void parseGroup_lowerCaseValueWithWhitespace_returnsUpperCaseTrimmedGroup() throws Exception {
+        String groupWithWhitespace = WHITESPACE + VALID_GROUP.toLowerCase() + WHITESPACE;
+        assertEquals(new Group(VALID_GROUP), ParserUtil.parseGroup(groupWithWhitespace));
     }
 
     @Test

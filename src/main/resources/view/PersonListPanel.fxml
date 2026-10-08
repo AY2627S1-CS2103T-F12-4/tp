@@ -1,8 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.scene.control.ListView?>
+<?import javafx.scene.control.Label?>
 <?import javafx.scene.layout.VBox?>
 
-<VBox xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1">
+<VBox styleClass="background" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1">
+  <Label fx:id="groupScope" styleClass="label-bright" style="-fx-padding: 4 12 4 12;" />
+  <Label text="Attendance: P = Present | A = Absent | &#8212; = Unmarked" styleClass="label-bright" style="-fx-padding: 4 12 4 12;" wrapText="true" />
   <ListView fx:id="personListView" VBox.vgrow="ALWAYS" />
 </VBox>

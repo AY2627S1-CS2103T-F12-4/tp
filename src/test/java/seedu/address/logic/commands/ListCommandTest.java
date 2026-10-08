@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Test;
 import seedu.address.model.Model;
 import seedu.address.model.ModelManager;
 import seedu.address.model.UserPrefs;
+import seedu.address.testutil.PersonBuilder;
 
 /**
  * Contains integration tests (interaction with the Model) and unit tests for ListCommand.
@@ -28,12 +29,33 @@ public class ListCommandTest {
 
     @Test
     public void execute_listIsNotFiltered_showsSameList() {
-        assertCommandSuccess(new ListCommand(), model, ListCommand.MESSAGE_SUCCESS, expectedModel);
+        assertCommandSuccess(new ListCommand(), model, "Listed all 7 students.", expectedModel);
     }
 
     @Test
     public void execute_listIsFiltered_showsEverything() {
         showPersonAtIndex(model, INDEX_FIRST_PERSON);
-        assertCommandSuccess(new ListCommand(), model, ListCommand.MESSAGE_SUCCESS, expectedModel);
+        assertCommandSuccess(new ListCommand(), model, "Listed all 7 students.", expectedModel);
+    }
+
+    @Test
+    public void execute_emptyRoster_showsEmptyMessage() {
+        model = new ModelManager();
+        expectedModel = new ModelManager();
+        assertCommandSuccess(new ListCommand(), model, ListCommand.MESSAGE_EMPTY, expectedModel);
+    }
+
+    @Test
+    public void execute_singleStudent_showsCount() {
+        model = new ModelManager();
+        model.addPerson(new PersonBuilder().build());
+        expectedModel = new ModelManager(model.getAddressBook(), new UserPrefs());
+        assertCommandSuccess(new ListCommand(), model, "Listed all 1 students.", expectedModel);
+    }
+
+    @Test
+    public void execute_noSearchMatches_restoresAllStudents() {
+        model.updateFilteredPersonList(person -> false);
+        assertCommandSuccess(new ListCommand(), model, "Listed all 7 students.", expectedModel);
     }
 }

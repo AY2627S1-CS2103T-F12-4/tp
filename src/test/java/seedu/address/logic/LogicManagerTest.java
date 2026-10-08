@@ -1,14 +1,20 @@
 package seedu.address.logic;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static seedu.address.logic.Messages.MESSAGE_INVALID_COMMAND_FORMAT;
 import static seedu.address.logic.Messages.MESSAGE_INVALID_PERSON_DISPLAYED_INDEX;
 import static seedu.address.logic.Messages.MESSAGE_UNKNOWN_COMMAND;
 import static seedu.address.logic.commands.CommandTestUtil.ADDRESS_DESC_AMY;
 import static seedu.address.logic.commands.CommandTestUtil.EMAIL_DESC_AMY;
+import static seedu.address.logic.commands.CommandTestUtil.GROUP_DESC_AMY;
+import static seedu.address.logic.commands.CommandTestUtil.MATRIC_DESC_AMY;
 import static seedu.address.logic.commands.CommandTestUtil.NAME_DESC_AMY;
 import static seedu.address.logic.commands.CommandTestUtil.PHONE_DESC_AMY;
+import static seedu.address.logic.commands.CommandTestUtil.showPersonAtIndex;
 import static seedu.address.testutil.Assert.assertThrows;
+import static seedu.address.testutil.TypicalIndexes.INDEX_FIRST_PERSON;
 import static seedu.address.testutil.TypicalPersons.AMY;
+import static seedu.address.testutil.TypicalPersons.BOB;
 
 import java.io.IOException;
 import java.nio.file.AccessDeniedException;
@@ -67,7 +73,19 @@ public class LogicManagerTest {
     @Test
     public void execute_validCommand_success() throws Exception {
         String listCommand = ListCommand.COMMAND_WORD;
-        assertCommandSuccess(listCommand, ListCommand.MESSAGE_SUCCESS, model);
+        assertCommandSuccess(listCommand, ListCommand.MESSAGE_EMPTY, model);
+    }
+
+    @Test
+    public void execute_invalidList_preservesFilteredListAndData() {
+        model.addPerson(AMY);
+        model.addPerson(BOB);
+        showPersonAtIndex(model, INDEX_FIRST_PERSON);
+        Model expectedModel = new ModelManager(model.getAddressBook(), new UserPrefs());
+        showPersonAtIndex(expectedModel, INDEX_FIRST_PERSON);
+
+        assertCommandFailure("list John", ParseException.class,
+                String.format(MESSAGE_INVALID_COMMAND_FORMAT, ListCommand.MESSAGE_USAGE), expectedModel);
     }
 
     @Test
@@ -165,7 +183,7 @@ public class LogicManagerTest {
 
         // Triggers the saveAddressBook method by executing an add command
         String addCommand = AddCommand.COMMAND_WORD + NAME_DESC_AMY + PHONE_DESC_AMY
-                + EMAIL_DESC_AMY + ADDRESS_DESC_AMY;
+                + EMAIL_DESC_AMY + ADDRESS_DESC_AMY + MATRIC_DESC_AMY + GROUP_DESC_AMY;
         Person expectedPerson = new PersonBuilder(AMY).withTags().build();
         ModelManager expectedModel = new ModelManager();
         expectedModel.addPerson(expectedPerson);

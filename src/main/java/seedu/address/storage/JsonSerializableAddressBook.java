@@ -2,6 +2,7 @@ package seedu.address.storage;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -11,6 +12,7 @@ import com.fasterxml.jackson.annotation.JsonRootName;
 import seedu.address.commons.exceptions.IllegalValueException;
 import seedu.address.model.AddressBook;
 import seedu.address.model.ReadOnlyAddressBook;
+import seedu.address.model.attendance.Attendance;
 import seedu.address.model.person.Group;
 import seedu.address.model.person.Person;
 import seedu.address.model.session.Session;
@@ -26,6 +28,9 @@ class JsonSerializableAddressBook {
     public static final String MESSAGE_DUPLICATE_SESSION = "Sessions list contains duplicate session(s).";
     public static final String MESSAGE_SESSION_GROUP_NOT_FOUND =
             "A session refers to a tutorial group that is not registered.";
+
+    public static final String MESSAGE_UNKNOWN_SESSION =
+            "Attendance records refer to a session that is not in the sessions list.";
 
     private final List<JsonAdaptedPerson> persons = new ArrayList<>();
     private final List<String> groups = new ArrayList<>();
@@ -92,9 +97,26 @@ class JsonSerializableAddressBook {
             if (addressBook.hasPerson(person)) {
                 throw new IllegalValueException(MESSAGE_DUPLICATE_PERSON);
             }
+            if (!areSessionsStored(person, addressBook)) {
+                throw new IllegalValueException(MESSAGE_UNKNOWN_SESSION);
+            }
             addressBook.addPerson(person);
         }
         return addressBook;
+    }
+
+    /**
+     * Returns true if every attendance record of {@code person} refers to a session stored in {@code addressBook}.
+     */
+    private static boolean areSessionsStored(Person person, AddressBook addressBook) {
+        for (Attendance attendance : person.getAttendances()) {
+            Session session = attendance.getSession();
+            Optional<Session> storedSession = addressBook.findSession(session.getGroup(), session.getWeek());
+            if (!storedSession.map(session::equals).orElse(false)) {
+                return false;
+            }
+        }
+        return true;
     }
 
 }

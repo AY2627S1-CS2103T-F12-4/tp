@@ -10,9 +10,11 @@ import java.util.Set;
 import seedu.address.commons.core.index.Index;
 import seedu.address.commons.util.StringUtil;
 import seedu.address.logic.parser.exceptions.ParseException;
+import seedu.address.model.attendance.Status;
 import seedu.address.model.person.Address;
 import seedu.address.model.person.Email;
 import seedu.address.model.person.Group;
+import seedu.address.model.person.Matric;
 import seedu.address.model.person.Name;
 import seedu.address.model.person.Phone;
 import seedu.address.model.session.SessionDate;
@@ -163,4 +165,34 @@ public class ParserUtil {
         }
         return new SessionDate(trimmedDate);
     }
+    /**
+     * Parses a {@code String matric} into a {@code Matric}.
+     * Leading and trailing whitespaces will be trimmed, and letters converted to uppercase.
+     *
+     * @throws ParseException if the given {@code matric} is invalid.
+     */
+    public static Matric parseMatric(String matric) throws ParseException {
+        requireNonNull(matric);
+        String normalisedMatric = matric.trim().toUpperCase(Locale.ROOT);
+        if (!Matric.isValidMatric(normalisedMatric)) {
+            throw new ParseException(Matric.MESSAGE_CONSTRAINTS);
+        }
+        return new Matric(normalisedMatric);
+    }
+
+    /**
+     * Parses a {@code String status} into a {@code Status}, ignoring letter case.
+     * Leading and trailing whitespaces will be trimmed.
+     *
+     * @throws ParseException if the given {@code status} is invalid.
+     */
+    public static Status parseStatus(String status) throws ParseException {
+        requireNonNull(status);
+        String trimmedStatus = status.trim();
+        if (!Status.isValidStatus(trimmedStatus)) {
+            throw new ParseException(Status.MESSAGE_CONSTRAINTS);
+        }
+        return Status.fromString(trimmedStatus);
+    }
+
 }

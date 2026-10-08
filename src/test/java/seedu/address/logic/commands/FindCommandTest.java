@@ -26,12 +26,18 @@ import seedu.address.testutil.PersonBuilder;
  * Contains integration tests (interaction with the Model) for {@code FindCommand}.
  */
 public class FindCommandTest {
-    private final Person johnny = new PersonBuilder().withName("Johnny Lim").build();
-    private final Person johnTan = new PersonBuilder().withName("John Tan").build();
-    private final Person johnson = new PersonBuilder().withName("Johnson Ng").build();
-    private final Person johnLim = new PersonBuilder().withName("John Lim").build();
-    private final Person johnTanner = new PersonBuilder().withName("John Tanner").build();
-    private final Person meiTan = new PersonBuilder().withName("Mei Tan").build();
+    private final Person johnny = new PersonBuilder().withName("Johnny Lim")
+            .withMatric("A0000001X").withEmail("student1@example.com").build();
+    private final Person johnTan = new PersonBuilder().withName("John Tan")
+            .withMatric("A0000002X").withEmail("student2@example.com").build();
+    private final Person johnson = new PersonBuilder().withName("Johnson Ng")
+            .withMatric("A0000003X").withEmail("student3@example.com").build();
+    private final Person johnLim = new PersonBuilder().withName("John Lim")
+            .withMatric("A0000004X").withEmail("student4@example.com").build();
+    private final Person johnTanner = new PersonBuilder().withName("John Tanner")
+            .withMatric("A0000005X").withEmail("student5@example.com").build();
+    private final Person meiTan = new PersonBuilder().withName("Mei Tan")
+            .withMatric("A0000006X").withEmail("student6@example.com").build();
     private final AddressBook roster = new AddressBookBuilder().withPerson(johnny).withPerson(johnTan)
             .withPerson(johnson).withPerson(johnLim).withPerson(johnTanner).withPerson(meiTan).build();
     private final Model model = new ModelManager(roster, new UserPrefs());
@@ -126,7 +132,7 @@ public class FindCommandTest {
     }
 
     @Test
-    public void execute_listAfterSearch_restoresRosterOrderInSameObservableView() throws Exception {
+    public void execute_listAfterSearch_restoresMatricOrderInSameObservableView() throws Exception {
         ObservableList<Person> displayed = model.getFilteredPersonList();
         parser.parseCommand("find n/John").execute(model);
         assertEquals(List.of(johnTan, johnLim, johnTanner, johnny, johnson), displayed);
@@ -161,12 +167,12 @@ public class FindCommandTest {
     }
 
     @Test
-    public void execute_addAfterSearch_restoresUnfilteredRosterOrder() throws Exception {
+    public void execute_addAfterSearch_preservesResultsAndRanking() throws Exception {
         parser.parseCommand("find n/John").execute(model);
         Person alice = new PersonBuilder().withName("Alice").build();
         new AddCommand(alice).execute(model);
 
-        assertEquals(List.of(johnny, johnTan, johnson, johnLim, johnTanner, meiTan, alice),
+        assertEquals(List.of(johnTan, johnLim, johnTanner, johnny, johnson),
                 model.getFilteredPersonList());
     }
 

@@ -17,7 +17,7 @@ import seedu.address.model.person.Group;
 
 public class InitCommandTest {
 
-    private static final Group T09 = new Group("T09");
+    private static final Group T11 = new Group("T11");
 
     @Test
     public void constructor_nullGroup_throwsNullPointerException() {
@@ -28,38 +28,37 @@ public class InitCommandTest {
     public void execute_newGroup_success() {
         Model model = new ModelManager(getTypicalAddressBook(), new UserPrefs());
         Model expectedModel = new ModelManager(getTypicalAddressBook(), new UserPrefs());
-        expectedModel.addGroup(T09);
-        expectedModel.setActiveGroup(T09);
-        expectedModel.updateFilteredPersonList(Model.PREDICATE_SHOW_NO_PERSONS);
+        expectedModel.addGroup(T11);
+        expectedModel.showGroup(T11);
 
-        assertCommandSuccess(new InitCommand(T09), model,
-                String.format(InitCommand.MESSAGE_SUCCESS, T09), expectedModel);
+        assertCommandSuccess(new InitCommand(T11), model,
+                String.format(InitCommand.MESSAGE_SUCCESS, T11), expectedModel);
         assertTrue(model.getFilteredPersonList().isEmpty());
-        assertEquals(T09, model.getActiveGroup().orElseThrow());
+        assertEquals(T11, model.getActiveGroup().orElseThrow());
     }
 
     @Test
     public void execute_duplicateGroup_failure() {
         Model model = new ModelManager(getTypicalAddressBook(), new UserPrefs());
-        model.addGroup(T09);
-        model.setActiveGroup(T09);
+        model.addGroup(T11);
+        model.setActiveGroup(T11);
         int displayedPersonCount = model.getFilteredPersonList().size();
 
-        assertCommandFailure(new InitCommand(new Group("T09")), model,
-                String.format(InitCommand.MESSAGE_DUPLICATE_GROUP, T09));
-        assertEquals(T09, model.getActiveGroup().orElseThrow());
+        assertCommandFailure(new InitCommand(new Group("T11")), model,
+                String.format(InitCommand.MESSAGE_DUPLICATE_GROUP, T11));
+        assertEquals(T11, model.getActiveGroup().orElseThrow());
         assertEquals(displayedPersonCount, model.getFilteredPersonList().size());
     }
 
     @Test
     public void equals() {
-        InitCommand initT09 = new InitCommand(T09);
-        InitCommand initT09Copy = new InitCommand(new Group("T09"));
+        InitCommand initT11 = new InitCommand(T11);
+        InitCommand initT11Copy = new InitCommand(new Group("T11"));
         InitCommand initT10 = new InitCommand(new Group("T10"));
 
-        assertTrue(initT09.equals(initT09));
-        assertTrue(initT09.equals(initT09Copy));
-        assertFalse(initT09.equals(initT10));
-        assertFalse(initT09.equals(null));
+        assertTrue(initT11.equals(initT11));
+        assertTrue(initT11.equals(initT11Copy));
+        assertFalse(initT11.equals(initT10));
+        assertFalse(initT11.equals(null));
     }
 }

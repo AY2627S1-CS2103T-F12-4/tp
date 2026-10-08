@@ -350,3 +350,9 @@
     -fx-background-radius: 2;
     -fx-font-size: 11;
 }
+
+.attendance-cell {
+    -fx-padding: 3 6 3 6;
+    -fx-background-color: #293442;
+    -fx-background-radius: 3;
+}

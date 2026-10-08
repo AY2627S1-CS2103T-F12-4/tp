@@ -7,6 +7,8 @@ import static seedu.address.logic.Messages.MESSAGE_UNKNOWN_COMMAND;
 import static seedu.address.testutil.Assert.assertThrows;
 import static seedu.address.testutil.TypicalIndexes.INDEX_FIRST_PERSON;
 
+import java.util.List;
+
 import org.junit.jupiter.api.Test;
 
 import seedu.address.logic.commands.AddCommand;
@@ -19,8 +21,10 @@ import seedu.address.logic.commands.FindCommand;
 import seedu.address.logic.commands.HelpCommand;
 import seedu.address.logic.commands.InitCommand;
 import seedu.address.logic.commands.ListCommand;
+import seedu.address.logic.commands.MarkCommand;
 import seedu.address.logic.commands.SessionCommand;
 import seedu.address.logic.parser.exceptions.ParseException;
+import seedu.address.model.attendance.Status;
 import seedu.address.model.person.Group;
 import seedu.address.model.person.NameContainsQueryPredicate;
 import seedu.address.model.person.Person;
@@ -85,7 +89,22 @@ public class AddressBookParserTest {
     @Test
     public void parseCommand_list() throws Exception {
         assertTrue(parser.parseCommand(ListCommand.COMMAND_WORD) instanceof ListCommand);
-        assertTrue(parser.parseCommand(ListCommand.COMMAND_WORD + " 3") instanceof ListCommand);
+        assertTrue(parser.parseCommand("  list \t ") instanceof ListCommand);
+    }
+
+    @Test
+    public void parseCommand_listWithArguments_throwsParseException() {
+        String expectedMessage = String.format(MESSAGE_INVALID_COMMAND_FORMAT, ListCommand.MESSAGE_USAGE);
+        for (String arguments : List.of("3", "John", "n/John")) {
+            assertThrows(ParseException.class, expectedMessage, () -> parser.parseCommand("list " + arguments));
+        }
+    }
+
+    @Test
+    public void parseCommand_mark() throws Exception {
+        MarkCommand command = (MarkCommand) parser.parseCommand(MarkCommand.COMMAND_WORD + " "
+                + INDEX_FIRST_PERSON.getOneBased() + " w/5 s/absent");
+        assertEquals(new MarkCommand(INDEX_FIRST_PERSON, new Week(5), Status.ABSENT), command);
     }
 
     @Test

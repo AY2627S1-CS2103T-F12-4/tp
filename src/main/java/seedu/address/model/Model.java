@@ -4,6 +4,7 @@ import java.util.Comparator;
 import java.util.Optional;
 import java.util.function.Predicate;
 
+import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.collections.ObservableList;
 import seedu.address.commons.core.GuiSettings;
 import seedu.address.model.person.Group;
@@ -91,17 +92,26 @@ public interface Model {
     /** Returns an unmodifiable view of the tutorial sessions. */
     ObservableList<Session> getSessionList();
 
+    /** Selects a registered group and displays its students in matric order. */
+    void showGroup(Group group);
+
+    /** Returns the observable active group, or null for all groups. */
+    ReadOnlyObjectProperty<Group> activeGroupProperty();
+
+    /** Returns whether a group/week session already exists. */
+    boolean hasSession(Session session);
+
     /** Returns an unmodifiable view of the filtered person list */
     ObservableList<Person> getFilteredPersonList();
 
     /**
-     * Updates the filter of the filtered person list to filter by the given {@code predicate}.
+     * Updates the displayed filter, restores matric order, and clears the active group.
      * @throws NullPointerException if {@code predicate} is null.
      */
     void updateFilteredPersonList(Predicate<Person> predicate);
 
     /**
-     * Updates the displayed list's filter and order without changing the stored roster.
+     * Updates the displayed list's filter and order, clearing the active group without changing the stored roster.
      * A null comparator restores the roster's original order.
      * @throws NullPointerException if {@code predicate} is null.
      */

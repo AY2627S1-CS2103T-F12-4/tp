@@ -68,7 +68,7 @@ public class JsonAddressBookStorageTest {
     public void readAndSaveAddressBook_allInOrder_success() throws Exception {
         Path filePath = testFolder.resolve("TempAddressBook.json");
         AddressBook original = getTypicalAddressBook();
-        Group group = new Group("T09");
+        Group group = new Group("T11");
         original.addGroup(group);
         original.addSession(new Session(group, new Week(5), new SessionDate("2026-09-15")));
         JsonAddressBookStorage jsonAddressBookStorage = new JsonAddressBookStorage(filePath);

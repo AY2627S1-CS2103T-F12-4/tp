@@ -14,6 +14,7 @@ import static seedu.address.logic.commands.CommandTestUtil.showPersonAtIndex;
 import static seedu.address.testutil.TypicalIndexes.INDEX_FIRST_PERSON;
 import static seedu.address.testutil.TypicalIndexes.INDEX_SECOND_PERSON;
 import static seedu.address.testutil.TypicalPersons.getTypicalAddressBook;
+import static seedu.address.testutil.TypicalSessions.T09_WEEK_1;
 
 import org.junit.jupiter.api.Test;
 
@@ -24,6 +25,7 @@ import seedu.address.model.AddressBook;
 import seedu.address.model.Model;
 import seedu.address.model.ModelManager;
 import seedu.address.model.UserPrefs;
+import seedu.address.model.attendance.Status;
 import seedu.address.model.person.Person;
 import seedu.address.testutil.EditPersonDescriptorBuilder;
 import seedu.address.testutil.PersonBuilder;
@@ -36,8 +38,29 @@ public class EditCommandTest {
     private Model model = new ModelManager(getTypicalAddressBook(), new UserPrefs());
 
     @Test
+    public void execute_personWithAttendance_attendanceKept() {
+        Person alice = model.getFilteredPersonList().get(INDEX_FIRST_PERSON.getZeroBased());
+        Person alicePresent = new PersonBuilder(alice).withAttendance(T09_WEEK_1, Status.PRESENT).build();
+        model.setPerson(alice, alicePresent);
+
+        Person editedAlice = new PersonBuilder(alicePresent).withName(VALID_NAME_BOB).build();
+        EditCommand editCommand = new EditCommand(INDEX_FIRST_PERSON,
+                new EditPersonDescriptorBuilder().withName(VALID_NAME_BOB).build());
+
+        String expectedMessage = String.format(EditCommand.MESSAGE_EDIT_PERSON_SUCCESS, Messages.format(editedAlice));
+
+        Model expectedModel = new ModelManager(new AddressBook(model.getAddressBook()), new UserPrefs());
+        expectedModel.setPerson(alicePresent, editedAlice);
+
+        assertCommandSuccess(editCommand, model, expectedMessage, expectedModel);
+    }
+
+    @Test
     public void execute_allFieldsSpecifiedUnfilteredList_success() {
-        Person editedPerson = new PersonBuilder().build();
+        // The matriculation number and group are not editable, so the edited person keeps the original ones
+        Person firstPerson = model.getFilteredPersonList().get(INDEX_FIRST_PERSON.getZeroBased());
+        Person editedPerson = new PersonBuilder().withMatric(firstPerson.getMatric().value)
+                .withGroup(firstPerson.getGroup().value).build();
         EditPersonDescriptor descriptor = new EditPersonDescriptorBuilder(editedPerson).build();
         EditCommand editCommand = new EditCommand(INDEX_FIRST_PERSON, descriptor);
 
