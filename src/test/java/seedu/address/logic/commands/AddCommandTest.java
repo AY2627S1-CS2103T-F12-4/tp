@@ -24,6 +24,8 @@ import seedu.address.model.ReadOnlyAddressBook;
 import seedu.address.model.ReadOnlyUserPrefs;
 import seedu.address.model.group.Group;
 import seedu.address.model.person.Person;
+import seedu.address.model.session.Session;
+import seedu.address.model.session.Week;
 import seedu.address.testutil.PersonBuilder;
 
 public class AddCommandTest {
@@ -156,6 +158,21 @@ public class AddCommandTest {
 
         @Override
         public Optional<Group> getActiveGroup() {
+            throw new AssertionError("This method should not be called.");
+        }
+
+        @Override
+        public Optional<Session> getSession(Group group, Week week) {
+            throw new AssertionError("This method should not be called.");
+        }
+
+        @Override
+        public void addSession(Session session) {
+            throw new AssertionError("This method should not be called.");
+        }
+
+        @Override
+        public ObservableList<Session> getSessionList() {
             throw new AssertionError("This method should not be called.");
         }
 

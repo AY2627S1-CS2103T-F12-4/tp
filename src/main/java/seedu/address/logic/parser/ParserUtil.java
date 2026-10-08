@@ -14,6 +14,8 @@ import seedu.address.model.person.Address;
 import seedu.address.model.person.Email;
 import seedu.address.model.person.Name;
 import seedu.address.model.person.Phone;
+import seedu.address.model.session.SessionDate;
+import seedu.address.model.session.Week;
 import seedu.address.model.tag.Tag;
 
 /**
@@ -135,4 +137,32 @@ public class ParserUtil {
         return new Group(trimmedGroup);
     }
 
+    /**
+     * Parses a teaching week from 1 to 13.
+     */
+    public static Week parseWeek(String week) throws ParseException {
+        requireNonNull(week);
+        String trimmedWeek = week.trim();
+        try {
+            int weekNumber = Integer.parseInt(trimmedWeek);
+            if (!Week.isValidWeek(weekNumber)) {
+                throw new ParseException(Week.MESSAGE_CONSTRAINTS);
+            }
+            return new Week(weekNumber);
+        } catch (NumberFormatException e) {
+            throw new ParseException(Week.MESSAGE_CONSTRAINTS);
+        }
+    }
+
+    /**
+     * Parses a session date in YYYY-MM-DD format.
+     */
+    public static SessionDate parseSessionDate(String date) throws ParseException {
+        requireNonNull(date);
+        String trimmedDate = date.trim();
+        if (!SessionDate.isValidDate(trimmedDate)) {
+            throw new ParseException(SessionDate.MESSAGE_CONSTRAINTS);
+        }
+        return new SessionDate(trimmedDate);
+    }
 }
