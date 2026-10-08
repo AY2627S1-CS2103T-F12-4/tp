@@ -4,6 +4,7 @@ import static java.util.Objects.requireNonNull;
 
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Locale;
 import java.util.Set;
 
 import seedu.address.commons.core.index.Index;
@@ -97,20 +98,6 @@ public class ParserUtil {
         return new Matric(trimmedMatric);
     }
 
-    /**
-     * Parses a {@code String group} into a {@code Group}.
-     * Leading and trailing whitespaces will be trimmed.
-     *
-     * @throws ParseException if the given {@code group} is invalid.
-     */
-    public static Group parseGroup(String group) throws ParseException {
-        requireNonNull(group);
-        String trimmedGroup = group.trim();
-        if (!Group.isValidGroup(trimmedGroup)) {
-            throw new ParseException(Group.MESSAGE_CONSTRAINTS);
-        }
-        return new Group(trimmedGroup);
-    }
 
     /**
      * Parses a {@code String email} into an {@code Email}.
@@ -153,4 +140,19 @@ public class ParserUtil {
         }
         return tagSet;
     }
+
+    /**
+     * Parses and normalizes a tutorial group code.
+     *
+     * @throws ParseException if the given {@code group} is invalid.
+     */
+    public static Group parseGroup(String group) throws ParseException {
+        requireNonNull(group);
+        String normalizedGroup = group.trim().toUpperCase(Locale.ROOT);
+        if (!Group.isValidGroup(normalizedGroup)) {
+            throw new ParseException(Group.MESSAGE_CONSTRAINTS);
+        }
+        return new Group(normalizedGroup);
+    }
+
 }

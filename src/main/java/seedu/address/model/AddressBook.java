@@ -3,11 +3,15 @@ package seedu.address.model;
 import static java.util.Objects.requireNonNull;
 
 import java.util.List;
+import java.util.Objects;
 
+import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import seedu.address.commons.util.ToStringBuilder;
+import seedu.address.model.person.Group;
 import seedu.address.model.person.Person;
 import seedu.address.model.person.UniquePersonList;
+import seedu.address.model.person.exceptions.DuplicateGroupException;
 
 /**
  * Wraps all data at the address-book level.
@@ -16,6 +20,8 @@ import seedu.address.model.person.UniquePersonList;
 public class AddressBook implements ReadOnlyAddressBook {
 
     private final UniquePersonList persons = new UniquePersonList();
+    private final ObservableList<Group> groups = FXCollections.observableArrayList();
+    private final ObservableList<Group> unmodifiableGroups = FXCollections.unmodifiableObservableList(groups);
 
     public AddressBook() {}
 
@@ -38,12 +44,23 @@ public class AddressBook implements ReadOnlyAddressBook {
     }
 
     /**
+     * Replaces the registered tutorial groups.
+     */
+    public void setGroups(List<Group> groups) {
+        this.groups.clear();
+        for (Group group : groups) {
+            addGroup(group);
+        }
+    }
+
+    /**
      * Resets the existing data of this {@code AddressBook} with {@code newData}.
      */
     public void resetData(ReadOnlyAddressBook newData) {
         requireNonNull(newData);
 
         setPersons(newData.getPersonList());
+        setGroups(newData.getGroupList());
     }
 
     //// person-level operations
@@ -83,18 +100,45 @@ public class AddressBook implements ReadOnlyAddressBook {
         persons.remove(key);
     }
 
+    //// tutorial-group operations
+
+    /**
+     * Returns true if {@code group} is registered.
+     */
+    public boolean hasGroup(Group group) {
+        requireNonNull(group);
+        return groups.contains(group);
+    }
+
+    /**
+     * Registers a tutorial group.
+     */
+    public void addGroup(Group group) {
+        requireNonNull(group);
+        if (hasGroup(group)) {
+            throw new DuplicateGroupException();
+        }
+        groups.add(group);
+    }
+
     //// util methods
 
     @Override
     public String toString() {
         return new ToStringBuilder(this)
                 .add("persons", persons)
+                .add("groups", groups)
                 .toString();
     }
 
     @Override
     public ObservableList<Person> getPersonList() {
         return persons.asUnmodifiableObservableList();
+    }
+
+    @Override
+    public ObservableList<Group> getGroupList() {
+        return unmodifiableGroups;
     }
 
     @Override
@@ -108,11 +152,12 @@ public class AddressBook implements ReadOnlyAddressBook {
             return false;
         }
 
-        return persons.equals(otherAddressBook.persons);
+        return persons.equals(otherAddressBook.persons)
+                && groups.equals(otherAddressBook.groups);
     }
 
     @Override
     public int hashCode() {
-        return persons.hashCode();
+        return Objects.hash(persons, groups);
     }
 }
