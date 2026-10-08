@@ -5,7 +5,7 @@ import static seedu.address.commons.util.CollectionUtil.requireAllNonNull;
 import java.util.Objects;
 
 import seedu.address.commons.util.ToStringBuilder;
-import seedu.address.model.group.Group;
+import seedu.address.model.person.Group;
 
 /**
  * Represents a tutorial session, uniquely identified by its group and teaching week.

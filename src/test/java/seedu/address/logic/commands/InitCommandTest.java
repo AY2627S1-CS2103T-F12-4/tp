@@ -13,7 +13,7 @@ import org.junit.jupiter.api.Test;
 import seedu.address.model.Model;
 import seedu.address.model.ModelManager;
 import seedu.address.model.UserPrefs;
-import seedu.address.model.group.Group;
+import seedu.address.model.person.Group;
 
 public class InitCommandTest {
 
@@ -45,7 +45,7 @@ public class InitCommandTest {
         model.setActiveGroup(T09);
         int displayedPersonCount = model.getFilteredPersonList().size();
 
-        assertCommandFailure(new InitCommand(new Group("t09")), model,
+        assertCommandFailure(new InitCommand(new Group("T09")), model,
                 String.format(InitCommand.MESSAGE_DUPLICATE_GROUP, T09));
         assertEquals(T09, model.getActiveGroup().orElseThrow());
         assertEquals(displayedPersonCount, model.getFilteredPersonList().size());
@@ -54,7 +54,7 @@ public class InitCommandTest {
     @Test
     public void equals() {
         InitCommand initT09 = new InitCommand(T09);
-        InitCommand initT09Copy = new InitCommand(new Group("t09"));
+        InitCommand initT09Copy = new InitCommand(new Group("T09"));
         InitCommand initT10 = new InitCommand(new Group("T10"));
 
         assertTrue(initT09.equals(initT09));

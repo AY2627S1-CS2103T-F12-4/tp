@@ -11,7 +11,7 @@ import org.junit.jupiter.api.Test;
 
 import seedu.address.model.Model;
 import seedu.address.model.ModelManager;
-import seedu.address.model.group.Group;
+import seedu.address.model.person.Group;
 import seedu.address.model.session.Session;
 import seedu.address.model.session.SessionDate;
 import seedu.address.model.session.Week;
@@ -78,7 +78,7 @@ public class SessionCommandTest {
     public void equals() {
         SessionCommand weekFive = new SessionCommand(WEEK_FIVE);
         SessionCommand weekFiveCopy = new SessionCommand(
-                new Session(new Group("t09"), new Week(5), new SessionDate("2026-09-15")));
+                new Session(new Group("T09"), new Week(5), new SessionDate("2026-09-15")));
         SessionCommand weekSix = new SessionCommand(
                 new Session(T09, new Week(6), new SessionDate("2026-09-22")));
 

@@ -9,7 +9,7 @@ import org.junit.jupiter.api.Test;
 
 import seedu.address.logic.Messages;
 import seedu.address.logic.commands.InitCommand;
-import seedu.address.model.group.Group;
+import seedu.address.model.person.Group;
 
 public class InitCommandParserTest {
 

@@ -10,7 +10,7 @@ import java.util.Optional;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import seedu.address.model.group.Group;
+import seedu.address.model.person.Group;
 import seedu.address.model.session.exceptions.DuplicateSessionException;
 
 /**

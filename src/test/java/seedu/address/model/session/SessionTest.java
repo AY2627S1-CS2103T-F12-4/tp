@@ -5,7 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.Test;
 
-import seedu.address.model.group.Group;
+import seedu.address.model.person.Group;
 
 public class SessionTest {
 

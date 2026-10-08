@@ -3,15 +3,16 @@ package seedu.address.model;
 import static java.util.Objects.requireNonNull;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import seedu.address.commons.util.ToStringBuilder;
-import seedu.address.model.group.Group;
-import seedu.address.model.group.exceptions.DuplicateGroupException;
+import seedu.address.model.person.Group;
 import seedu.address.model.person.Person;
 import seedu.address.model.person.UniquePersonList;
+import seedu.address.model.person.exceptions.DuplicateGroupException;
 import seedu.address.model.session.Session;
 import seedu.address.model.session.UniqueSessionList;
 import seedu.address.model.session.Week;
@@ -206,6 +207,6 @@ public class AddressBook implements ReadOnlyAddressBook {
 
     @Override
     public int hashCode() {
-        return java.util.Objects.hash(persons, groups, sessions);
+        return Objects.hash(persons, groups, sessions);
     }
 }

@@ -16,8 +16,9 @@ import org.junit.jupiter.api.Test;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import seedu.address.model.group.Group;
+import seedu.address.model.person.Group;
 import seedu.address.model.person.Person;
+import seedu.address.model.person.exceptions.DuplicateGroupException;
 import seedu.address.model.person.exceptions.DuplicatePersonException;
 import seedu.address.model.session.Session;
 import seedu.address.model.session.SessionDate;
@@ -85,8 +86,8 @@ public class AddressBookTest {
         Group group = new Group("T09");
         addressBook.addGroup(group);
 
-        assertThrows(seedu.address.model.group.exceptions.DuplicateGroupException.class, () ->
-                addressBook.addGroup(new Group("t09")));
+        assertThrows(DuplicateGroupException.class, () ->
+                addressBook.addGroup(new Group("T09")));
     }
 
     @Test

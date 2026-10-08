@@ -24,7 +24,7 @@ import seedu.address.logic.commands.InitCommand;
 import seedu.address.logic.commands.ListCommand;
 import seedu.address.logic.commands.SessionCommand;
 import seedu.address.logic.parser.exceptions.ParseException;
-import seedu.address.model.group.Group;
+import seedu.address.model.person.Group;
 import seedu.address.model.person.NameContainsKeywordsPredicate;
 import seedu.address.model.person.Person;
 import seedu.address.model.session.Session;

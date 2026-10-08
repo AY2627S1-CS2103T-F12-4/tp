@@ -4,14 +4,15 @@ import static java.util.Objects.requireNonNull;
 
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Locale;
 import java.util.Set;
 
 import seedu.address.commons.core.index.Index;
 import seedu.address.commons.util.StringUtil;
 import seedu.address.logic.parser.exceptions.ParseException;
-import seedu.address.model.group.Group;
 import seedu.address.model.person.Address;
 import seedu.address.model.person.Email;
+import seedu.address.model.person.Group;
 import seedu.address.model.person.Name;
 import seedu.address.model.person.Phone;
 import seedu.address.model.session.SessionDate;
@@ -127,14 +128,16 @@ public class ParserUtil {
 
     /**
      * Parses and normalizes a tutorial group code.
+     *
+     * @throws ParseException if the given {@code group} is invalid.
      */
     public static Group parseGroup(String group) throws ParseException {
         requireNonNull(group);
-        String trimmedGroup = group.trim();
-        if (!Group.isValidGroup(trimmedGroup)) {
+        String normalizedGroup = group.trim().toUpperCase(Locale.ROOT);
+        if (!Group.isValidGroup(normalizedGroup)) {
             throw new ParseException(Group.MESSAGE_CONSTRAINTS);
         }
-        return new Group(trimmedGroup);
+        return new Group(normalizedGroup);
     }
 
     /**

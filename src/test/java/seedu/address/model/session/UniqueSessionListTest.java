@@ -8,7 +8,7 @@ import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
-import seedu.address.model.group.Group;
+import seedu.address.model.person.Group;
 import seedu.address.model.session.exceptions.DuplicateSessionException;
 
 public class UniqueSessionListTest {
