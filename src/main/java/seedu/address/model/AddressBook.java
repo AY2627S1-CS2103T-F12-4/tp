@@ -4,6 +4,7 @@ import static java.util.Objects.requireNonNull;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -12,6 +13,9 @@ import seedu.address.model.person.Group;
 import seedu.address.model.person.Person;
 import seedu.address.model.person.UniquePersonList;
 import seedu.address.model.person.exceptions.DuplicateGroupException;
+import seedu.address.model.session.Session;
+import seedu.address.model.session.UniqueSessionList;
+import seedu.address.model.session.Week;
 
 /**
  * Wraps all data at the address-book level.
@@ -21,7 +25,9 @@ public class AddressBook implements ReadOnlyAddressBook {
 
     private final UniquePersonList persons = new UniquePersonList();
     private final ObservableList<Group> groups = FXCollections.observableArrayList();
-    private final ObservableList<Group> unmodifiableGroups = FXCollections.unmodifiableObservableList(groups);
+    private final UniqueSessionList sessions = new UniqueSessionList();
+    private final ObservableList<Group> unmodifiableGroups =
+            FXCollections.unmodifiableObservableList(groups);
 
     public AddressBook() {}
 
@@ -54,6 +60,13 @@ public class AddressBook implements ReadOnlyAddressBook {
     }
 
     /**
+     * Replaces the tutorial sessions.
+     */
+    public void setSessions(List<Session> sessions) {
+        this.sessions.setSessions(sessions);
+    }
+
+    /**
      * Resets the existing data of this {@code AddressBook} with {@code newData}.
      */
     public void resetData(ReadOnlyAddressBook newData) {
@@ -61,6 +74,7 @@ public class AddressBook implements ReadOnlyAddressBook {
 
         setPersons(newData.getPersonList());
         setGroups(newData.getGroupList());
+        setSessions(newData.getSessionList());
     }
 
     //// person-level operations
@@ -121,6 +135,34 @@ public class AddressBook implements ReadOnlyAddressBook {
         groups.add(group);
     }
 
+    //// session operations
+
+    /**
+     * Returns the session for {@code group} and {@code week}, if it exists.
+     */
+    public Optional<Session> findSession(Group group, Week week) {
+        return sessions.find(group, week);
+    }
+
+    /**
+     * Returns true if a session with the same group and week exists.
+     */
+    public boolean hasSession(Session session) {
+        requireNonNull(session);
+        return sessions.contains(session);
+    }
+
+    /**
+     * Adds a tutorial session and maintains group/week display order.
+     */
+    public void addSession(Session session) {
+        requireNonNull(session);
+        if (!hasGroup(session.getGroup())) {
+            throw new IllegalArgumentException("Session tutorial group must be registered");
+        }
+        sessions.add(session);
+    }
+
     //// util methods
 
     @Override
@@ -128,6 +170,7 @@ public class AddressBook implements ReadOnlyAddressBook {
         return new ToStringBuilder(this)
                 .add("persons", persons)
                 .add("groups", groups)
+                .add("sessions", sessions)
                 .toString();
     }
 
@@ -142,6 +185,11 @@ public class AddressBook implements ReadOnlyAddressBook {
     }
 
     @Override
+    public ObservableList<Session> getSessionList() {
+        return sessions.asUnmodifiableObservableList();
+    }
+
+    @Override
     public boolean equals(Object other) {
         if (other == this) {
             return true;
@@ -153,11 +201,12 @@ public class AddressBook implements ReadOnlyAddressBook {
         }
 
         return persons.equals(otherAddressBook.persons)
-                && groups.equals(otherAddressBook.groups);
+                && groups.equals(otherAddressBook.groups)
+                && sessions.equals(otherAddressBook.sessions);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(persons, groups);
+        return Objects.hash(persons, groups, sessions);
     }
 }

@@ -8,6 +8,8 @@ import javafx.collections.ObservableList;
 import seedu.address.commons.core.GuiSettings;
 import seedu.address.model.person.Group;
 import seedu.address.model.person.Person;
+import seedu.address.model.session.Session;
+import seedu.address.model.session.Week;
 
 /**
  * The API of the Model component.
@@ -79,6 +81,15 @@ public interface Model {
 
     /** Returns the active tutorial group, if any. */
     Optional<Group> getActiveGroup();
+
+    /** Returns the session for a tutorial group and week, if it exists. */
+    Optional<Session> findSession(Group group, Week week);
+
+    /** Adds a tutorial session. */
+    void addSession(Session session);
+
+    /** Returns an unmodifiable view of the tutorial sessions. */
+    ObservableList<Session> getSessionList();
 
     /** Returns an unmodifiable view of the filtered person list */
     ObservableList<Person> getFilteredPersonList();

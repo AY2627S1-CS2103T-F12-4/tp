@@ -13,6 +13,7 @@ import seedu.address.model.AddressBook;
 import seedu.address.model.ReadOnlyAddressBook;
 import seedu.address.model.person.Group;
 import seedu.address.model.person.Person;
+import seedu.address.model.session.Session;
 
 /**
  * An Immutable AddressBook that is serializable to JSON format.
@@ -22,21 +23,29 @@ class JsonSerializableAddressBook {
 
     public static final String MESSAGE_DUPLICATE_PERSON = "Persons list contains duplicate person(s).";
     public static final String MESSAGE_DUPLICATE_GROUP = "Tutorial groups list contains duplicate group(s).";
+    public static final String MESSAGE_DUPLICATE_SESSION = "Sessions list contains duplicate session(s).";
+    public static final String MESSAGE_SESSION_GROUP_NOT_FOUND =
+            "A session refers to a tutorial group that is not registered.";
 
     private final List<JsonAdaptedPerson> persons = new ArrayList<>();
     private final List<String> groups = new ArrayList<>();
+    private final List<JsonAdaptedSession> sessions = new ArrayList<>();
 
     /**
      * Constructs a {@code JsonSerializableAddressBook} with the given persons.
      */
     @JsonCreator
     public JsonSerializableAddressBook(@JsonProperty("persons") List<JsonAdaptedPerson> persons,
-            @JsonProperty("groups") List<String> groups) {
+            @JsonProperty("groups") List<String> groups,
+            @JsonProperty("sessions") List<JsonAdaptedSession> sessions) {
         if (persons != null) {
             this.persons.addAll(persons);
         }
         if (groups != null) {
             this.groups.addAll(groups);
+        }
+        if (sessions != null) {
+            this.sessions.addAll(sessions);
         }
     }
 
@@ -48,6 +57,7 @@ class JsonSerializableAddressBook {
     public JsonSerializableAddressBook(ReadOnlyAddressBook source) {
         persons.addAll(source.getPersonList().stream().map(JsonAdaptedPerson::new).collect(Collectors.toList()));
         groups.addAll(source.getGroupList().stream().map(Group::toString).collect(Collectors.toList()));
+        sessions.addAll(source.getSessionList().stream().map(JsonAdaptedSession::new).collect(Collectors.toList()));
     }
 
     /**
@@ -66,6 +76,16 @@ class JsonSerializableAddressBook {
                 throw new IllegalValueException(MESSAGE_DUPLICATE_GROUP);
             }
             addressBook.addGroup(group);
+        }
+        for (JsonAdaptedSession jsonAdaptedSession : sessions) {
+            Session session = jsonAdaptedSession.toModelType();
+            if (!addressBook.hasGroup(session.getGroup())) {
+                throw new IllegalValueException(MESSAGE_SESSION_GROUP_NOT_FOUND);
+            }
+            if (addressBook.hasSession(session)) {
+                throw new IllegalValueException(MESSAGE_DUPLICATE_SESSION);
+            }
+            addressBook.addSession(session);
         }
         for (JsonAdaptedPerson jsonAdaptedPerson : persons) {
             Person person = jsonAdaptedPerson.toModelType();

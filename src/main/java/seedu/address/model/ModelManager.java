@@ -16,6 +16,8 @@ import seedu.address.commons.core.GuiSettings;
 import seedu.address.commons.core.LogsCenter;
 import seedu.address.model.person.Group;
 import seedu.address.model.person.Person;
+import seedu.address.model.session.Session;
+import seedu.address.model.session.Week;
 
 /**
  * Represents the in-memory model of the address book data.
@@ -102,7 +104,7 @@ public class ModelManager implements Model {
         addressBook.setPerson(target, editedPerson);
     }
 
-    //=========== Tutorial Groups ============================================================================
+    //=========== Tutorial Groups and Sessions ===============================================================
 
     @Override
     public boolean hasGroup(Group group) {
@@ -132,6 +134,22 @@ public class ModelManager implements Model {
     @Override
     public Optional<Group> getActiveGroup() {
         return Optional.ofNullable(activeGroup);
+    }
+
+    @Override
+    public Optional<Session> findSession(Group group, Week week) {
+        return addressBook.findSession(group, week);
+    }
+
+    @Override
+    public void addSession(Session session) {
+        requireNonNull(session);
+        addressBook.addSession(session);
+    }
+
+    @Override
+    public ObservableList<Session> getSessionList() {
+        return addressBook.getSessionList();
     }
 
     //=========== Filtered Person List Accessors =============================================================

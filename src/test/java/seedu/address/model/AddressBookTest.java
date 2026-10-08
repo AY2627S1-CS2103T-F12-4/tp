@@ -20,6 +20,9 @@ import seedu.address.model.person.Group;
 import seedu.address.model.person.Person;
 import seedu.address.model.person.exceptions.DuplicateGroupException;
 import seedu.address.model.person.exceptions.DuplicatePersonException;
+import seedu.address.model.session.Session;
+import seedu.address.model.session.SessionDate;
+import seedu.address.model.session.Week;
 import seedu.address.testutil.PersonBuilder;
 
 public class AddressBookTest {
@@ -88,6 +91,29 @@ public class AddressBookTest {
     }
 
     @Test
+    public void addSession_sameGroupAndWeek_throwsDuplicateSessionException() {
+        Group group = new Group("T09");
+        addressBook.addGroup(group);
+        addressBook.addSession(new Session(group, new Week(5), new SessionDate("2026-09-15")));
+
+        assertThrows(seedu.address.model.session.exceptions.DuplicateSessionException.class, () ->
+                addressBook.addSession(new Session(group, new Week(5), new SessionDate("2026-09-16"))));
+    }
+
+    @Test
+    public void addSession_outOfOrder_sortsByWeek() {
+        Group group = new Group("T09");
+        Session weekFive = new Session(group, new Week(5), new SessionDate("2026-09-15"));
+        Session weekSix = new Session(group, new Week(6), new SessionDate("2026-09-22"));
+
+        addressBook.addGroup(group);
+        addressBook.addSession(weekSix);
+        addressBook.addSession(weekFive);
+
+        assertEquals(List.of(weekFive, weekSix), addressBook.getSessionList());
+    }
+
+    @Test
     public void getPersonList_modifyList_throwsUnsupportedOperationException() {
         assertThrows(UnsupportedOperationException.class, () -> addressBook.getPersonList().remove(0));
     }
@@ -95,7 +121,7 @@ public class AddressBookTest {
     @Test
     public void toStringMethod() {
         String expected = AddressBook.class.getCanonicalName() + "{persons=" + addressBook.getPersonList()
-                + ", groups=[]}";
+                + ", groups=[], sessions=[]}";
         assertEquals(expected, addressBook.toString());
     }
 
@@ -119,6 +145,10 @@ public class AddressBookTest {
             return FXCollections.emptyObservableList();
         }
 
+        @Override
+        public ObservableList<Session> getSessionList() {
+            return FXCollections.emptyObservableList();
+        }
     }
 
 }
