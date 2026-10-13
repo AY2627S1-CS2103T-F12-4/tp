@@ -160,6 +160,33 @@ public class EditCommandTest {
     }
 
     @Test
+    public void execute_emailOfAnotherStudent_failure() {
+        // emails are compared ignoring case
+        String secondPersonEmail = model.getFilteredPersonList().get(INDEX_SECOND_PERSON.getZeroBased())
+                .getEmail().value.toUpperCase();
+        EditCommand editCommand = new EditCommand(INDEX_FIRST_PERSON,
+                new EditPersonDescriptorBuilder().withEmail(secondPersonEmail).build());
+
+        assertCommandFailure(editCommand, model, String.format(AddCommand.MESSAGE_DUPLICATE_EMAIL, secondPersonEmail));
+    }
+
+    @Test
+    public void execute_ownEmailInDifferentCase_success() {
+        Person firstPerson = model.getFilteredPersonList().get(INDEX_FIRST_PERSON.getZeroBased());
+        String upperCaseEmail = firstPerson.getEmail().value.toUpperCase();
+        Person editedPerson = new PersonBuilder(firstPerson).withEmail(upperCaseEmail).build();
+        EditCommand editCommand = new EditCommand(INDEX_FIRST_PERSON,
+                new EditPersonDescriptorBuilder().withEmail(upperCaseEmail).build());
+
+        String expectedMessage = String.format(EditCommand.MESSAGE_EDIT_PERSON_SUCCESS, Messages.format(editedPerson));
+
+        Model expectedModel = new ModelManager(new AddressBook(model.getAddressBook()), new UserPrefs());
+        expectedModel.setPerson(firstPerson, editedPerson);
+
+        assertCommandSuccess(editCommand, model, expectedMessage, expectedModel);
+    }
+
+    @Test
     public void execute_invalidPersonIndexUnfilteredList_failure() {
         Index outOfBoundIndex = Index.fromOneBased(model.getFilteredPersonList().size() + 1);
         EditPersonDescriptor descriptor = new EditPersonDescriptorBuilder().withName(VALID_NAME_BOB).build();

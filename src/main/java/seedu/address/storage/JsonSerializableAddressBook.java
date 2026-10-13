@@ -24,6 +24,7 @@ import seedu.address.model.session.Session;
 class JsonSerializableAddressBook {
 
     public static final String MESSAGE_DUPLICATE_PERSON = "Persons list contains duplicate person(s).";
+    public static final String MESSAGE_DUPLICATE_EMAIL = "Persons list contains duplicate email(s).";
     public static final String MESSAGE_DUPLICATE_GROUP = "Tutorial groups list contains duplicate group(s).";
     public static final String MESSAGE_DUPLICATE_SESSION = "Sessions list contains duplicate session(s).";
     public static final String MESSAGE_SESSION_GROUP_NOT_FOUND =
@@ -95,6 +96,9 @@ class JsonSerializableAddressBook {
             Person person = jsonAdaptedPerson.toModelType();
             if (addressBook.hasPerson(person)) {
                 throw new IllegalValueException(MESSAGE_DUPLICATE_PERSON);
+            }
+            if (addressBook.getPersonList().stream().anyMatch(person::hasSameEmail)) {
+                throw new IllegalValueException(MESSAGE_DUPLICATE_EMAIL);
             }
             if (!areSessionsStored(person, addressBook)) {
                 throw new IllegalValueException(MESSAGE_UNKNOWN_SESSION);

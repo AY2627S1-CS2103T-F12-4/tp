@@ -157,6 +157,16 @@ public class Person {
     }
 
     /**
+     * Returns true if both persons have the same email, ignoring case.
+     * Each student has their own email, and emails are not case-sensitive in practice,
+     * so two students must not have emails that differ only in case.
+     */
+    public boolean hasSameEmail(Person otherPerson) {
+        return otherPerson != null
+                && otherPerson.getEmail().value.equalsIgnoreCase(getEmail().value);
+    }
+
+    /**
      * Returns true if both persons have the same identity and data fields.
      * This defines a stronger notion of equality between two persons.
      */
