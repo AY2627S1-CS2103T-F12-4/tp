@@ -178,6 +178,49 @@ public class AddCommandParserTest {
     }
 
     @Test
+    public void parse_supportedNamesAndWhitespace_success() {
+        for (String name : new String[]{"O'Neil", "Anne-Marie", "A", "A".repeat(70)}) {
+            Person expectedPerson = new PersonBuilder(BOB).withName(name).withTags().build();
+            assertParseSuccess(parser, " n/" + name + PHONE_DESC_BOB + EMAIL_DESC_BOB + ADDRESS_DESC_BOB
+                    + MATRIC_DESC_BOB + GROUP_DESC_BOB, new AddCommand(expectedPerson));
+        }
+
+        Person expectedPerson = new PersonBuilder(BOB).withName("Alex Tan").withTags().build();
+        assertParseSuccess(parser, " n/  Alex \t\u2003 Tan  " + PHONE_DESC_BOB + EMAIL_DESC_BOB + ADDRESS_DESC_BOB
+                + MATRIC_DESC_BOB + GROUP_DESC_BOB, new AddCommand(expectedPerson));
+    }
+
+    @Test
+    public void parse_invalidNames_failure() {
+        for (String name : new String[]{"123", "Alex2", "'Alex", "Alex-", "A".repeat(71)}) {
+            assertParseFailure(parser, " n/" + name + PHONE_DESC_BOB + EMAIL_DESC_BOB + ADDRESS_DESC_BOB
+                    + MATRIC_DESC_BOB + GROUP_DESC_BOB, Name.MESSAGE_CONSTRAINTS);
+        }
+    }
+
+    @Test
+    public void parse_unknownParameter_failure() {
+        String validArgs = NAME_DESC_BOB + PHONE_DESC_BOB + EMAIL_DESC_BOB + ADDRESS_DESC_BOB
+                + MATRIC_DESC_BOB + GROUP_DESC_BOB;
+        assertParseFailure(parser, " x/ignored" + validArgs, AddCommand.MESSAGE_UNKNOWN_PARAMETER);
+        assertParseFailure(parser, validArgs + " x/ignored", AddCommand.MESSAGE_UNKNOWN_PARAMETER);
+
+        for (String prefix : new String[]{"x/", "extra/", "x1/", "bad_param/", "N/"}) {
+            assertParseFailure(parser, NAME_DESC_BOB + PHONE_DESC_BOB + EMAIL_DESC_BOB + ADDRESS_DESC_BOB
+                    + " " + prefix + "ignored" + MATRIC_DESC_BOB + GROUP_DESC_BOB,
+                    AddCommand.MESSAGE_UNKNOWN_PARAMETER);
+        }
+    }
+
+    @Test
+    public void parse_slashesInsideAddress_success() {
+        Person expectedPerson = new PersonBuilder(BOB).withAddress("Block 12 #01/02, 1/2 Street").withTags().build();
+        assertParseSuccess(parser, NAME_DESC_BOB + PHONE_DESC_BOB + EMAIL_DESC_BOB
+                + " a/Block 12 #01/02, 1/2 Street" + MATRIC_DESC_BOB + GROUP_DESC_BOB,
+                new AddCommand(expectedPerson));
+    }
+
+    @Test
     public void parse_compulsoryFieldMissing_failure() {
         String expectedMessage = String.format(MESSAGE_INVALID_COMMAND_FORMAT, AddCommand.MESSAGE_USAGE);
 

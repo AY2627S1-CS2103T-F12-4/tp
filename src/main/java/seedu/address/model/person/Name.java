@@ -9,35 +9,37 @@ import static seedu.address.commons.util.AppUtil.checkArgument;
  */
 public class Name {
 
-    public static final String MESSAGE_CONSTRAINTS =
-            "Names should only contain alphanumeric characters and spaces, and should not be blank";
+    public static final String MESSAGE_CONSTRAINTS = "Names must be 1-70 characters, contain only letters, "
+            + "spaces, apostrophes or hyphens, and begin and end with a letter.";
 
-    /*
-     * The first character of the name must not be a whitespace,
-     * otherwise " " (a blank string) becomes a valid input.
-     */
-    public static final String VALIDATION_REGEX = "[\\p{Alnum}][\\p{Alnum} ]*";
+    public static final String VALIDATION_REGEX = "\\p{L}(?:[\\p{L} '\u2019-]*\\p{L})?";
 
     public final String fullName;
 
     /**
-     * Constructs a {@code Name}.
+     * Constructs a {@code Name}, trimming and collapsing whitespace.
      *
      * @param name A valid name.
      */
     public Name(String name) {
         requireNonNull(name);
-        checkArgument(isValidName(name), MESSAGE_CONSTRAINTS);
-        fullName = name;
+        String normalizedName = normalizeWhitespace(name);
+        checkArgument(isValidName(normalizedName), MESSAGE_CONSTRAINTS);
+        fullName = normalizedName;
     }
 
     /**
-     * Returns true if a given string is a valid name.
+     * Returns true if a given string is a valid name after whitespace normalization.
      */
     public static boolean isValidName(String test) {
-        return test.matches(VALIDATION_REGEX);
+        String normalizedName = normalizeWhitespace(test);
+        return normalizedName.codePointCount(0, normalizedName.length()) <= 70
+                && normalizedName.matches(VALIDATION_REGEX);
     }
 
+    private static String normalizeWhitespace(String name) {
+        return name.replaceAll("(?U)\\s+", " ").strip();
+    }
 
     @Override
     public String toString() {

@@ -51,6 +51,15 @@ public class JsonAdaptedPersonTest {
     }
 
     @Test
+    public void toModelType_nameWithPunctuationAndWhitespace_returnsNormalizedPerson() throws Exception {
+        JsonAdaptedPerson person = new JsonAdaptedPerson("  Anne-Marie  O'Neil  ", VALID_PHONE, VALID_EMAIL,
+                VALID_ADDRESS, VALID_MATRIC, VALID_GROUP, VALID_TAGS, List.of());
+        Person expected = new PersonBuilder(BENSON).withName("Anne-Marie O'Neil").build();
+        assertEquals(expected, person.toModelType());
+        assertEquals(expected, new JsonAdaptedPerson(expected).toModelType());
+    }
+
+    @Test
     public void toModelType_invalidName_throwsIllegalValueException() {
         JsonAdaptedPerson person =
                 new JsonAdaptedPerson(INVALID_NAME, VALID_PHONE, VALID_EMAIL, VALID_ADDRESS,

@@ -10,6 +10,8 @@ import static seedu.address.logic.parser.CliSyntax.PREFIX_PHONE;
 import static seedu.address.logic.parser.CliSyntax.PREFIX_TAG;
 
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 import seedu.address.logic.commands.AddCommand;
@@ -27,6 +29,11 @@ import seedu.address.model.tag.Tag;
  * Parses input arguments and creates a new AddCommand object
  */
 public class AddCommandParser implements Parser<AddCommand> {
+    private static final Pattern PREFIX_PATTERN =
+            Pattern.compile("(?<!\\S)([\\p{L}][\\p{L}\\p{N}_-]*/)", Pattern.UNICODE_CHARACTER_CLASS);
+    private static final Set<String> SUPPORTED_PREFIXES = Set.of(PREFIX_NAME.getPrefix(), PREFIX_PHONE.getPrefix(),
+            PREFIX_EMAIL.getPrefix(), PREFIX_ADDRESS.getPrefix(), PREFIX_MATRIC.getPrefix(),
+            PREFIX_GROUP.getPrefix(), PREFIX_TAG.getPrefix());
 
     /**
      * Parses the given {@code String} of arguments in the context of the AddCommand
@@ -34,6 +41,13 @@ public class AddCommandParser implements Parser<AddCommand> {
      * @throws ParseException if the user input does not conform to the expected format
      */
     public AddCommand parse(String args) throws ParseException {
+        Matcher prefixMatcher = PREFIX_PATTERN.matcher(args);
+        while (prefixMatcher.find()) {
+            if (!SUPPORTED_PREFIXES.contains(prefixMatcher.group())) {
+                throw new ParseException(AddCommand.MESSAGE_UNKNOWN_PARAMETER);
+            }
+        }
+
         ArgumentMultimap argMultimap = ArgumentTokenizer.tokenize(args, PREFIX_NAME, PREFIX_PHONE, PREFIX_EMAIL,
                 PREFIX_ADDRESS, PREFIX_MATRIC, PREFIX_GROUP, PREFIX_TAG);
 

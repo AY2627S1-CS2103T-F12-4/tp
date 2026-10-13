@@ -45,6 +45,8 @@ public class AddCommand extends Command {
             "A student with matriculation number %1$s already exists.";
     public static final String MESSAGE_UNKNOWN_GROUP =
             "Tutorial group %1$s does not exist. Create it first with the init command.";
+    public static final String MESSAGE_UNKNOWN_PARAMETER =
+            "Unexpected input. Use only: n/, p/, e/, a/, m/, grp/ and t/.";
 
     private final Person toAdd;
 
