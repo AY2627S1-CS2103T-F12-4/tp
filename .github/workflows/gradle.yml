@@ -29,7 +29,13 @@ jobs:
           java-package: jdk+fx
 
       - name: Build and check with Gradle
+        if: runner.os != 'Linux'
         run: ./gradlew check coverage
+
+      # Linux runners have no display, which the UI tests need to start JavaFX
+      - name: Build and check with Gradle, with a virtual display
+        if: runner.os == 'Linux'
+        run: xvfb-run --auto-servernum ./gradlew check coverage
 
       - name: Upload coverage reports to Codecov
         if: runner.os == 'Linux'
