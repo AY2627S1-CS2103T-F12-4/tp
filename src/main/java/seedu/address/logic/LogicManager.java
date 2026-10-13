@@ -15,6 +15,7 @@ import seedu.address.logic.parser.exceptions.ParseException;
 import seedu.address.model.Model;
 import seedu.address.model.person.Group;
 import seedu.address.model.person.Person;
+import seedu.address.model.session.Session;
 import seedu.address.storage.Storage;
 
 /**
@@ -68,6 +69,11 @@ public class LogicManager implements Logic {
     @Override
     public ObservableList<Group> getGroupList() {
         return model.getGroupList();
+    }
+
+    @Override
+    public ObservableList<Session> getSessionList() {
+        return model.getSessionList();
     }
 
     @Override

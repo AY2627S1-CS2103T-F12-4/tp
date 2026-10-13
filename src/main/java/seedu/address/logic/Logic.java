@@ -7,6 +7,7 @@ import seedu.address.logic.commands.exceptions.CommandException;
 import seedu.address.logic.parser.exceptions.ParseException;
 import seedu.address.model.person.Group;
 import seedu.address.model.person.Person;
+import seedu.address.model.session.Session;
 
 /**
  * API of the Logic component
@@ -26,6 +27,9 @@ public interface Logic {
 
     /** Returns the registered tutorial groups. */
     ObservableList<Group> getGroupList();
+
+    /** Returns the sessions of all tutorial groups. */
+    ObservableList<Session> getSessionList();
 
     /**
      * Returns the user prefs' GUI settings.

@@ -350,3 +350,28 @@
     -fx-background-radius: 2;
     -fx-font-size: 11;
 }
+
+#attendances {
+    -fx-hgap: 5;
+    -fx-vgap: 3;
+    -fx-padding: 3 0 0 0;
+}
+
+#attendances .label {
+    -fx-text-fill: white;
+    -fx-padding: 1 4 1 4;
+    -fx-background-radius: 2;
+    -fx-font-size: 11;
+}
+
+#attendances .attendance_present {
+    -fx-background-color: #2e7d32;
+}
+
+#attendances .attendance_absent {
+    -fx-background-color: #c62828;
+}
+
+#attendances .attendance_unmarked {
+    -fx-background-color: #616161;
+}
