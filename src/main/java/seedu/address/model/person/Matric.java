@@ -4,17 +4,14 @@ import static java.util.Objects.requireNonNull;
 import static seedu.address.commons.util.AppUtil.checkArgument;
 
 /**
- * Represents a Person's matriculation number in the address book.
+ * Represents a Student's matriculation number in the address book.
  * Guarantees: immutable; is valid as declared in {@link #isValidMatric(String)}
  */
 public class Matric {
 
     public static final String MESSAGE_CONSTRAINTS =
-            "Matriculation numbers should be the letter A, followed by 7 digits and 1 letter, e.g. A0287654J.";
-
-    /*
-     * Letters are expected in uppercase: user input is converted to uppercase before it is validated.
-     */
+            "Matriculation numbers should start with A, followed by seven digits and one final letter, "
+                    + "e.g. A0123456X";
     public static final String VALIDATION_REGEX = "A\\d{7}[A-Z]";
 
     public final String value;
@@ -22,7 +19,7 @@ public class Matric {
     /**
      * Constructs a {@code Matric}.
      *
-     * @param matric A valid matriculation number.
+     * @param matric A valid, normalized matriculation number.
      */
     public Matric(String matric) {
         requireNonNull(matric);
@@ -31,10 +28,10 @@ public class Matric {
     }
 
     /**
-     * Returns true if a given string is a valid matriculation number.
+     * Returns true if {@code test} is a valid normalized matriculation number.
      */
     public static boolean isValidMatric(String test) {
-        return test.matches(VALIDATION_REGEX);
+        return test != null && test.matches(VALIDATION_REGEX);
     }
 
     @Override

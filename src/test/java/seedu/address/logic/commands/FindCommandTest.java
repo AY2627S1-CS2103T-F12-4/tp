@@ -149,7 +149,7 @@ public class FindCommandTest {
         parser.parseCommand("find n/John").execute(model);
         parser.parseCommand("delete 1").execute(model);
 
-        assertFalse(model.hasPerson(johnTan));
+        assertFalse(model.getAddressBook().getPersonList().contains(johnTan));
         assertTrue(model.hasPerson(johnny));
         assertEquals(List.of(johnLim, johnTanner, johnny, johnson), displayed);
         assertEquals(List.of(johnny, johnson, johnLim, johnTanner, meiTan), model.getAddressBook().getPersonList());
@@ -161,7 +161,7 @@ public class FindCommandTest {
         parser.parseCommand("edit 1 n/Jack Tan").execute(model);
         Person edited = new PersonBuilder(johnTan).withName("Jack Tan").build();
 
-        assertFalse(model.hasPerson(johnTan));
+        assertFalse(model.getAddressBook().getPersonList().contains(johnTan));
         assertTrue(model.hasPerson(johnny));
         assertEquals(List.of(johnny, edited, johnson, johnLim, johnTanner, meiTan), model.getFilteredPersonList());
     }

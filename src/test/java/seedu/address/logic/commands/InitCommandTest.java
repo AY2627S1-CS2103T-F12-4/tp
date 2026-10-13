@@ -17,7 +17,8 @@ import seedu.address.model.person.Group;
 
 public class InitCommandTest {
 
-    private static final Group T11 = new Group("T11");
+    // A group that no typical student belongs to, so the typical address book has not registered it.
+    private static final Group T99 = new Group("T99");
 
     @Test
     public void constructor_nullGroup_throwsNullPointerException() {
@@ -28,37 +29,37 @@ public class InitCommandTest {
     public void execute_newGroup_success() {
         Model model = new ModelManager(getTypicalAddressBook(), new UserPrefs());
         Model expectedModel = new ModelManager(getTypicalAddressBook(), new UserPrefs());
-        expectedModel.addGroup(T11);
-        expectedModel.showGroup(T11);
+        expectedModel.addGroup(T99);
+        expectedModel.showGroup(T99);
 
-        assertCommandSuccess(new InitCommand(T11), model,
-                String.format(InitCommand.MESSAGE_SUCCESS, T11), expectedModel);
+        assertCommandSuccess(new InitCommand(T99), model,
+                String.format(InitCommand.MESSAGE_SUCCESS, T99), expectedModel);
         assertTrue(model.getFilteredPersonList().isEmpty());
-        assertEquals(T11, model.getActiveGroup().orElseThrow());
+        assertEquals(T99, model.getActiveGroup().orElseThrow());
     }
 
     @Test
     public void execute_duplicateGroup_failure() {
         Model model = new ModelManager(getTypicalAddressBook(), new UserPrefs());
-        model.addGroup(T11);
-        model.setActiveGroup(T11);
+        model.addGroup(T99);
+        model.setActiveGroup(T99);
         int displayedPersonCount = model.getFilteredPersonList().size();
 
-        assertCommandFailure(new InitCommand(new Group("T11")), model,
-                String.format(InitCommand.MESSAGE_DUPLICATE_GROUP, T11));
-        assertEquals(T11, model.getActiveGroup().orElseThrow());
+        assertCommandFailure(new InitCommand(new Group("T99")), model,
+                String.format(InitCommand.MESSAGE_DUPLICATE_GROUP, T99));
+        assertEquals(T99, model.getActiveGroup().orElseThrow());
         assertEquals(displayedPersonCount, model.getFilteredPersonList().size());
     }
 
     @Test
     public void equals() {
-        InitCommand initT11 = new InitCommand(T11);
-        InitCommand initT11Copy = new InitCommand(new Group("T11"));
+        InitCommand initT99 = new InitCommand(T99);
+        InitCommand initT99Copy = new InitCommand(new Group("T99"));
         InitCommand initT10 = new InitCommand(new Group("T10"));
 
-        assertTrue(initT11.equals(initT11));
-        assertTrue(initT11.equals(initT11Copy));
-        assertFalse(initT11.equals(initT10));
-        assertFalse(initT11.equals(null));
+        assertTrue(initT99.equals(initT99));
+        assertTrue(initT99.equals(initT99Copy));
+        assertFalse(initT99.equals(initT10));
+        assertFalse(initT99.equals(null));
     }
 }

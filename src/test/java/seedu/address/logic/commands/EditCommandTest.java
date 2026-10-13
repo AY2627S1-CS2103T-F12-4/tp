@@ -56,11 +56,27 @@ public class EditCommandTest {
     }
 
     @Test
+    public void execute_groupChanged_attendanceCleared() {
+        Person alice = model.getFilteredPersonList().get(INDEX_FIRST_PERSON.getZeroBased());
+        Person alicePresent = new PersonBuilder(alice).withAttendance(T09_WEEK_1, Status.PRESENT).build();
+        model.setPerson(alice, alicePresent);
+
+        // ALICE's records are for T09 sessions, so they cannot move with her to T10
+        Person editedAlice = new PersonBuilder(alice).withGroup("T10").build();
+        EditCommand editCommand = new EditCommand(INDEX_FIRST_PERSON,
+                new EditPersonDescriptorBuilder().withGroup("T10").build());
+
+        String expectedMessage = String.format(EditCommand.MESSAGE_EDIT_PERSON_SUCCESS, Messages.format(editedAlice));
+
+        Model expectedModel = new ModelManager(new AddressBook(model.getAddressBook()), new UserPrefs());
+        expectedModel.setPerson(alicePresent, editedAlice);
+
+        assertCommandSuccess(editCommand, model, expectedMessage, expectedModel);
+    }
+
+    @Test
     public void execute_allFieldsSpecifiedUnfilteredList_success() {
-        // The matriculation number and group are not editable, so the edited person keeps the original ones
-        Person firstPerson = model.getFilteredPersonList().get(INDEX_FIRST_PERSON.getZeroBased());
-        Person editedPerson = new PersonBuilder().withMatric(firstPerson.getMatric().value)
-                .withGroup(firstPerson.getGroup().value).build();
+        Person editedPerson = new PersonBuilder().build();
         EditPersonDescriptor descriptor = new EditPersonDescriptorBuilder(editedPerson).build();
         EditCommand editCommand = new EditCommand(INDEX_FIRST_PERSON, descriptor);
 

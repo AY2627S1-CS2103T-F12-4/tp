@@ -28,7 +28,6 @@ class JsonSerializableAddressBook {
     public static final String MESSAGE_DUPLICATE_SESSION = "Sessions list contains duplicate session(s).";
     public static final String MESSAGE_SESSION_GROUP_NOT_FOUND =
             "A session refers to a tutorial group that is not registered.";
-
     public static final String MESSAGE_UNKNOWN_SESSION =
             "Attendance records refer to a session that is not in the sessions list.";
 
@@ -107,6 +106,7 @@ class JsonSerializableAddressBook {
 
     /**
      * Returns true if every attendance record of {@code person} refers to a session stored in {@code addressBook}.
+     * The sessions must be loaded into {@code addressBook} before the persons.
      */
     private static boolean areSessionsStored(Person person, AddressBook addressBook) {
         for (Attendance attendance : person.getAttendances()) {

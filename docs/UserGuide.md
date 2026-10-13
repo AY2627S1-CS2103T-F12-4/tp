@@ -115,7 +115,10 @@ until their attendance is recorded. Weeks with no session have no cell. The list
 
 The group scope is shown above the list. `find` searches across groups and clears the active group.
 Adding or deleting a student refreshes the current results without clearing the filter.
-Student indices are the row numbers currently on screen, so check the displayed list before using `delete` or `mark`.
+Student indices are the row numbers currently on screen, so check the displayed list before using `delete`, `edit`,
+or `mark`. A successful edit shows all students again in matriculation-number order. Editing a matriculation number
+can therefore change row numbers. Moving a student to another group clears their old attendance records; their
+attendance strip then uses the new group's sessions.
 
 Only one `grp/` parameter is allowed. Missing group values, invalid codes, repeated parameters and unrelated arguments
 are rejected. A rejected list command leaves the data, active group and displayed rows unchanged.

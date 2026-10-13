@@ -21,9 +21,13 @@ public class AddressBookBuilder {
     }
 
     /**
-     * Adds a new {@code Person} to the {@code AddressBook} that we are building.
+     * Adds a new {@code Person} to the {@code AddressBook} that we are building,
+     * registering their tutorial group first if it is not registered yet.
      */
     public AddressBookBuilder withPerson(Person person) {
+        if (!addressBook.hasGroup(person.getGroup())) {
+            addressBook.addGroup(person.getGroup());
+        }
         addressBook.addPerson(person);
         return this;
     }

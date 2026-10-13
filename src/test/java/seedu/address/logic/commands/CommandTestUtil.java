@@ -35,10 +35,10 @@ public class CommandTestUtil {
     public static final String VALID_EMAIL_BOB = "bob@example.com";
     public static final String VALID_ADDRESS_AMY = "Block 312, Amy Street 1";
     public static final String VALID_ADDRESS_BOB = "Block 123, Bobby Street 3";
-    public static final String VALID_MATRIC_AMY = "A1111111A";
-    public static final String VALID_MATRIC_BOB = "A2222222B";
-    public static final String VALID_GROUP_AMY = "T01";
-    public static final String VALID_GROUP_BOB = "T02";
+    public static final String VALID_MATRIC_AMY = "A0111111A";
+    public static final String VALID_MATRIC_BOB = "A0222222B";
+    public static final String VALID_GROUP_AMY = "T11";
+    public static final String VALID_GROUP_BOB = "T12";
     public static final String VALID_TAG_HUSBAND = "husband";
     public static final String VALID_TAG_FRIEND = "friend";
 
@@ -61,8 +61,8 @@ public class CommandTestUtil {
     public static final String INVALID_PHONE_DESC = " " + PREFIX_PHONE + "911a"; // 'a' not allowed in phones
     public static final String INVALID_EMAIL_DESC = " " + PREFIX_EMAIL + "bob!yahoo"; // missing '@' symbol
     public static final String INVALID_ADDRESS_DESC = " " + PREFIX_ADDRESS; // empty string not allowed for addresses
-    public static final String INVALID_MATRIC_DESC = " " + PREFIX_MATRIC + "B1234567X"; // must start with 'A'
-    public static final String INVALID_GROUP_DESC = " " + PREFIX_GROUP + "T1"; // two digits needed
+    public static final String INVALID_MATRIC_DESC = " " + PREFIX_MATRIC + "A123X"; // too few digits
+    public static final String INVALID_GROUP_DESC = " " + PREFIX_GROUP + "T0"; // only one digit
     public static final String INVALID_TAG_DESC = " " + PREFIX_TAG + "hubby*"; // '*' not allowed in tags
 
     public static final String PREAMBLE_WHITESPACE = "\t  \r  \n";
@@ -74,9 +74,11 @@ public class CommandTestUtil {
     static {
         DESC_AMY = new EditPersonDescriptorBuilder().withName(VALID_NAME_AMY)
                 .withPhone(VALID_PHONE_AMY).withEmail(VALID_EMAIL_AMY).withAddress(VALID_ADDRESS_AMY)
+                .withMatric(VALID_MATRIC_AMY).withGroup(VALID_GROUP_AMY)
                 .withTags(VALID_TAG_FRIEND).build();
         DESC_BOB = new EditPersonDescriptorBuilder().withName(VALID_NAME_BOB)
                 .withPhone(VALID_PHONE_BOB).withEmail(VALID_EMAIL_BOB).withAddress(VALID_ADDRESS_BOB)
+                .withMatric(VALID_MATRIC_BOB).withGroup(VALID_GROUP_BOB)
                 .withTags(VALID_TAG_HUSBAND, VALID_TAG_FRIEND).build();
     }
 

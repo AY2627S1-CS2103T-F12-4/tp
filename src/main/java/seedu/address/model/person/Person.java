@@ -142,7 +142,9 @@ public class Person {
     }
 
     /**
-     * Returns true if both persons have the same name.
+     * Returns true if both persons have the same matriculation number.
+     * A matriculation number identifies a student on its own, so two students may share a
+     * name but not a matriculation number.
      * This defines a weaker notion of equality between two persons.
      */
     public boolean isSamePerson(Person otherPerson) {
@@ -151,7 +153,7 @@ public class Person {
         }
 
         return otherPerson != null
-                && otherPerson.getName().equals(getName());
+                && otherPerson.getMatric().equals(getMatric());
     }
 
     /**

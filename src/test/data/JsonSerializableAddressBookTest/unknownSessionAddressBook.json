@@ -1,5 +1,5 @@
 {
-  "groups": ["T09", "T10"],
+  "groups": [ "T09" ],
   "sessions": [ {
     "group": "T09",
     "week": "1",

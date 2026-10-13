@@ -20,9 +20,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import seedu.address.model.AddressBook;
-import seedu.address.model.person.Group;
 import seedu.address.model.person.Person;
-import seedu.address.model.session.Session;
 
 /**
  * A utility class containing a list of {@code Person} objects to be used in tests.
@@ -35,39 +33,41 @@ public class TypicalPersons {
             .withTags("friends").build();
     public static final Person BENSON = new PersonBuilder().withName("Benson Meier")
             .withAddress("311, Clementi Ave 2, #02-25")
-            .withEmail("johnd@example.com").withPhone("98765432").withMatric("A0000002B").withGroup("T09")
+            .withEmail("johnd@example.com").withPhone("98765432")
+            .withMatric("A0000002B").withGroup("T09")
             .withTags("owesMoney", "friends").build();
     public static final Person CARL = new PersonBuilder().withName("Carl Kurz").withPhone("95352563")
-            .withEmail("heinz@example.com").withAddress("wall street").withMatric("A0000003C").withGroup("T09")
-            .build();
+            .withEmail("heinz@example.com").withAddress("wall street")
+            .withMatric("A0000003C").withGroup("T09").build();
     public static final Person DANIEL = new PersonBuilder().withName("Daniel Meier").withPhone("87652533")
-            .withEmail("cornelia@example.com").withAddress("10th street").withMatric("A0000004D").withGroup("T09")
-            .withTags("friends").build();
+            .withEmail("cornelia@example.com").withAddress("10th street")
+            .withMatric("A0000004D").withGroup("T10").withTags("friends").build();
     public static final Person ELLE = new PersonBuilder().withName("Elle Meyer").withPhone("9482224")
-            .withEmail("werner@example.com").withAddress("michegan ave").withMatric("A0000005E").withGroup("T10")
-            .build();
+            .withEmail("werner@example.com").withAddress("michegan ave")
+            .withMatric("A0000005E").withGroup("T10").build();
     public static final Person FIONA = new PersonBuilder().withName("Fiona Kunz").withPhone("9482427")
-            .withEmail("lydia@example.com").withAddress("little tokyo").withMatric("A0000006F").withGroup("T10")
-            .build();
+            .withEmail("lydia@example.com").withAddress("little tokyo")
+            .withMatric("A0000006F").withGroup("T10").build();
     public static final Person GEORGE = new PersonBuilder().withName("George Best").withPhone("9482442")
-            .withEmail("anna@example.com").withAddress("4th street").withMatric("A0000007G").withGroup("T10")
-            .build();
+            .withEmail("anna@example.com").withAddress("4th street")
+            .withMatric("A0000007G").withGroup("T10").build();
 
     // Manually added
     public static final Person HOON = new PersonBuilder().withName("Hoon Meier").withPhone("8482424")
-            .withEmail("stefan@example.com").withAddress("little india").withMatric("A0000008H").withGroup("T10")
-            .build();
+            .withEmail("stefan@example.com").withAddress("little india")
+            .withMatric("A0000008H").withGroup("T11").build();
     public static final Person IDA = new PersonBuilder().withName("Ida Mueller").withPhone("8482131")
-            .withEmail("hans@example.com").withAddress("chicago ave").withMatric("A0000009I").withGroup("T10")
-            .build();
+            .withEmail("hans@example.com").withAddress("chicago ave")
+            .withMatric("A0000009I").withGroup("T11").build();
 
     // Manually added - Person's details found in {@code CommandTestUtil}
     public static final Person AMY = new PersonBuilder().withName(VALID_NAME_AMY).withPhone(VALID_PHONE_AMY)
-            .withEmail(VALID_EMAIL_AMY).withAddress(VALID_ADDRESS_AMY).withMatric(VALID_MATRIC_AMY)
-            .withGroup(VALID_GROUP_AMY).withTags(VALID_TAG_FRIEND).build();
+            .withEmail(VALID_EMAIL_AMY).withAddress(VALID_ADDRESS_AMY)
+            .withMatric(VALID_MATRIC_AMY).withGroup(VALID_GROUP_AMY).withTags(VALID_TAG_FRIEND).build();
     public static final Person BOB = new PersonBuilder().withName(VALID_NAME_BOB).withPhone(VALID_PHONE_BOB)
-            .withEmail(VALID_EMAIL_BOB).withAddress(VALID_ADDRESS_BOB).withMatric(VALID_MATRIC_BOB)
-            .withGroup(VALID_GROUP_BOB).withTags(VALID_TAG_HUSBAND, VALID_TAG_FRIEND)
+            .withEmail(VALID_EMAIL_BOB).withAddress(VALID_ADDRESS_BOB)
+            .withMatric(VALID_MATRIC_BOB).withGroup(VALID_GROUP_BOB)
+            .withTags(VALID_TAG_HUSBAND, VALID_TAG_FRIEND)
             .build();
 
     public static final String KEYWORD_MATCHING_MEIER = "Meier"; // A keyword that matches MEIER
@@ -75,16 +75,14 @@ public class TypicalPersons {
     private TypicalPersons() {} // prevents instantiation
 
     /**
-     * Returns an {@code AddressBook} with all the typical persons and sessions.
+     * Returns an {@code AddressBook} with all the typical persons.
      */
     public static AddressBook getTypicalAddressBook() {
         AddressBook ab = new AddressBook();
-        ab.addGroup(new Group("T09"));
-        ab.addGroup(new Group("T10"));
-        for (Session session : TypicalSessions.getTypicalSessions()) {
-            ab.addSession(session);
-        }
         for (Person person : getTypicalPersons()) {
+            if (!ab.hasGroup(person.getGroup())) {
+                ab.addGroup(person.getGroup());
+            }
             ab.addPerson(person);
         }
         return ab;

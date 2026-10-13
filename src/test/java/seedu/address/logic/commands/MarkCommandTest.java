@@ -16,6 +16,7 @@ import static seedu.address.testutil.TypicalPersons.ELLE;
 import static seedu.address.testutil.TypicalPersons.getTypicalAddressBook;
 import static seedu.address.testutil.TypicalSessions.T09_WEEK_1;
 import static seedu.address.testutil.TypicalSessions.T10_WEEK_1;
+import static seedu.address.testutil.TypicalSessions.getTypicalSessions;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -44,15 +45,24 @@ import seedu.address.testutil.PersonBuilder;
 
 /**
  * Contains integration tests (interaction with the Model) and unit tests for {@code MarkCommand}.
- * In the typical address book, ALICE (index 1) to DANIEL are in T09 and ELLE (index 5) onwards are in T10;
- * T09 has sessions in weeks 1 and 2, and T10 only in week 1.
+ * In the typical address book, ALICE (index 1) to CARL are in T09 and DANIEL (index 4) onwards are in T10;
+ * the typical sessions are added to it, so T09 has sessions in weeks 1 and 2, and T10 only in week 1.
  * The tests with a stub model check only the command's own behavior, without a real model.
  */
 public class MarkCommandTest {
 
     private static final Index INDEX_FIFTH_PERSON = Index.fromOneBased(5);
 
-    private final Model model = new ModelManager(getTypicalAddressBook(), new UserPrefs());
+    private final Model model = new ModelManager(getTypicalAddressBookWithSessions(), new UserPrefs());
+
+    /**
+     * Returns the typical address book with the typical sessions added.
+     */
+    private static AddressBook getTypicalAddressBookWithSessions() {
+        AddressBook addressBook = getTypicalAddressBook();
+        getTypicalSessions().forEach(addressBook::addSession);
+        return addressBook;
+    }
 
     @Test
     public void execute_firstMarkUnfilteredList_success() {

@@ -1,19 +1,6 @@
 {
-  "groups": ["T09", "T10"],
-  "_comment": "AddressBook save file which contains the same Person and Session values as in TypicalPersons#getTypicalAddressBook()",
-  "sessions" : [ {
-    "group" : "T09",
-    "week" : "1",
-    "date" : "2026-08-11"
-  }, {
-    "group" : "T09",
-    "week" : "2",
-    "date" : "2026-08-18"
-  }, {
-    "group" : "T10",
-    "week" : "1",
-    "date" : "2026-08-13"
-  } ],
+  "_comment": "AddressBook save file which contains the same Person values as in TypicalPersons#getTypicalAddressBook()",
+  "groups" : [ "T09", "T10" ],
   "persons" : [ {
     "name" : "Alice Pauline",
     "phone" : "94351253",
@@ -44,7 +31,7 @@
     "email" : "cornelia@example.com",
     "address" : "10th street",
     "matric" : "A0000004D",
-    "group" : "T09",
+    "group" : "T10",
     "tags" : [ "friends" ]
   }, {
     "name" : "Elle Meyer",

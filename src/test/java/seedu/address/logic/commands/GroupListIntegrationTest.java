@@ -8,10 +8,12 @@ import static seedu.address.testutil.Assert.assertThrows;
 import static seedu.address.testutil.TypicalIndexes.INDEX_FIRST_PERSON;
 import static seedu.address.testutil.TypicalSessions.T09_WEEK_1;
 
+import java.nio.file.Path;
 import java.util.List;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 import seedu.address.logic.commands.exceptions.CommandException;
 import seedu.address.logic.parser.AddressBookParser;
@@ -27,6 +29,7 @@ import seedu.address.model.person.Person;
 import seedu.address.model.session.Session;
 import seedu.address.model.session.SessionDate;
 import seedu.address.model.session.Week;
+import seedu.address.storage.JsonAddressBookStorage;
 import seedu.address.testutil.PersonBuilder;
 import seedu.address.ui.AttendanceCell;
 
@@ -34,6 +37,9 @@ import seedu.address.ui.AttendanceCell;
  * Exercises group listing with the shared displayed indices used by other commands.
  */
 public class GroupListIntegrationTest {
+    @TempDir
+    public Path temporaryFolder;
+
     private final Group group = new Group("T09");
     private final Person later = new PersonBuilder().withName("Later Student").withMatric("A0000009Z")
             .withGroup("T09").build();
@@ -184,6 +190,69 @@ public class GroupListIntegrationTest {
         model.addSession(new Session(group, new Week(2), new SessionDate("2026-08-18")));
         assertEquals(List.of(new AttendanceCell(1, "P"), new AttendanceCell(2, "\u2014")),
                 AttendanceCell.forStudent(marked, model.getAddressBook().getSessionList()));
+    }
+
+    @Test
+    public void execute_editMatric_reordersRowsAndKeepsAttendanceOnSameStudent() throws Exception {
+        AddressBookParser parser = new AddressBookParser();
+        parser.parseCommand("list grp/T09").execute(model);
+        parser.parseCommand("mark 1 w/1 s/present").execute(model);
+        parser.parseCommand("edit 1 m/A0000010Z").execute(model);
+
+        Person edited = model.getFilteredPersonList().getLast();
+        assertEquals(earlier.getName(), edited.getName());
+        assertEquals("A0000010Z", edited.getMatric().value);
+        assertEquals(List.of(otherGroup, later, edited), model.getFilteredPersonList());
+        assertTrue(model.getActiveGroup().isEmpty());
+        assertEquals(List.of(new AttendanceCell(1, "P")),
+                AttendanceCell.forStudent(edited, model.getSessionList()));
+
+        parser.parseCommand("list grp/T09").execute(model);
+        parser.parseCommand("delete 1").execute(model);
+        assertFalse(model.hasPerson(later));
+        assertEquals(List.of(edited), model.getFilteredPersonList());
+    }
+
+    @Test
+    public void execute_editGroup_usesNewGroupsSessionsAndClearsOldAttendance() throws Exception {
+        AddressBookParser parser = new AddressBookParser();
+        parser.parseCommand("session grp/T10 w/2 d/2026-08-18").execute(model);
+        parser.parseCommand("list grp/T09").execute(model);
+        parser.parseCommand("mark 1 w/1 s/present").execute(model);
+        parser.parseCommand("edit 1 grp/T10").execute(model);
+        assertTrue(model.getActiveGroup().isEmpty());
+
+        parser.parseCommand("list grp/T10").execute(model);
+        Person moved = model.getFilteredPersonList().get(1);
+        assertEquals(earlier.getMatric(), moved.getMatric());
+        assertTrue(moved.getAttendances().isEmpty());
+        assertEquals(List.of(new AttendanceCell(2, "\u2014")),
+                AttendanceCell.forStudent(moved, model.getSessionList()));
+        parser.parseCommand("mark 2 w/2 s/absent").execute(model);
+        assertEquals(List.of(new AttendanceCell(2, "A")),
+                AttendanceCell.forStudent(model.getFilteredPersonList().get(1), model.getSessionList()));
+        parser.parseCommand("list grp/T09").execute(model);
+        assertEquals(List.of(later), model.getFilteredPersonList());
+    }
+
+    @Test
+    public void saveAndReload_listingRetainsSessionsAttendanceAndEmptyGroups() throws Exception {
+        AddressBookParser parser = new AddressBookParser();
+        parser.parseCommand("list grp/T09").execute(model);
+        parser.parseCommand("mark 1 w/1 s/present").execute(model);
+        JsonAddressBookStorage storage = new JsonAddressBookStorage(temporaryFolder.resolve("roster.json"));
+        storage.saveAddressBook(model.getAddressBook());
+
+        ModelManager restored = new ModelManager(storage.readAddressBook().orElseThrow(), new UserPrefs());
+        assertEquals(model.getAddressBook(), restored.getAddressBook());
+        parser.parseCommand("list grp/T09").execute(restored);
+        assertEquals(List.of(earlier.getMatric(), later.getMatric()),
+                restored.getFilteredPersonList().stream().map(Person::getMatric).toList());
+        assertEquals(List.of(new AttendanceCell(1, "P")),
+                AttendanceCell.forStudent(restored.getFilteredPersonList().getFirst(), restored.getSessionList()));
+        assertEquals("Tutorial group T11 has no students yet.",
+                parser.parseCommand("list grp/T11").execute(restored).getFeedbackToUser());
+        assertTrue(restored.getFilteredPersonList().isEmpty());
     }
 
     @Test

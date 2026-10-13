@@ -87,18 +87,50 @@ public class ParserUtil {
     }
 
     /**
-     * Parses a {@code String email} into an {@code Email}.
+     * Parses a {@code String matric} into a {@code Matric}.
      * Leading and trailing whitespaces will be trimmed.
+     *
+     * @throws ParseException if the given {@code matric} is invalid.
+     */
+    public static Matric parseMatric(String matric) throws ParseException {
+        requireNonNull(matric);
+        String normalizedMatric = matric.trim().toUpperCase(Locale.ROOT);
+        if (!Matric.isValidMatric(normalizedMatric)) {
+            throw new ParseException(Matric.MESSAGE_CONSTRAINTS);
+        }
+        return new Matric(normalizedMatric);
+    }
+
+
+    /**
+     * Parses a {@code String email} into an {@code Email}.
+     * Leading and trailing whitespaces will be trimmed, and the address is lowercased so that
+     * the same address entered with different casing is stored and compared identically.
      *
      * @throws ParseException if the given {@code email} is invalid.
      */
     public static Email parseEmail(String email) throws ParseException {
         requireNonNull(email);
-        String trimmedEmail = email.trim();
-        if (!Email.isValidEmail(trimmedEmail)) {
+        String normalizedEmail = email.trim().toLowerCase(Locale.ROOT);
+        if (!Email.isValidEmail(normalizedEmail)) {
             throw new ParseException(Email.MESSAGE_CONSTRAINTS);
         }
-        return new Email(trimmedEmail);
+        return new Email(normalizedEmail);
+    }
+
+    /**
+     * Parses a {@code String status} into a {@code Status}, ignoring letter case.
+     * Leading and trailing whitespaces will be trimmed.
+     *
+     * @throws ParseException if the given {@code status} is invalid.
+     */
+    public static Status parseStatus(String status) throws ParseException {
+        requireNonNull(status);
+        String trimmedStatus = status.trim();
+        if (!Status.isValidStatus(trimmedStatus)) {
+            throw new ParseException(Status.MESSAGE_CONSTRAINTS);
+        }
+        return Status.fromString(trimmedStatus);
     }
 
     /**
@@ -165,34 +197,4 @@ public class ParserUtil {
         }
         return new SessionDate(trimmedDate);
     }
-    /**
-     * Parses a {@code String matric} into a {@code Matric}.
-     * Leading and trailing whitespaces will be trimmed, and letters converted to uppercase.
-     *
-     * @throws ParseException if the given {@code matric} is invalid.
-     */
-    public static Matric parseMatric(String matric) throws ParseException {
-        requireNonNull(matric);
-        String normalisedMatric = matric.trim().toUpperCase(Locale.ROOT);
-        if (!Matric.isValidMatric(normalisedMatric)) {
-            throw new ParseException(Matric.MESSAGE_CONSTRAINTS);
-        }
-        return new Matric(normalisedMatric);
-    }
-
-    /**
-     * Parses a {@code String status} into a {@code Status}, ignoring letter case.
-     * Leading and trailing whitespaces will be trimmed.
-     *
-     * @throws ParseException if the given {@code status} is invalid.
-     */
-    public static Status parseStatus(String status) throws ParseException {
-        requireNonNull(status);
-        String trimmedStatus = status.trim();
-        if (!Status.isValidStatus(trimmedStatus)) {
-            throw new ParseException(Status.MESSAGE_CONSTRAINTS);
-        }
-        return Status.fromString(trimmedStatus);
-    }
-
 }

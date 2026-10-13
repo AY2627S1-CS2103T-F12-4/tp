@@ -21,7 +21,7 @@ public class MatricTest {
     @Test
     public void isValidMatric() {
         // null matriculation number
-        assertThrows(NullPointerException.class, () -> Matric.isValidMatric(null));
+        assertFalse(Matric.isValidMatric(null));
 
         // invalid matriculation numbers
         assertFalse(Matric.isValidMatric("")); // empty string
