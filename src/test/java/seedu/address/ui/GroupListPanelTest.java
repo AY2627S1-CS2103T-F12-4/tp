@@ -2,6 +2,7 @@ package seedu.address.ui;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static seedu.address.testutil.Assert.assertThrows;
 import static seedu.address.testutil.FxTestUtil.onFxThread;
 
@@ -35,6 +36,10 @@ public class GroupListPanelTest {
             ListView<?> list = groupList(panel);
 
             assertEquals(first, list.getSelectionModel().getSelectedItem());
+            list.getSelectionModel().select(1);
+            assertEquals(first, list.getSelectionModel().getSelectedItem());
+            assertEquals(0, list.getSelectionModel().getSelectedIndex());
+            assertEquals(List.of(0), list.getSelectionModel().getSelectedIndices());
             groups.add(new Group("T11"));
             assertEquals(first, list.getSelectionModel().getSelectedItem());
             active.set(second);
@@ -45,6 +50,7 @@ public class GroupListPanelTest {
             list.getSelectionModel().select(0);
             assertNull(list.getSelectionModel().getSelectedItem());
             assertEquals(-1, list.getSelectionModel().getSelectedIndex());
+            assertTrue(list.getSelectionModel().getSelectedIndices().isEmpty());
             return null;
         });
     }
