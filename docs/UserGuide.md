@@ -150,15 +150,16 @@ Format: `find n/KEYWORD`
 * The query must contain 1–100 characters after whitespace normalization: letters, spaces, hyphens, apostrophes or full stops, with at least one letter.
 * The search is case-insensitive and considers only names. Accents and punctuation remain significant.
 * The entire phrase must appear contiguously and in the same order. For example, `john tan` matches `John Tan` and `John Tanner`, but does not match `John Lim`, `Mei Tan` or `Tan John`.
-* Whole-word phrase matches appear first, followed by partial matches. For example, `find n/john` lists `John Tan` before `Johnny Lim` even if `Johnny Lim` was added first. Within each tier, students retain their roster order.
+* Results are sorted by matriculation number in ascending order, including both complete and partial name matches. For example, `find n/john` lists `Johnny Lim` with matriculation number `A0000001X` before `John Tan` with `A0000002X`.
+* A successful search clears the active tutorial group and its selection in the group panel. Each result shows the student's matriculation number, tutorial group and attendance for that group's sessions.
 * Each search considers all students, including when the previous search returned no matches.
 * Successful searches show `Found COUNT student(s) matching "KEYWORD".` A search with no matches produces an empty list and shows `No students found matching "KEYWORD". Try another name.`
-* Missing or blank queries, repeated `n/` prefixes, unsupported characters, text before `n/`, and other parameters produce an error without changing the displayed list.
-* `delete INDEX` and `edit INDEX` use the displayed result indexes. Search does not change the saved roster order. Use `list` to show everyone again in ascending matriculation-number order.
+* Missing or blank queries, repeated `n/` prefixes, unsupported characters, text before `n/`, and other parameters produce an error without changing the displayed list or active tutorial group.
+* `mark INDEX`, `delete INDEX` and `edit INDEX` use the displayed result indexes. Search does not change the saved roster order. Use `list` to show everyone again in ascending matriculation-number order.
 
 Examples:
-* `find n/John` returns `John Doe` before `Johnny Lim`.
-* `find n/john tan` returns `John Tan` before `John Tanner`.
+* `find n/John` returns `John Doe` and `Johnny Lim`, sorted by matriculation number.
+* `find n/john tan` returns `John Tan` and `John Tanner`, sorted by matriculation number.
 * `find n/joh` returns names containing `joh`, including `John Tan` and `Johnny Lim`.
 
 ### Deleting a person: `delete`

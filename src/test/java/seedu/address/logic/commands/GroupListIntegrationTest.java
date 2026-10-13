@@ -69,22 +69,23 @@ public class GroupListIntegrationTest {
         assertEquals(group, model.getActiveGroup().orElseThrow());
         assertEquals(group, model.activeGroupProperty().get());
 
+        parser.parseCommand("session grp/T10 w/1 d/2026-08-12").execute(model);
         parser.parseCommand("find n/Student").execute(model);
-        assertEquals(List.of(later, otherGroup, earlier), model.getFilteredPersonList());
+        assertEquals(List.of(otherGroup, earlier, later), model.getFilteredPersonList());
         assertTrue(model.getActiveGroup().isEmpty());
         assertNull(model.activeGroupProperty().get());
 
         parser.parseCommand("mark 1 w/1 s/present").execute(model);
         Person marked = model.getFilteredPersonList().getFirst();
-        assertEquals(later.getMatric(), marked.getMatric());
+        assertEquals(otherGroup.getMatric(), marked.getMatric());
         assertEquals(List.of(new AttendanceCell(1, "P")),
                 AttendanceCell.forStudent(marked, model.getSessionList()));
 
         parser.parseCommand("list grp/T09").execute(model);
-        assertEquals(List.of(earlier, marked), model.getFilteredPersonList());
+        assertEquals(List.of(earlier, later), model.getFilteredPersonList());
         assertEquals(group, model.getActiveGroup().orElseThrow());
         parser.parseCommand("list").execute(model);
-        assertEquals(List.of(otherGroup, earlier, marked), model.getFilteredPersonList());
+        assertEquals(List.of(marked, earlier, later), model.getFilteredPersonList());
         assertTrue(model.getActiveGroup().isEmpty());
     }
 
