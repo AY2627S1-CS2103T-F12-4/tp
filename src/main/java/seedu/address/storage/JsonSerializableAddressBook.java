@@ -99,6 +99,11 @@ class JsonSerializableAddressBook {
             if (!areSessionsStored(person, addressBook)) {
                 throw new IllegalValueException(MESSAGE_UNKNOWN_SESSION);
             }
+            // Data files saved before groups were stored, such as the saved sample data, list students
+            // without their groups. Registering the group keeps those files loadable.
+            if (!addressBook.hasGroup(person.getGroup())) {
+                addressBook.addGroup(person.getGroup());
+            }
             addressBook.addPerson(person);
         }
         return addressBook;

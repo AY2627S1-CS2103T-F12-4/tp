@@ -5,12 +5,14 @@ import static seedu.address.testutil.Assert.assertThrows;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
 import seedu.address.commons.exceptions.IllegalValueException;
 import seedu.address.commons.util.JsonUtil;
 import seedu.address.model.AddressBook;
+import seedu.address.model.person.Group;
 import seedu.address.testutil.TypicalPersons;
 
 public class JsonSerializableAddressBookTest {
@@ -20,6 +22,7 @@ public class JsonSerializableAddressBookTest {
     private static final Path INVALID_PERSON_FILE = TEST_DATA_FOLDER.resolve("invalidPersonAddressBook.json");
     private static final Path DUPLICATE_PERSON_FILE = TEST_DATA_FOLDER.resolve("duplicatePersonAddressBook.json");
     private static final Path UNKNOWN_SESSION_FILE = TEST_DATA_FOLDER.resolve("unknownSessionAddressBook.json");
+    private static final Path UNLISTED_GROUP_FILE = TEST_DATA_FOLDER.resolve("unlistedGroupAddressBook.json");
 
     @Test
     public void toModelType_typicalPersonsFile_success() throws Exception {
@@ -51,6 +54,15 @@ public class JsonSerializableAddressBookTest {
                 JsonSerializableAddressBook.class).get();
         assertThrows(IllegalValueException.class, JsonSerializableAddressBook.MESSAGE_UNKNOWN_SESSION,
                 dataFromFile::toModelType);
+    }
+
+    @Test
+    public void toModelType_studentGroupNotListed_registersGroup() throws Exception {
+        JsonSerializableAddressBook dataFromFile = JsonUtil.readJsonFile(UNLISTED_GROUP_FILE,
+                JsonSerializableAddressBook.class).get();
+        AddressBook addressBookFromFile = dataFromFile.toModelType();
+        assertEquals(List.of(new Group("T09")), addressBookFromFile.getGroupList());
+        assertEquals(1, addressBookFromFile.getPersonList().size());
     }
 
 }

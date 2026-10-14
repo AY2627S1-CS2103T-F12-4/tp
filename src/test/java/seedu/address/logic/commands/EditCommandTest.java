@@ -148,6 +148,14 @@ public class EditCommandTest {
     }
 
     @Test
+    public void execute_unregisteredGroup_failure() {
+        EditCommand editCommand = new EditCommand(INDEX_FIRST_PERSON,
+                new EditPersonDescriptorBuilder().withGroup("T77").build());
+
+        assertCommandFailure(editCommand, model, String.format(AddCommand.MESSAGE_UNKNOWN_GROUP, "T77"));
+    }
+
+    @Test
     public void execute_duplicatePersonFilteredList_failure() {
         showPersonAtIndex(model, INDEX_FIRST_PERSON);
 

@@ -79,6 +79,8 @@ public class JsonAddressBookStorageTest {
         assertEquals(original, new AddressBook(readBack));
 
         // Modify data, overwrite existing file, and read back
+        // HOON and IDA are in T11, which the typical address book does not register
+        original.addGroup(HOON.getGroup());
         original.addPerson(HOON);
         original.removePerson(ALICE);
         jsonAddressBookStorage.saveAddressBook(original, filePath);

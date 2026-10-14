@@ -86,6 +86,10 @@ public class EditCommand extends Command {
         Person personToEdit = lastShownList.get(index.getZeroBased());
         Person editedPerson = createEditedPerson(personToEdit, editPersonDescriptor);
 
+        if (!model.hasGroup(editedPerson.getGroup())) {
+            throw new CommandException(String.format(AddCommand.MESSAGE_UNKNOWN_GROUP, editedPerson.getGroup()));
+        }
+
         if (!personToEdit.isSamePerson(editedPerson) && model.hasPerson(editedPerson)) {
             throw new CommandException(MESSAGE_DUPLICATE_PERSON);
         }
