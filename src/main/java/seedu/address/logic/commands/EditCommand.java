@@ -94,6 +94,13 @@ public class EditCommand extends Command {
             throw new CommandException(MESSAGE_DUPLICATE_PERSON);
         }
 
+        boolean isEmailTaken = model.getAddressBook().getPersonList().stream()
+                .filter(person -> !person.equals(personToEdit))
+                .anyMatch(editedPerson::hasSameEmail);
+        if (isEmailTaken) {
+            throw new CommandException(String.format(AddCommand.MESSAGE_DUPLICATE_EMAIL, editedPerson.getEmail()));
+        }
+
         model.setPerson(personToEdit, editedPerson);
         model.updateFilteredPersonList(PREDICATE_SHOW_ALL_PERSONS);
         return new CommandResult(String.format(MESSAGE_EDIT_PERSON_SUCCESS, Messages.format(editedPerson)));
