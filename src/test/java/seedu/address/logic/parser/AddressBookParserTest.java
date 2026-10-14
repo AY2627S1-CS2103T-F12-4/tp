@@ -116,6 +116,14 @@ public class AddressBookParserTest {
     }
 
     @Test
+    public void parseCommand_nonSearchWithLineBreaks_throwsParseException() {
+        String expectedMessage = String.format(MESSAGE_INVALID_COMMAND_FORMAT, HelpCommand.MESSAGE_USAGE);
+        for (String command : List.of("clear", "exit", "help", "add", "list", "unknownCommand")) {
+            assertThrows(ParseException.class, expectedMessage, () -> parser.parseCommand(command + "\nother input"));
+        }
+    }
+
+    @Test
     public void parseCommand_help() throws Exception {
         assertTrue(parser.parseCommand(HelpCommand.COMMAND_WORD) instanceof HelpCommand);
         assertTrue(parser.parseCommand(HelpCommand.COMMAND_WORD + " 3") instanceof HelpCommand);
