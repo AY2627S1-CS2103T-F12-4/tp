@@ -3,7 +3,7 @@ layout: page
 title: User Guide
 ---
 
-AddressBook Level 3 (AB3) is a **desktop application for managing contacts, optimized for use through a Command Line Interface (CLI)** while retaining the benefits of a Graphical User Interface (GUI). If you type quickly, AB3 can help you manage contacts faster than traditional GUI applications.
+Roster is a **desktop application for NUS teaching assistants to manage students and attendance across multiple tutorial groups**. It is optimized for fast, keyboard-driven use through a Command Line Interface (CLI), while retaining the convenience of a Graphical User Interface (GUI).
 
 * Table of Contents
 {:toc}
@@ -15,28 +15,55 @@ AddressBook Level 3 (AB3) is a **desktop application for managing contacts, opti
 1. Ensure that Java `25` or later is installed on your computer.<br>
    **Mac users:** Ensure you have the precise JDK version prescribed [here](https://se-education.org/guides/tutorials/javaInstallationMac.html).
 
-1. Download the latest `.jar` file from [here](https://github.com/se-edu/addressbook-level3/releases).
+1. Download the latest `.jar` file from the [Roster releases page](https://github.com/AY2627S1-CS2103T-F12-4/tp/releases).
 
-1. Copy the file to the folder you want to use as the _home folder_ for your AddressBook.
+1. Copy the file to the folder you want to use as Roster's _home folder_.
 
 1. Open a terminal, `cd` to the folder containing the JAR file, and run `java -jar addressbook.jar`.<br>
-   A GUI similar to the one below should appear in a few seconds. Note how the app contains some sample data.<br>
-   ![Ui](images/Ui.png)
+   A GUI similar to the one below should appear in a few seconds. Roster includes sample data on its first launch.<br>
+   ![Roster user interface](images/Ui.png)
 
-1. Type a command in the command box and press Enter to execute it. For example, type **`help`** and press Enter to open the help window.<br>
-   Some example commands you can try:
+1. Type a command in the command box and press Enter to execute it. For example, type **`help`** and press Enter to open the help window.
 
-   * `list` : Lists all contacts.
+1. Try this typical attendance workflow:
 
-   * `add n/John Doe p/98765432 e/johnd@example.com a/John street, block 123, #01-01` : Adds a contact named `John Doe` to the Address Book.
+   * `init grp/T09` : Creates tutorial group `T09`.
+   * `add n/Alex Tan m/A0123456X grp/T09 e/alex.tan@example.com` : Adds Alex Tan to `T09`.
+   * `session grp/T09 w/5 d/2026-09-15` : Creates the week 5 session for `T09`.
+   * `list grp/T09` : Shows the students in `T09` and makes it the active group.
+   * `mark 1 w/5 s/present` : Marks the first displayed student present for week 5.
 
-   * `delete 3` : Deletes the 3rd contact shown in the current list.
+1. Refer to the [Features](#features) section for full details of each command.
 
-   * `clear` : Deletes all contacts.
+--------------------------------------------------------------------------------------------------------------------
 
-   * `exit` : Exits the app.
+## Understanding Roster
 
-1. Refer to the [Features](#features) section below for details of each command.
+### Tutorial groups and sessions
+
+Every student belongs to exactly one tutorial group. Create a group with `init` before adding students or sessions to it.
+
+A session records that a tutorial group met during a particular teaching week and on a particular date. A group can have at most one session per teaching week.
+
+### Attendance states
+
+For each session in a student's tutorial group, their attendance is one of three states:
+
+* **Present (`P`)**: The student has been marked present.
+* **Absent (`A`)**: The student has been marked absent.
+* **Unmarked (`—`)**: No attendance has been recorded yet. Unmarked is kept separate from absent so unfinished attendance is not mistaken for a confirmed absence.
+
+Creating a session does not automatically mark any student. A student added after sessions have been created is also unmarked for those earlier sessions.
+
+The MVP does not support returning a recorded status to unmarked. You can, however, replace `present` with `absent`, or vice versa, by running `mark` again.
+
+### Displayed list and active group
+
+* `list` shows every student and clears the active group.
+* `list grp/GROUP` shows one group's students and makes that group active.
+* `find` searches every group and clears the active group.
+* Students are listed by matriculation number in ascending order.
+* `INDEX` always refers to the list currently displayed. The same student may have a different index after `list`, `list grp/GROUP`, or `find`.
 
 --------------------------------------------------------------------------------------------------------------------
 
@@ -44,53 +71,97 @@ AddressBook Level 3 (AB3) is a **desktop application for managing contacts, opti
 
 <div markdown="block" class="alert alert-info">
 
-**:information_source: Notes about the command format:**<br>
+**:information_source: Notes about command formats:**<br>
 
-* Words in `UPPER_CASE` are the parameters to be supplied by the user.<br>
-  For example, in `add n/NAME`, replace `NAME` with a value such as `John Doe`.
+* Words in `UPPER_CASE` are parameters that you must replace with your own values.<br>
+  For example, replace `GROUP` in `init grp/GROUP` with a group code such as `T09`.
 
 * Items in square brackets are optional.<br>
-  For example, `n/NAME [t/TAG]` can be used as `n/John Doe t/friend` or as `n/John Doe`.
+  For example, `list [grp/GROUP]` can be used as either `list` or `list grp/T09`.
 
-* Items followed by `…`​ can appear zero or more times.<br>
-  For example, `[t/TAG]…​` may be omitted, or written as `t/friend` or `t/friend t/family`.
+* Prefixed parameters can be given in any order.<br>
+  For example, both `session grp/T09 w/5 d/2026-09-15` and `session d/2026-09-15 grp/T09 w/5` are valid.
 
-* Parameters can be in any order.<br>
-  For example, if the command specifies `n/NAME p/PHONE_NUMBER`, `p/PHONE_NUMBER n/NAME` is also acceptable.
+* A prefix marks the start of a parameter. Because `/` marks the end of a prefix, parameter values cannot contain `/`.
 
-* Extraneous parameters for `help`, `exit`, and `clear` are ignored.<br>
-  For example, `help 123` is interpreted as `help`.
+* Unless a command states otherwise, each parameter may appear only once.
 
-* If you are using a PDF version of this document, be careful when copying and pasting commands that span multiple lines as space characters surrounding line-breaks may be omitted when copied over to the application.
+* `INDEX` must be a positive integer and always refers to the currently displayed list.
+
+* If a command fails, Roster does not create, change, or delete any data, and the displayed list remains unchanged.
+
+* If you are using a PDF version of this guide, take care when copying commands that span multiple lines, as spaces around line breaks may be omitted.
 </div>
+
+### Parameter rules
+
+Parameter | Accepted value
+----------|---------------
+`grp/GROUP` | One or two letters followed by two digits, e.g. `T09` or `TG01`. Surrounding spaces are removed and letters are converted to uppercase.
+`n/NAME` | 1–60 characters. Letters, spaces, hyphens, apostrophes and full stops only; must begin with a letter. Surrounding spaces are removed, repeated spaces become one space, and letter case is preserved.
+`m/MATRIC` | `A`, followed by seven digits and one letter, e.g. `A0287654J`. Surrounding spaces are removed and letters are converted to uppercase.
+`e/EMAIL` | A valid email address such as `alex.tan@example.com`. Surrounding spaces are removed and the address is converted to lowercase.
+`w/WEEK` | A whole number from `1` to `13`, without a leading zero.
+`d/DATE` | A real calendar date in `YYYY-MM-DD` format.
+`s/STATUS` | `present` or `absent`, case-insensitive.
+`INDEX` | A positive integer identifying a student in the currently displayed list.
 
 ### Viewing help: `help`
 
-Shows a message explaining how to access the help page.
-
-![help message](images/helpMessage.png)
+Shows a message explaining how to access this User Guide.
 
 Format: `help`
 
+![Help message](images/helpMessage.png)
+
+### Creating a tutorial group: `init`
+
+Creates a new, empty tutorial group. The new group becomes the active group and the displayed student list becomes empty.
+
+Format: `init grp/GROUP`
+
+Examples:
+
+* `init grp/T09`
+* `init grp/t10` creates group `T10` because group codes are normalized to uppercase.
+
+### Creating a tutorial session: `session`
+
+Creates a session for an existing tutorial group and teaching week. Every student in that group is initially unmarked for the session.
+
+Format: `session grp/GROUP w/WEEK d/DATE`
+
+Examples:
+
+* `session grp/T09 w/5 d/2026-09-15`
+* `session d/2026-09-22 grp/t09 w/6`
+
+* A tutorial group can have only one session per teaching week. The date is not part of a session's identity.
+* Sessions may be created out of order; attendance is displayed in teaching-week order.
+* The date must be a real date, but Roster does not check whether it falls within the specified teaching week.
+* Creating a session for an empty group is allowed.
+* The MVP does not support editing or deleting sessions.
+
+On success, Roster displays a confirmation such as `Created session: T09 week 5 (2026-09-15)`.
 
 ### Adding a student: `add`
 
-Adds a student to an existing tutorial group. Create the group first with `init grp/GROUP`.
+Adds a student to an existing tutorial group. The student is unmarked for every existing session in that group.
 
-Format: `add n/NAME p/PHONE_NUMBER e/EMAIL a/ADDRESS m/MATRIC grp/GROUP [t/TAG]…​`
-
-* Names must contain 1–70 characters after whitespace normalization. Letters, spaces, apostrophes and hyphens are allowed; the name must begin and end with a letter. For example, `O'Neil` and `Anne-Marie` are valid, while `123` and `Alex-` are rejected.
-* Surrounding whitespace is removed, and repeated internal whitespace becomes one space. Letter case is preserved.
-* Required prefixes may appear in any order, but each must appear exactly once. Tags are optional and may be repeated.
-* Unknown parameters, such as `x/ignored`, are rejected even when they follow an address. Invalid names and unknown parameters leave the student records and current view unchanged.
-
-<div markdown="span" class="alert alert-primary">:bulb: **Tip:**
-A person can have any number of tags, including zero.
-</div>
+Format: `add n/NAME m/MATRIC grp/GROUP e/EMAIL`
 
 Examples:
-* `add n/John Doe p/98765432 e/johnd@example.com a/John street, block 123, #01-01 m/A0123456X grp/T09`
-* `add n/Anne-Marie p/91234567 e/anne@example.com a/Kent Ridge m/A7654321Z grp/T09 t/friend`
+
+* `add n/Alex Tan m/A0123456X grp/T09 e/alex.tan@example.com`
+* The tutorial group must already exist.
+* Matriculation numbers and email addresses must be unique across all tutorial groups.
+* Names do not need to be unique because different students may share a name.
+
+On success, Roster displays a confirmation such as `Added Alex Tan (A0123456X) to tutorial group T09.`
+
+<div markdown="span" class="alert alert-info">:information_source: **Editing student details:**
+The `edit` command is not part of the MVP. To correct a student's details, delete the student and add them again. Deleting a student also deletes all of their attendance records.
+</div>
 
 ### Listing students: `list`
 
@@ -131,29 +202,13 @@ attendance strip then uses the new group's sessions.
 Only one `grp/` parameter is allowed. Missing group values, invalid codes, repeated parameters and unrelated arguments
 are rejected. A rejected list command leaves the data, active group and displayed rows unchanged.
 
-### Editing a person: `edit`
+### Finding students by name: `find`
 
-Edits an existing person in the address book.
-
-Format: `edit INDEX [n/NAME] [p/PHONE] [e/EMAIL] [a/ADDRESS] [t/TAG]…​`
-
-* Edits the person at the specified `INDEX`. The index refers to the index number shown in the displayed person list. The index **must be a positive integer** 1, 2, 3, …​
-* At least one of the optional fields must be provided.
-* Existing values will be updated to the input values.
-* When editing tags, all of the person's existing tags are removed; adding tags is not cumulative.
-* To remove all of a person's tags, enter `t/` without a tag after it.
-
-Examples:
-*  `edit 1 p/91234567 e/johndoe@example.com` Edits the phone number and email address of the 1st person to be `91234567` and `johndoe@example.com` respectively.
-*  `edit 2 n/Betsy Crower t/` Edits the name of the 2nd person to be `Betsy Crower` and clears all existing tags.
-
-### Locating students by name: `find`
-
-Finds students whose names contain the search phrase.
+Finds students across all tutorial groups whose names contain the search phrase. A search clears the active group.
 
 Format: `find n/KEYWORD`
 
-* The `n/` prefix is required and must appear exactly once. The keyword can contain several words, such as `john tan`.
+* The `n/` prefix is required and must appear exactly once. The keyword may contain several words, such as `john tan`.
 * Surrounding whitespace is ignored, and repeated whitespace is treated as one space in both the query and name.
 * Copied commands can use Unicode spaces, including non-breaking spaces, around `find` and `n/`. Line breaks within a search phrase are also treated as spaces.
 * The query must contain 1–100 characters after whitespace normalization: letters, spaces, hyphens, apostrophes or full stops, with at least one letter.
@@ -171,73 +226,105 @@ Examples:
 * `find n/john tan` returns `John Tan` and `John Tanner`, sorted by matriculation number.
 * `find n/joh` returns names containing `joh`, including `John Tan` and `Johnny Lim`.
 
-### Deleting a person: `delete`
+### Deleting a student: `delete`
 
-Deletes the specified person from the address book.
+Deletes a student and all of their attendance records. The student's tutorial group and its sessions are kept, even if the group becomes empty.
 
 Format: `delete INDEX`
 
-* Deletes the person at the specified `INDEX`.
-* The index refers to the index number shown in the displayed person list.
-* The index **must be a positive integer** 1, 2, 3, …​
+* `INDEX` refers to the index number in the currently displayed student list.
+* The index must be a positive integer within the displayed list.
+* Deletion happens immediately, with no confirmation and no undo.
+* After deletion, the displayed list is refreshed and its indexes are recalculated. Repeating the same command may therefore delete a different student.
+* Re-adding the student creates a new record whose attendance is unmarked; deleted attendance is not restored.
+
+On success, Roster names the deleted student and confirms that their attendance records were also removed.
 
 Examples:
-* `list` followed by `delete 2` deletes the 2nd person in the address book.
-* `find n/Betsy` followed by `delete 1` deletes the 1st person in the results of the `find` command.
 
-### Clearing all entries: `clear`
+* `list` followed by `delete 2` deletes the second student in the full roster.
+* `list grp/T09` followed by `delete 1` deletes the first displayed student in `T09`.
+* `find n/Betsy` followed by `delete 1` deletes the first student in the search results.
 
-Clears all entries from the address book.
+### Marking attendance: `mark`
 
-Format: `clear`
+Records a displayed student as present or absent for one of their tutorial group's sessions.
 
-### Exiting the program: `exit`
+Format: `mark INDEX w/WEEK s/STATUS`
 
-Exits the program.
+Examples:
+
+* `mark 3 w/5 s/present`
+* `mark 1 s/absent w/6`
+
+* `INDEX` refers to the currently displayed student list.
+* The specified teaching week must have a session for that student's tutorial group.
+* `STATUS` must be either `present` or `absent`, case-insensitive.
+* Marking an already marked student replaces the earlier status and reports the previous value.
+* The displayed list and its indexes stay unchanged after a successful mark.
+* The updated attendance cell changes to `P` or `A` and is briefly highlighted.
+* Marking never creates a missing session. When the displayed list contains multiple groups, Roster looks up the teaching week in each selected student's own group.
+
+On success, Roster names the student, status, tutorial group, and teaching week so you can verify the updated record.
+
+<div markdown="span" class="alert alert-primary">:bulb: **Tip:**
+Run `list grp/GROUP` before taking attendance so only that tutorial group's students are displayed.
+</div>
+
+### Exiting Roster: `exit`
+
+Exits the application.
 
 Format: `exit`
 
-### Saving the data
+### Saving data
 
-AddressBook automatically saves data after every command. You do not need to save manually.
+Roster automatically saves its data after each successful command. You do not need to save manually.
 
 ### Editing the data file
 
-AddressBook data is saved automatically as a JSON file `[JAR file location]/data/addressbook.json`. Advanced users are welcome to update data directly by editing that data file.
+Roster data is saved as `[JAR file location]/data/addressbook.json`. Advanced users may edit this JSON file directly.
 
 <div markdown="span" class="alert alert-warning">:exclamation: **Caution:**
-If your changes make the data file invalid, AddressBook starts with an empty address book at the next run. The invalid file remains on disk until you run a command (AddressBook saves after every command). Still, we recommend backing up the file before editing it.<br>
-Furthermore, certain edits can cause the AddressBook to behave in unexpected ways (e.g., if a value entered is outside of the acceptable range). Therefore, edit the data file only if you are confident that you can update it correctly.
+If your changes make the data file invalid, Roster starts with an empty roster the next time it runs. The invalid file remains on disk until a successful command causes Roster to save again. Back up the file before editing it.<br>
+Manual edits can also produce unexpected behavior if values do not follow Roster's rules. Edit the data file only if you are confident that you can update it correctly.
 </div>
-
-### Archiving data files `[coming in v2.0]`
-
-_Details coming soon ..._
 
 --------------------------------------------------------------------------------------------------------------------
 
 ## FAQ
 
 **Q**: How do I transfer my data to another computer?<br>
-**A**: Install the app on the other computer and overwrite the data file it creates with the data file from your previous AddressBook home folder.
+**A**: Install Roster on the other computer and replace its `data/addressbook.json` file with the file from your previous Roster home folder.
+
+**Q**: How do I correct a student's details?<br>
+**A**: The MVP does not include `edit`. Delete the student and add them again. Note that deleting the student also removes all of their attendance records.
+
+**Q**: How do I switch between tutorial groups?<br>
+**A**: Use `list grp/GROUP`, for example `list grp/T09`. There is no separate switch command.
+
+**Q**: How do I change an attendance record?<br>
+**A**: Run `mark` again for the same student and teaching week with the new status. Roster replaces the earlier status.
 
 --------------------------------------------------------------------------------------------------------------------
 
 ## Known issues
 
-1. **When using multiple screens**, if you move the application to a secondary screen, and later switch to using only the primary screen, the GUI will open off-screen. The remedy is to delete the `preferences.json` file created by the application before running the application again.
-2. **If you minimize the Help Window** and then run the `help` command (or use the `Help` menu, or the keyboard shortcut `F1`) again, the original Help Window will remain minimized, and no new Help Window will appear. The remedy is to manually restore the minimized Help Window.
+1. **When using multiple screens**, if you move the application to a secondary screen and later use only the primary screen, the GUI may open off-screen. Delete the `preferences.json` file created by the application before running it again.
+2. **If you minimize the Help Window** and run `help` again, the original window remains minimized and no new Help Window appears. Restore the minimized Help Window manually.
 
 --------------------------------------------------------------------------------------------------------------------
 
 ## Command summary
 
-Action | Format, Examples
---------|------------------
-**Add** | `add n/NAME p/PHONE_NUMBER e/EMAIL a/ADDRESS [t/TAG]…​` <br> e.g., `add n/James Ho p/22224444 e/jamesho@example.com a/123, Clementi Rd, 1234665 t/friend t/colleague`
-**Clear** | `clear`
-**Delete** | `delete INDEX`<br> e.g., `delete 3`
-**Edit** | `edit INDEX [n/NAME] [p/PHONE_NUMBER] [e/EMAIL] [a/ADDRESS] [t/TAG]…​`<br> e.g., `edit 2 n/James Lee e/jameslee@example.com`
-**Find** | `find n/KEYWORD`<br> e.g., `find n/John Tan`
-**List** | `list`
+Action | Format, example
+-------|----------------
 **Help** | `help`
+**Create tutorial group** | `init grp/GROUP`<br>e.g. `init grp/T09`
+**Create session** | `session grp/GROUP w/WEEK d/DATE`<br>e.g. `session grp/T09 w/5 d/2026-09-15`
+**Add student** | `add n/NAME m/MATRIC grp/GROUP e/EMAIL`<br>e.g. `add n/Alex Tan m/A0123456X grp/T09 e/alex.tan@example.com`
+**List students** | `list [grp/GROUP]`<br>e.g. `list grp/T09`
+**Find students** | `find n/KEYWORD`<br>e.g. `find n/John Tan`
+**Delete student** | `delete INDEX`<br>e.g. `delete 3`
+**Mark attendance** | `mark INDEX w/WEEK s/STATUS`<br>e.g. `mark 3 w/5 s/present`
+**Exit** | `exit`
