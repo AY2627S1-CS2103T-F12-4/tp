@@ -19,7 +19,7 @@ Roster is a **desktop application for NUS teaching assistants to manage students
 
 1. Copy the file to the folder you want to use as Roster's _home folder_.
 
-1. Open a terminal, `cd` to the folder containing the JAR file, and run `java -jar addressbook.jar`.<br>
+1. Open a terminal, `cd` to the folder containing the JAR file, and run `java -jar roster.jar`.<br>
    A GUI similar to the one below should appear in a few seconds. Roster includes sample data on its first launch.<br>
    ![Roster user interface](images/Ui.png)
 
@@ -28,7 +28,7 @@ Roster is a **desktop application for NUS teaching assistants to manage students
 1. Try this typical attendance workflow:
 
    * `init grp/T09` : Creates tutorial group `T09`.
-   * `add n/Alex Tan m/A0123456X grp/T09 e/alex.tan@example.com` : Adds Alex Tan to `T09`.
+   * `add n/Alex Tan p/12345678 e/alex.tan@example.com a/Kent Ridge m/A0123456X grp/T09` : Adds Alex Tan to `T09`.
    * `session grp/T09 w/5 d/2026-09-15` : Creates the week 5 session for `T09`.
    * `list grp/T09` : Shows the students in `T09` and makes it the active group.
    * `mark 1 w/5 s/present` : Marks the first displayed student present for week 5.
@@ -49,8 +49,8 @@ A session records that a tutorial group met during a particular teaching week an
 
 For each session in a student's tutorial group, their attendance is one of three states:
 
-* **Present (`P`)**: The student has been marked present.
-* **Absent (`A`)**: The student has been marked absent.
+* **Present (`✓`)**: The student has been marked present.
+* **Absent (`✗`)**: The student has been marked absent.
 * **Unmarked (`—`)**: No attendance has been recorded yet. Unmarked is kept separate from absent so unfinished attendance is not mistaken for a confirmed absence.
 
 Creating a session does not automatically mark any student. A student added after sessions have been created is also unmarked for those earlier sessions.
@@ -98,9 +98,12 @@ The MVP does not support returning a recorded status to unmarked. You can, howev
 Parameter | Accepted value
 ----------|---------------
 `grp/GROUP` | One or two letters followed by two digits, e.g. `T09` or `TG01`. Surrounding spaces are removed and letters are converted to uppercase.
-`n/NAME` | 1–60 characters. Letters, spaces, hyphens, apostrophes and full stops only; must begin with a letter. Surrounding spaces are removed, repeated spaces become one space, and letter case is preserved.
+`n/NAME` | 1–70 characters. Letters, spaces, hyphens and apostrophes only; must begin and end with a letter. Surrounding spaces are removed, repeated spaces become one space, and letter case is preserved.
+`p/PHONE` | At least three digits, with no spaces or other characters.
 `m/MATRIC` | `A`, followed by seven digits and one letter, e.g. `A0287654J`. Surrounding spaces are removed and letters are converted to uppercase.
 `e/EMAIL` | A valid email address such as `alex.tan@example.com`. Surrounding spaces are removed and the address is converted to lowercase.
+`a/ADDRESS` | Any non-blank text.
+`t/TAG` | One or more letters or digits, with no spaces or other characters. Repeat `t/` to give a student multiple tags.
 `w/WEEK` | A whole number from `1` to `13`, without a leading zero.
 `d/DATE` | A real calendar date in `YYYY-MM-DD` format.
 `s/STATUS` | `present` or `absent`, case-insensitive.
@@ -148,20 +151,17 @@ On success, Roster displays a confirmation such as `Created session: T09 week 5 
 
 Adds a student to an existing tutorial group. The student is unmarked for every existing session in that group.
 
-Format: `add n/NAME m/MATRIC grp/GROUP e/EMAIL`
+Format: `add n/NAME p/PHONE e/EMAIL a/ADDRESS m/MATRIC grp/GROUP [t/TAG]...`
 
 Examples:
 
-* `add n/Alex Tan m/A0123456X grp/T09 e/alex.tan@example.com`
+* `add n/Alex Tan p/12345678 e/alex.tan@example.com a/Kent Ridge m/A0123456X grp/T09`
 * The tutorial group must already exist.
 * Matriculation numbers and email addresses must be unique across all tutorial groups.
 * Names do not need to be unique because different students may share a name.
 
 On success, Roster displays a confirmation such as `Added Alex Tan (A0123456X) to tutorial group T09.`
 
-<div markdown="span" class="alert alert-info">:information_source: **Editing student details:**
-The `edit` command is not part of the MVP. To correct a student's details, delete the student and add them again. Deleting a student also deletes all of their attendance records.
-</div>
 
 ### Listing students: `list`
 
@@ -262,7 +262,7 @@ Examples:
 * `STATUS` must be either `present` or `absent`, case-insensitive.
 * Marking an already marked student replaces the earlier status and reports the previous value.
 * The displayed list and its indexes stay unchanged after a successful mark.
-* The updated attendance cell changes to `P` or `A` and is briefly highlighted.
+* The updated attendance cell changes to `✓` or `✗` and is briefly highlighted.
 * Marking never creates a missing session. When the displayed list contains multiple groups, Roster looks up the teaching week in each selected student's own group.
 
 On success, Roster names the student, status, tutorial group, and teaching week so you can verify the updated record.
@@ -276,6 +276,16 @@ Run `list grp/GROUP` before taking attendance so only that tutorial group's stud
 Exits the application.
 
 Format: `exit`
+
+### Clearing all data: `clear`
+
+Deletes every student, tutorial group, session and attendance record.
+
+Format: `clear`
+
+<div markdown="span" class="alert alert-warning">:exclamation: **Caution:**
+Clearing happens immediately, with no confirmation and no undo. Back up `data/addressbook.json` first if you may need to restore the data.
+</div>
 
 ### Saving data
 
@@ -298,7 +308,7 @@ Manual edits can also produce unexpected behavior if values do not follow Roster
 **A**: Install Roster on the other computer and replace its `data/addressbook.json` file with the file from your previous Roster home folder.
 
 **Q**: How do I correct a student's details?<br>
-**A**: The MVP does not include `edit`. Delete the student and add them again. Note that deleting the student also removes all of their attendance records.
+**A**: Use `edit INDEX` followed by the fields to change, for example `edit 1 e/alex.tan@example.com`.
 
 **Q**: How do I switch between tutorial groups?<br>
 **A**: Use `list grp/GROUP`, for example `list grp/T09`. There is no separate switch command.
@@ -322,9 +332,11 @@ Action | Format, example
 **Help** | `help`
 **Create tutorial group** | `init grp/GROUP`<br>e.g. `init grp/T09`
 **Create session** | `session grp/GROUP w/WEEK d/DATE`<br>e.g. `session grp/T09 w/5 d/2026-09-15`
-**Add student** | `add n/NAME m/MATRIC grp/GROUP e/EMAIL`<br>e.g. `add n/Alex Tan m/A0123456X grp/T09 e/alex.tan@example.com`
+**Add student** | `add n/NAME p/PHONE e/EMAIL a/ADDRESS m/MATRIC grp/GROUP [t/TAG]...`<br>e.g. `add n/Alex Tan p/12345678 e/alex.tan@example.com a/Kent Ridge m/A0123456X grp/T09`
+**Edit student** | `edit INDEX [n/NAME] [p/PHONE] [e/EMAIL] [a/ADDRESS] [m/MATRIC] [grp/GROUP] [t/TAG]...`<br>e.g. `edit 1 e/alex.tan@example.com`
 **List students** | `list [grp/GROUP]`<br>e.g. `list grp/T09`
 **Find students** | `find n/KEYWORD`<br>e.g. `find n/John Tan`
 **Delete student** | `delete INDEX`<br>e.g. `delete 3`
 **Mark attendance** | `mark INDEX w/WEEK s/STATUS`<br>e.g. `mark 3 w/5 s/present`
 **Exit** | `exit`
+**Clear all data** | `clear`
