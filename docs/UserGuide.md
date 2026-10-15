@@ -73,19 +73,24 @@ Shows a message explaining how to access the help page.
 Format: `help`
 
 
-### Adding a person: `add`
+### Adding a student: `add`
 
-Adds a person to the address book.
+Adds a student to an existing tutorial group. Create the group first with `init grp/GROUP`.
 
-Format: `add n/NAME p/PHONE_NUMBER e/EMAIL a/ADDRESS [t/TAG]…​`
+Format: `add n/NAME p/PHONE_NUMBER e/EMAIL a/ADDRESS m/MATRIC grp/GROUP [t/TAG]…​`
+
+* Names must contain 1–70 characters after whitespace normalization. Letters, spaces, apostrophes and hyphens are allowed; the name must begin and end with a letter. For example, `O'Neil` and `Anne-Marie` are valid, while `123` and `Alex-` are rejected.
+* Surrounding whitespace is removed, and repeated internal whitespace becomes one space. Letter case is preserved.
+* Required prefixes may appear in any order, but each must appear exactly once. Tags are optional and may be repeated.
+* Unknown parameters, such as `x/ignored`, are rejected even when they follow an address. Invalid names and unknown parameters leave the student records and current view unchanged.
 
 <div markdown="span" class="alert alert-primary">:bulb: **Tip:**
 A person can have any number of tags, including zero.
 </div>
 
 Examples:
-* `add n/John Doe p/98765432 e/johnd@example.com a/John street, block 123, #01-01`
-* `add n/Betsy Crowe t/friend e/betsycrowe@example.com a/Newgate Prison p/1234567 t/criminal`
+* `add n/John Doe p/98765432 e/johnd@example.com a/John street, block 123, #01-01 m/A0123456X grp/T09`
+* `add n/Anne-Marie p/91234567 e/anne@example.com a/Kent Ridge m/A7654321Z grp/T09 t/friend`
 
 ### Listing students: `list`
 

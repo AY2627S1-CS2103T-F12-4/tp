@@ -1,5 +1,6 @@
 package seedu.address.model.person;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static seedu.address.testutil.Assert.assertThrows;
@@ -20,6 +21,12 @@ public class NameTest {
     }
 
     @Test
+    public void constructor_whitespace_returnsNormalizedName() {
+        assertEquals("Alex Tan", new Name(" \tAlex\u2003  Tan\n ").fullName);
+        assertEquals("Alex Tan", new Name("Alex" + " ".repeat(80) + "Tan").fullName);
+    }
+
+    @Test
     public void isValidName() {
         // null name
         assertThrows(NullPointerException.class, () -> Name.isValidName(null));
@@ -27,15 +34,27 @@ public class NameTest {
         // invalid name
         assertFalse(Name.isValidName("")); // empty string
         assertFalse(Name.isValidName(" ")); // spaces only
-        assertFalse(Name.isValidName("^")); // only non-alphanumeric characters
-        assertFalse(Name.isValidName("peter*")); // contains non-alphanumeric characters
+        assertFalse(Name.isValidName("^")); // unsupported punctuation
+        assertFalse(Name.isValidName("peter*"));
+        assertFalse(Name.isValidName("12345"));
+        assertFalse(Name.isValidName("peter the 2nd"));
+        assertFalse(Name.isValidName("'Peter"));
+        assertFalse(Name.isValidName("Peter-"));
+        assertFalse(Name.isValidName("Peter."));
+        assertFalse(Name.isValidName("A".repeat(71)));
+        assertFalse(Name.isValidName("\ud801\udc00".repeat(71)));
 
         // valid name
         assertTrue(Name.isValidName("peter jack")); // alphabets only
-        assertTrue(Name.isValidName("12345")); // numbers only
-        assertTrue(Name.isValidName("peter the 2nd")); // alphanumeric characters
+        assertTrue(Name.isValidName("A")); // single-letter name
+        assertTrue(Name.isValidName("O'Neil"));
+        assertTrue(Name.isValidName("O\u2019Neil"));
+        assertTrue(Name.isValidName("Anne-Marie"));
+        assertTrue(Name.isValidName("\u00c9lodie Tan"));
+        assertTrue(Name.isValidName("A".repeat(70)));
+        assertTrue(Name.isValidName("\ud801\udc00".repeat(70)));
         assertTrue(Name.isValidName("Capital Tan")); // with capital letters
-        assertTrue(Name.isValidName("David Roger Jackson Ray Jr 2nd")); // long names
+        assertTrue(Name.isValidName("David Roger Jackson Ray Junior")); // long names
     }
 
     @Test
