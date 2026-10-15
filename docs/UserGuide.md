@@ -19,7 +19,7 @@ Roster is a **desktop application for NUS teaching assistants to manage students
 
 1. Copy the file to the folder you want to use as Roster's _home folder_.
 
-1. Open a terminal, `cd` to the folder containing the JAR file, and run `java -jar addressbook.jar`.<br>
+1. Open a terminal, `cd` to the folder containing the JAR file, and run `java -jar roster.jar`.<br>
    A GUI similar to the one below should appear in a few seconds. Roster includes sample data on its first launch.<br>
    ![Roster user interface](images/Ui.png)
 
