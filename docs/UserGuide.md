@@ -91,7 +91,10 @@ Examples:
 
 Shows all students or the students of one registered tutorial group, sorted by matriculation number.
 
-Format: `list [grp/GROUP]`
+Formats:
+
+* `list` — list all students.
+* `list grp/GROUP` — list students in one registered tutorial group.
 
 Examples:
 * `list` shows every student and clears the active group and any previous search filter.
@@ -101,17 +104,17 @@ Examples:
 Group codes have one or two letters followed by two digits, such as `T09` or `TG01`.
 The group must already exist. Listing an empty group is allowed; listing a nonexistent group is an error.
 
-| Situation | Feedback |
-| --- | --- |
-| All students | `Listed all 58 students.` (with the actual count) |
-| One group | `Listed 20 students in T09.` (with the actual count and group) |
-| Registered but empty group | `Tutorial group T09 has no students yet.` |
-| Empty roster | `No students in Roster. Create a tutorial group and add students to get started.` |
-| Unknown group | `Tutorial group T09 does not exist. Create it first with: init grp/T09` |
+| Situation                  | Feedback                                                                          |
+| -------------------------- | --------------------------------------------------------------------------------- |
+| All students               | `Listed all 58 students.` (with the actual count)                                 |
+| One group                  | `Listed 20 students in T09.` (with the actual count and group)                    |
+| Registered but empty group | `Tutorial group T09 has no students yet.`                                         |
+| Empty roster               | `No students in Roster. Create a tutorial group and add students to get started.` |
+| Unknown group              | `Tutorial group T09 does not exist. Create it first with: init grp/T09`           |
 
 Each student's card shows their details and attendance for every session of their group, in teaching-week order:
-`P` means present, `A` means absent, and `—` means unmarked. A student added after a session also shows `—`
-until their attendance is recorded. Weeks with no session have no cell. The list scrolls when needed.
+A green `✓` means present, a red `✗` means absent, and a grey `—` means unmarked.
+A student added after a session also shows `—` until their attendance is recorded. Weeks with no session have no cell. The list scrolls when needed.
 
 The group scope is shown above the list. `find` searches across groups and clears the active group.
 Adding or deleting a student refreshes the current results without clearing the filter.

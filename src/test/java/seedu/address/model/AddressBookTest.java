@@ -159,18 +159,18 @@ public class AddressBookTest {
         }
 
         @Override
-        public ObservableList<Group> getGroupList() {
-            return FXCollections.observableArrayList();
-        }
-
-        @Override
         public ObservableList<Person> getPersonList() {
             return persons;
         }
 
         @Override
+        public ObservableList<Group> getGroupList() {
+            return FXCollections.emptyObservableList();
+        }
+
+        @Override
         public ObservableList<Session> getSessionList() {
-            return FXCollections.observableArrayList();
+            return FXCollections.emptyObservableList();
         }
     }
 

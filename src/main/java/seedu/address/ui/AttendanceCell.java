@@ -27,6 +27,28 @@ public record AttendanceCell(int week, String status) {
                 .toList();
     }
 
+    /**
+     * Returns a distinct display symbol for present, absent and unmarked attendance.
+     */
+    public String symbol() {
+        return switch (status) {
+            case "P" -> "\u2713";
+            case "A" -> "\u2717";
+            default -> "\u2014";
+        };
+    }
+
+    /**
+     * Returns the CSS class used to colour this attendance status.
+     */
+    public String styleClass() {
+        return switch (status) {
+            case "P" -> "attendance-present";
+            case "A" -> "attendance-absent";
+            default -> "attendance-unmarked";
+        };
+    }
+
     private static String statusFor(Person person, Session session) {
         return person.getAttendances().stream()
                 .filter(attendance -> attendance.isForSession(session))

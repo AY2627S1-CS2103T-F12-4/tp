@@ -262,11 +262,13 @@ public class GroupListIntegrationTest {
     @Test
     public void addPerson_preservesFilterAndUpdatesSortedIndices() throws Exception {
         new ListCommand(group).execute(model);
-        Person first = new PersonBuilder().withName("First Student").withMatric("A0000000Z")
+        Person first = new PersonBuilder().withName("First Student")
+                .withEmail("first@example.com").withMatric("A0000000Z")
                 .withGroup("T09").build();
         model.addPerson(first);
         assertEquals(List.of(first, earlier, later), model.getFilteredPersonList());
-        Person hidden = new PersonBuilder().withName("Hidden Student").withMatric("A0000003Z")
+        Person hidden = new PersonBuilder().withName("Hidden Student")
+                .withEmail("hidden@example.com").withMatric("A0000003Z")
                 .withGroup("T10").build();
         model.addPerson(hidden);
         assertEquals(List.of(first, earlier, later), model.getFilteredPersonList());
