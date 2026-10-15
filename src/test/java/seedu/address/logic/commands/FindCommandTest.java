@@ -133,7 +133,7 @@ public class FindCommandTest {
     }
 
     @Test
-    public void execute_listAfterSearch_restoresRosterOrderInSameObservableView() throws Exception {
+    public void execute_listAfterSearch_restoresMatricOrderInSameObservableView() throws Exception {
         ObservableList<Person> displayed = model.getFilteredPersonList();
         parser.parseCommand("find n/John").execute(model);
         assertEquals(List.of(johnTan, johnLim, johnTanner, johnny, johnson), displayed);
@@ -150,7 +150,7 @@ public class FindCommandTest {
         parser.parseCommand("find n/John").execute(model);
         parser.parseCommand("delete 1").execute(model);
 
-        assertFalse(model.hasPerson(johnTan));
+        assertFalse(model.getAddressBook().getPersonList().contains(johnTan));
         assertTrue(model.hasPerson(johnny));
         assertEquals(List.of(johnLim, johnTanner, johnny, johnson), displayed);
         assertEquals(List.of(johnny, johnson, johnLim, johnTanner, meiTan), model.getAddressBook().getPersonList());
@@ -162,20 +162,18 @@ public class FindCommandTest {
         parser.parseCommand("edit 1 n/Jack Tan").execute(model);
         Person edited = new PersonBuilder(johnTan).withName("Jack Tan").build();
 
-        // The student keeps their matriculation number, so they remain the same student.
-        // What is gone is the record carrying the old name.
         assertFalse(model.getAddressBook().getPersonList().contains(johnTan));
         assertTrue(model.hasPerson(johnny));
         assertEquals(List.of(johnny, edited, johnson, johnLim, johnTanner, meiTan), model.getFilteredPersonList());
     }
 
     @Test
-    public void execute_addAfterSearch_restoresUnfilteredRosterOrder() throws Exception {
+    public void execute_addAfterSearch_preservesResultsAndRanking() throws Exception {
         parser.parseCommand("find n/John").execute(model);
         Person alice = new PersonBuilder().withName("Alice").withEmail("alice@example.com").build();
         new AddCommand(alice).execute(model);
 
-        assertEquals(List.of(johnny, johnTan, johnson, johnLim, johnTanner, meiTan, alice),
+        assertEquals(List.of(johnTan, johnLim, johnTanner, johnny, johnson),
                 model.getFilteredPersonList());
     }
 

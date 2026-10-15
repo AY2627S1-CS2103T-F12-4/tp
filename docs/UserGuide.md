@@ -176,21 +176,42 @@ The `edit` command is not part of the MVP. To correct a student's details, delet
 
 ### Listing students: `list`
 
-Shows all students or only the students in one tutorial group, together with their attendance.
+Shows all students or the students of one registered tutorial group, sorted by matriculation number.
 
-Format: `list grp/GROUP`
+Formats:
+
+* `list` — list all students.
+* `list grp/GROUP` — list students in one registered tutorial group.
 
 Examples:
+* `list` shows every student and clears the active group and any previous search filter.
+* `list grp/T09` shows only T09's students and makes T09 the active group.
+* `list grp/t09` works too: group codes ignore letter case and surrounding spaces.
 
-* `list` shows every student across all tutorial groups and clears the active group.
-* `list grp/T09` shows only students in `T09` and makes `T09` the active group.
+Group codes have one or two letters followed by two digits, such as `T09` or `TG01`.
+The group must already exist. Listing an empty group is allowed; listing a nonexistent group is an error.
 
-* Students are sorted by matriculation number in ascending order.
-* Each student's entry shows their name, matriculation number, tutorial group, email, and attendance strip.
-* The attendance strip contains one cell per session in teaching-week order: `P` for present, `A` for absent, and `—` for unmarked.
-* An existing group with no students is different from a group that does not exist; Roster reports each case separately.
+| Situation                  | Feedback                                                                          |
+| -------------------------- | --------------------------------------------------------------------------------- |
+| All students               | `Listed all 58 students.` (with the actual count)                                 |
+| One group                  | `Listed 20 students in T09.` (with the actual count and group)                    |
+| Registered but empty group | `Tutorial group T09 has no students yet.`                                         |
+| Empty roster               | `No students in Roster. Create a tutorial group and add students to get started.` |
+| Unknown group              | `Tutorial group T09 does not exist. Create it first with: init grp/T09`           |
 
-Roster reports how many students were listed, or explains when the selected group or the entire roster has no students.
+Each student's card shows their details and attendance for every session of their group, in teaching-week order:
+A green `✓` means present, a red `✗` means absent, and a grey `—` means unmarked.
+A student added after a session also shows `—` until their attendance is recorded. Weeks with no session have no cell. The list scrolls when needed.
+
+The group scope is shown above the list. `find` searches across groups and clears the active group.
+Adding or deleting a student refreshes the current results without clearing the filter.
+Student indices are the row numbers currently on screen, so check the displayed list before using `delete`, `edit`,
+or `mark`. A successful edit shows all students again in matriculation-number order. Editing a matriculation number
+can therefore change row numbers. Moving a student to another group clears their old attendance records; their
+attendance strip then uses the new group's sessions.
+
+Only one `grp/` parameter is allowed. Missing group values, invalid codes, repeated parameters and unrelated arguments
+are rejected. A rejected list command leaves the data, active group and displayed rows unchanged.
 
 ### Finding students by name: `find`
 
@@ -200,14 +221,15 @@ Format: `find n/KEYWORD`
 
 * The `n/` prefix is required and must appear exactly once. The keyword may contain several words, such as `john tan`.
 * Surrounding whitespace is ignored, and repeated whitespace is treated as one space in both the query and name.
-* The keyword follows the same rules as a name: 1–60 characters, using letters, spaces, hyphens, apostrophes, or full stops, and beginning with a letter.
-* The search is case-insensitive and considers names only. Accents and punctuation remain significant.
-* The entire phrase must appear contiguously and in the same order. For example, `john tan` matches `John Tan` and `John Tanner`, but does not match `John Lim`, `Mei Tan`, or `Tan John`.
-* Matching students are sorted by matriculation number in ascending order.
-* Each search considers all students, even if the previous search returned no matches.
-* `delete INDEX` and `mark INDEX ...` use the indexes in the displayed search results. Search does not change the saved roster order. Use `list` to show everyone again.
-
-Roster reports the number of matching students, or explains that no student matched the search phrase.
+* Copied commands can use Unicode spaces, including non-breaking spaces, around `find` and `n/`. Line breaks within a search phrase are also treated as spaces.
+* The query must contain 1–100 characters after whitespace normalization: letters, spaces, hyphens, apostrophes or full stops, with at least one letter.
+* The search is case-insensitive and considers only names. Accents and punctuation remain significant.
+* The entire phrase must appear contiguously and in the same order. For example, `john tan` matches `John Tan` and `John Tanner`, but does not match `John Lim`, `Mei Tan` or `Tan John`.
+* Whole-word phrase matches appear first, followed by partial matches. For example, `find n/john` lists `John Tan` before `Johnny Lim` even if `Johnny Lim` was added first. Within each tier, students retain their roster order.
+* Each search considers all students, including when the previous search returned no matches.
+* Successful searches show `Found COUNT student(s) matching "KEYWORD".` A search with no matches produces an empty list and shows `No students found matching "KEYWORD". Try another name.`
+* Missing or blank queries, repeated `n/` prefixes, unsupported characters, text before `n/`, and other parameters produce an error without changing the displayed list.
+* `delete INDEX` and `edit INDEX` use the displayed result indexes. Search does not change the saved roster order. Use `list` to show everyone again in ascending matriculation-number order.
 
 Examples:
 

@@ -40,8 +40,7 @@ public class InitCommand extends Command {
         }
 
         model.addGroup(group);
-        model.setActiveGroup(group);
-        model.updateFilteredPersonList(Model.PREDICATE_SHOW_NO_PERSONS);
+        model.showGroup(group);
         return new CommandResult(String.format(MESSAGE_SUCCESS, group));
     }
 

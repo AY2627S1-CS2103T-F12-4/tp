@@ -138,9 +138,16 @@ public class AddressBookParserTest {
     @Test
     public void parseCommand_listWithArguments_throwsParseException() {
         String expectedMessage = String.format(MESSAGE_INVALID_COMMAND_FORMAT, ListCommand.MESSAGE_USAGE);
-        for (String arguments : List.of("3", "John", "n/John", "grp/T09", "grp/")) {
+        for (String arguments : List.of("3", "John", "n/John")) {
             assertThrows(ParseException.class, expectedMessage, () -> parser.parseCommand("list " + arguments));
         }
+    }
+
+    @Test
+    public void parseCommand_mark() throws Exception {
+        MarkCommand command = (MarkCommand) parser.parseCommand(MarkCommand.COMMAND_WORD + " "
+                + INDEX_FIRST_PERSON.getOneBased() + " w/5 s/absent");
+        assertEquals(new MarkCommand(INDEX_FIRST_PERSON, new Week(5), Status.ABSENT), command);
     }
 
     @Test
@@ -155,13 +162,6 @@ public class AddressBookParserTest {
                 "session grp/T09 w/5 d/2026-09-15");
         Session expectedSession = new Session(new Group("T09"), new Week(5), new SessionDate("2026-09-15"));
         assertEquals(new SessionCommand(expectedSession), command);
-    }
-
-    @Test
-    public void parseCommand_mark() throws Exception {
-        MarkCommand command = (MarkCommand) parser.parseCommand(MarkCommand.COMMAND_WORD + " "
-                + INDEX_FIRST_PERSON.getOneBased() + " w/5 s/absent");
-        assertEquals(new MarkCommand(INDEX_FIRST_PERSON, new Week(5), Status.ABSENT), command);
     }
 
     @Test
