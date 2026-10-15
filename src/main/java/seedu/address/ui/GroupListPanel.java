@@ -1,6 +1,8 @@
 package seedu.address.ui;
 
-import javafx.collections.ListChangeListener;
+import java.util.Objects;
+
+import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.ListView;
@@ -18,15 +20,25 @@ public class GroupListPanel extends UiPart<Region> {
     private ListView<Group> groupListView;
 
     /**
-     * Creates a {@code GroupListPanel} backed by {@code groupList}.
+     * Creates a group panel whose selection follows the active tutorial group.
      */
-    public GroupListPanel(ObservableList<Group> groupList) {
+    public GroupListPanel(ObservableList<Group> groupList, ReadOnlyObjectProperty<Group> activeGroup) {
         super(FXML);
         groupListView.setItems(groupList);
-        groupList.addListener((ListChangeListener<Group>) change -> {
-            if (!groupList.isEmpty()) {
-                groupListView.getSelectionModel().selectLast();
+        selectGroup(activeGroup.get());
+        activeGroup.addListener((observable, oldGroup, newGroup) -> selectGroup(newGroup));
+        groupListView.getSelectionModel().selectedItemProperty().addListener((observable, oldGroup, newGroup) -> {
+            if (!Objects.equals(newGroup, activeGroup.get())) {
+                selectGroup(activeGroup.get());
             }
         });
+    }
+
+    private void selectGroup(Group group) {
+        if (group == null) {
+            groupListView.getSelectionModel().clearSelection();
+        } else {
+            groupListView.getSelectionModel().select(group);
+        }
     }
 }

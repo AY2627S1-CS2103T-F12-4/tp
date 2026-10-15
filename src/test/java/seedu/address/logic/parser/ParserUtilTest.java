@@ -186,6 +186,12 @@ public class ParserUtilTest {
     }
 
     @Test
+    public void parseMatric_lowerCaseValueWithWhitespace_returnsUpperCaseTrimmedMatric() throws Exception {
+        String matricWithWhitespace = WHITESPACE + VALID_MATRIC.toLowerCase() + WHITESPACE;
+        assertEquals(new Matric(VALID_MATRIC), ParserUtil.parseMatric(matricWithWhitespace));
+    }
+
+    @Test
     public void parseWeek_null_throwsNullPointerException() {
         assertThrows(NullPointerException.class, () -> ParserUtil.parseWeek((String) null));
     }
