@@ -6,6 +6,6 @@
 
 <VBox styleClass="background" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1">
   <Label fx:id="groupScope" styleClass="label-bright" style="-fx-padding: 4 12 4 12;" />
-  <Label text="Attendance: P = Present | A = Absent | &#8212; = Unmarked" styleClass="label-bright" style="-fx-padding: 4 12 4 12;" wrapText="true" />
+  <Label text="Attendance: &#10003; = Present | &#10007; = Absent | &#8212; = Unmarked" styleClass="label-bright" style="-fx-padding: 4 12 4 12;" wrapText="true" />
   <ListView fx:id="personListView" VBox.vgrow="ALWAYS" />
 </VBox>

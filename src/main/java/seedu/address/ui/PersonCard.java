@@ -63,8 +63,8 @@ public class PersonCard extends UiPart<Region> {
         matric.setText(person.getMatric().value);
         group.setText(person.getGroup().value);
         for (AttendanceCell cell : AttendanceCell.forStudent(person, sessions)) {
-            Label label = new Label("W" + cell.week() + ": " + cell.status());
-            label.getStyleClass().add("attendance-cell");
+            Label label = new Label("W" + cell.week() + ": " + cell.symbol());
+            label.getStyleClass().addAll("attendance-cell", cell.styleClass());
             attendance.getChildren().add(label);
         }
         if (attendance.getChildren().isEmpty()) {

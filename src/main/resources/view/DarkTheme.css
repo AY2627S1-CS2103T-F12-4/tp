@@ -352,7 +352,23 @@
 }
 
 .attendance-cell {
+    -fx-font-family: "System";
+    -fx-opacity: 1;
     -fx-padding: 3 6 3 6;
     -fx-background-color: #293442;
     -fx-background-radius: 3;
+}
+
+.attendance-cell.attendance-present {
+    -fx-text-fill: #86efac;
+    -fx-background-color: #173d2a;
+}
+
+.attendance-cell.attendance-absent {
+    -fx-text-fill: #fca5a5;
+    -fx-background-color: #4a2328;
+}
+
+.attendance-cell.attendance-unmarked {
+    -fx-text-fill: #d1d5db;
 }
