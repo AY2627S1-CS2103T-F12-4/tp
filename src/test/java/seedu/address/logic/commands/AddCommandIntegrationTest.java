@@ -56,8 +56,7 @@ public class AddCommandIntegrationTest {
     @Test
     public void execute_invalidNameOrUnknownParameter_preservesRosterAndView() {
         Group group = new Group("T09");
-        model.setActiveGroup(group);
-        model.updateFilteredPersonList(person -> person.getName().fullName.contains("Alice"));
+        model.showGroup(group);
         AddressBook previousBook = new AddressBook(model.getAddressBook());
         List<Person> previousResults = List.copyOf(model.getFilteredPersonList());
         AddressBookParser parser = new AddressBookParser();
