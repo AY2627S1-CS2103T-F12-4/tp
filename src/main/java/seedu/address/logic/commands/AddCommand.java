@@ -43,6 +43,7 @@ public class AddCommand extends Command {
     public static final String MESSAGE_SUCCESS = "Added %1$s (%2$s) to tutorial group %3$s.";
     public static final String MESSAGE_DUPLICATE_PERSON =
             "A student with matriculation number %1$s already exists.";
+    public static final String MESSAGE_DUPLICATE_EMAIL = "A student with email %1$s already exists.";
     public static final String MESSAGE_UNKNOWN_GROUP =
             "Tutorial group %1$s does not exist. Create it first with the init command.";
 
@@ -66,6 +67,10 @@ public class AddCommand extends Command {
 
         if (model.hasPerson(toAdd)) {
             throw new CommandException(String.format(MESSAGE_DUPLICATE_PERSON, toAdd.getMatric()));
+        }
+
+        if (model.getAddressBook().getPersonList().stream().anyMatch(toAdd::hasSameEmail)) {
+            throw new CommandException(String.format(MESSAGE_DUPLICATE_EMAIL, toAdd.getEmail()));
         }
 
         model.addPerson(toAdd);

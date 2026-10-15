@@ -41,11 +41,14 @@ public class GroupListIntegrationTest {
     public Path temporaryFolder;
 
     private final Group group = new Group("T09");
-    private final Person later = new PersonBuilder().withName("Later Student").withMatric("A0000009Z")
+    private final Person later = new PersonBuilder().withName("Later Student")
+            .withEmail("later@example.com").withMatric("A0000009Z")
             .withGroup("T09").build();
-    private final Person earlier = new PersonBuilder().withName("Earlier Student").withMatric("A0000002Z")
+    private final Person earlier = new PersonBuilder().withName("Earlier Student")
+            .withEmail("earlier@example.com").withMatric("A0000002Z")
             .withGroup("T09").build();
-    private final Person otherGroup = new PersonBuilder().withName("Other Student").withMatric("A0000001Z")
+    private final Person otherGroup = new PersonBuilder().withName("Other Student")
+            .withEmail("other@example.com").withMatric("A0000001Z")
             .withGroup("T10").build();
     private ModelManager model;
 
@@ -258,11 +261,13 @@ public class GroupListIntegrationTest {
     @Test
     public void addPerson_preservesFilterAndUpdatesSortedIndices() throws Exception {
         new ListCommand(group).execute(model);
-        Person first = new PersonBuilder().withName("First Student").withMatric("A0000000Z")
+        Person first = new PersonBuilder().withName("First Student")
+                .withEmail("first@example.com").withMatric("A0000000Z")
                 .withGroup("T09").build();
         model.addPerson(first);
         assertEquals(List.of(first, earlier, later), model.getFilteredPersonList());
-        Person hidden = new PersonBuilder().withName("Hidden Student").withMatric("A0000003Z")
+        Person hidden = new PersonBuilder().withName("Hidden Student")
+                .withEmail("hidden@example.com").withMatric("A0000003Z")
                 .withGroup("T10").build();
         model.addPerson(hidden);
         assertEquals(List.of(first, earlier, later), model.getFilteredPersonList());
