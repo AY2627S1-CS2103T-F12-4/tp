@@ -124,7 +124,8 @@ public class FindCommandTest {
     public void parse_invalidSearch_preservesPreviousResultsAndRoster() throws Exception {
         parser.parseCommand("find n/John").execute(model);
         for (String input : new String[]{"find John", "find n/", "find n/John n/Tan",
-            "find n/John grp/T09", "find n/John123"}) {
+            "find n/John grp/T09", "find n/John123", "find\u00a0n/John\u2003grp/T09",
+            "find n/John\n n/Tan", "find\u2003n/John2"}) {
             assertThrows(ParseException.class, () -> parser.parseCommand(input));
             assertEquals(List.of(johnTan, johnLim, johnTanner, johnny, johnson), model.getFilteredPersonList());
             assertEquals(roster, model.getAddressBook());
