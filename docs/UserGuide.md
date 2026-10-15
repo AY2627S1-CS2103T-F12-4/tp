@@ -125,14 +125,6 @@ Examples:
 * `init grp/T09`
 * `init grp/t10` creates group `T10` because group codes are normalized to uppercase.
 
-<div markdown="span" class="alert alert-primary">:bulb: **Tip:**
-Create a tutorial group before adding students or sessions to it.
-</div>
-
-Roster rejects a group code that is invalid or already in use. Group codes are compared after normalization, so `t09` and `T09` identify the same group.
-
-On success, Roster displays a confirmation such as `New tutorial group added: T09`.
-
 ### Creating a tutorial session: `session`
 
 Creates a session for an existing tutorial group and teaching week. Every student in that group is initially unmarked for the session.
@@ -161,9 +153,6 @@ Format: `add n/NAME m/MATRIC grp/GROUP e/EMAIL`
 Examples:
 
 * `add n/Alex Tan m/A0123456X grp/T09 e/alex.tan@example.com`
-* `add grp/T09 e/mei.lin@example.com n/Mei Lin m/A7654321Z`
-
-* All four parameters are required and may be given in any order.
 * The tutorial group must already exist.
 * Matriculation numbers and email addresses must be unique across all tutorial groups.
 * Names do not need to be unique because different students may share a name.
@@ -225,17 +214,17 @@ Format: `find n/KEYWORD`
 * The query must contain 1–100 characters after whitespace normalization: letters, spaces, hyphens, apostrophes or full stops, with at least one letter.
 * The search is case-insensitive and considers only names. Accents and punctuation remain significant.
 * The entire phrase must appear contiguously and in the same order. For example, `john tan` matches `John Tan` and `John Tanner`, but does not match `John Lim`, `Mei Tan` or `Tan John`.
-* Whole-word phrase matches appear first, followed by partial matches. For example, `find n/john` lists `John Tan` before `Johnny Lim` even if `Johnny Lim` was added first. Within each tier, students retain their roster order.
+* Results are sorted by matriculation number in ascending order, including both complete and partial name matches. For example, `find n/john` lists `Johnny Lim` with matriculation number `A0000001X` before `John Tan` with `A0000002X`.
+* A successful search clears the active tutorial group and its selection in the group panel. Each result shows the student's matriculation number, tutorial group and attendance for that group's sessions.
 * Each search considers all students, including when the previous search returned no matches.
 * Successful searches show `Found COUNT student(s) matching "KEYWORD".` A search with no matches produces an empty list and shows `No students found matching "KEYWORD". Try another name.`
-* Missing or blank queries, repeated `n/` prefixes, unsupported characters, text before `n/`, and other parameters produce an error without changing the displayed list.
-* `delete INDEX` and `edit INDEX` use the displayed result indexes. Search does not change the saved roster order. Use `list` to show everyone again in ascending matriculation-number order.
+* Missing or blank queries, repeated `n/` prefixes, unsupported characters, text before `n/`, and other parameters produce an error without changing the displayed list or active tutorial group.
+* `mark INDEX`, `delete INDEX` and `edit INDEX` use the displayed result indexes. Search does not change the saved roster order. Use `list` to show everyone again in ascending matriculation-number order.
 
 Examples:
-
-* `find n/John`
-* `find n/john tan`
-* `find n/O'Neil`
+* `find n/John` returns `John Doe` and `Johnny Lim`, sorted by matriculation number.
+* `find n/john tan` returns `John Tan` and `John Tanner`, sorted by matriculation number.
+* `find n/joh` returns names containing `joh`, including `John Tan` and `Johnny Lim`.
 
 ### Deleting a student: `delete`
 
