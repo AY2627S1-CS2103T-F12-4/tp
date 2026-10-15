@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static seedu.address.logic.Messages.MESSAGE_INVALID_COMMAND_FORMAT;
 import static seedu.address.logic.Messages.MESSAGE_UNKNOWN_COMMAND;
+import static seedu.address.logic.parser.CliSyntax.PREFIX_NAME;
 import static seedu.address.testutil.Assert.assertThrows;
 import static seedu.address.testutil.TypicalIndexes.INDEX_FIRST_PERSON;
 
@@ -11,6 +12,7 @@ import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
+import seedu.address.logic.Messages;
 import seedu.address.logic.commands.AddCommand;
 import seedu.address.logic.commands.ClearCommand;
 import seedu.address.logic.commands.DeleteCommand;
@@ -44,6 +46,12 @@ public class AddressBookParserTest {
         Person person = new PersonBuilder().build();
         AddCommand command = (AddCommand) parser.parseCommand(PersonUtil.getAddCommand(person));
         assertEquals(new AddCommand(person), command);
+    }
+
+    @Test
+    public void parseCommand_add_preservesAddressWhitespace() throws Exception {
+        Person person = new PersonBuilder().withAddress("Block  12, Kent Ridge").build();
+        assertEquals(new AddCommand(person), parser.parseCommand(PersonUtil.getAddCommand(person)));
     }
 
     @Test
@@ -81,6 +89,41 @@ public class AddressBookParserTest {
     }
 
     @Test
+    public void parseCommand_findWithUnicodeWhitespace_returnsNormalizedSearch() throws Exception {
+        FindCommand expected = new FindCommand(new NameContainsQueryPredicate("John Tan"));
+        for (String command : List.of("find\u00a0n/John\u2003Tan", "\u00a0find n/John Tan\u00a0",
+                "find\u2003n/John Tan")) {
+            assertEquals(expected, parser.parseCommand(command));
+        }
+    }
+
+    @Test
+    public void parseCommand_findWithLineBreaks_returnsNormalizedSearch() throws Exception {
+        FindCommand expected = new FindCommand(new NameContainsQueryPredicate("John Tan"));
+        for (String whitespace : List.of("\n", "\r\n", "\u0085", "\u2028", "\u2029")) {
+            assertEquals(expected, parser.parseCommand("find n/John" + whitespace + "Tan"));
+        }
+    }
+
+    @Test
+    public void parseCommand_findWithWhitespace_keepsQueryValidation() {
+        assertThrows(ParseException.class, FindCommand.MESSAGE_UNKNOWN_PARAMETER, () ->
+                parser.parseCommand("find\u00a0n/John\u2003grp/T09"));
+        assertThrows(ParseException.class, Messages.getErrorMessageForDuplicatePrefixes(PREFIX_NAME), () ->
+                parser.parseCommand("find n/John\n n/Tan"));
+        assertThrows(ParseException.class, NameContainsQueryPredicate.MESSAGE_CONSTRAINTS, () ->
+                parser.parseCommand("find\u2003n/John2"));
+    }
+
+    @Test
+    public void parseCommand_nonSearchWithLineBreaks_throwsParseException() {
+        String expectedMessage = String.format(MESSAGE_INVALID_COMMAND_FORMAT, HelpCommand.MESSAGE_USAGE);
+        for (String command : List.of("clear", "exit", "help", "add", "list", "unknownCommand")) {
+            assertThrows(ParseException.class, expectedMessage, () -> parser.parseCommand(command + "\nother input"));
+        }
+    }
+
+    @Test
     public void parseCommand_help() throws Exception {
         assertTrue(parser.parseCommand(HelpCommand.COMMAND_WORD) instanceof HelpCommand);
         assertTrue(parser.parseCommand(HelpCommand.COMMAND_WORD + " 3") instanceof HelpCommand);
@@ -95,9 +138,16 @@ public class AddressBookParserTest {
     @Test
     public void parseCommand_listWithArguments_throwsParseException() {
         String expectedMessage = String.format(MESSAGE_INVALID_COMMAND_FORMAT, ListCommand.MESSAGE_USAGE);
-        for (String arguments : List.of("3", "John", "n/John", "grp/T09", "grp/")) {
+        for (String arguments : List.of("3", "John", "n/John")) {
             assertThrows(ParseException.class, expectedMessage, () -> parser.parseCommand("list " + arguments));
         }
+    }
+
+    @Test
+    public void parseCommand_mark() throws Exception {
+        MarkCommand command = (MarkCommand) parser.parseCommand(MarkCommand.COMMAND_WORD + " "
+                + INDEX_FIRST_PERSON.getOneBased() + " w/5 s/absent");
+        assertEquals(new MarkCommand(INDEX_FIRST_PERSON, new Week(5), Status.ABSENT), command);
     }
 
     @Test
@@ -115,20 +165,21 @@ public class AddressBookParserTest {
     }
 
     @Test
-    public void parseCommand_mark() throws Exception {
-        MarkCommand command = (MarkCommand) parser.parseCommand(MarkCommand.COMMAND_WORD + " "
-                + INDEX_FIRST_PERSON.getOneBased() + " w/5 s/absent");
-        assertEquals(new MarkCommand(INDEX_FIRST_PERSON, new Week(5), Status.ABSENT), command);
-    }
-
-    @Test
     public void parseCommand_unrecognisedInput_throwsParseException() {
         assertThrows(ParseException.class, String.format(MESSAGE_INVALID_COMMAND_FORMAT, HelpCommand.MESSAGE_USAGE), ()
             -> parser.parseCommand(""));
     }
 
     @Test
+    public void parseCommand_unicodeWhitespaceOnly_throwsParseException() {
+        assertThrows(ParseException.class, String.format(MESSAGE_INVALID_COMMAND_FORMAT, HelpCommand.MESSAGE_USAGE), ()
+            -> parser.parseCommand("\u00a0\u2003\n"));
+    }
+
+    @Test
     public void parseCommand_unknownCommand_throwsParseException() {
         assertThrows(ParseException.class, MESSAGE_UNKNOWN_COMMAND, () -> parser.parseCommand("unknownCommand"));
+        assertThrows(ParseException.class, MESSAGE_UNKNOWN_COMMAND, () ->
+                parser.parseCommand("\u00a0unknownCommand\u2003"));
     }
 }

@@ -1,6 +1,7 @@
 package seedu.address.logic;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static seedu.address.logic.Messages.MESSAGE_INVALID_COMMAND_FORMAT;
 import static seedu.address.logic.Messages.MESSAGE_INVALID_PERSON_DISPLAYED_INDEX;
 import static seedu.address.logic.Messages.MESSAGE_UNKNOWN_COMMAND;
@@ -19,11 +20,16 @@ import static seedu.address.testutil.TypicalPersons.BOB;
 import java.io.IOException;
 import java.nio.file.AccessDeniedException;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
+import javafx.beans.property.ReadOnlyObjectProperty;
+import javafx.collections.ListChangeListener;
+import javafx.collections.ObservableList;
 import seedu.address.logic.commands.AddCommand;
 import seedu.address.logic.commands.CommandResult;
 import seedu.address.logic.commands.ListCommand;
@@ -33,7 +39,11 @@ import seedu.address.model.Model;
 import seedu.address.model.ModelManager;
 import seedu.address.model.ReadOnlyAddressBook;
 import seedu.address.model.UserPrefs;
+import seedu.address.model.person.Group;
 import seedu.address.model.person.Person;
+import seedu.address.model.session.Session;
+import seedu.address.model.session.SessionDate;
+import seedu.address.model.session.Week;
 import seedu.address.storage.JsonAddressBookStorage;
 import seedu.address.storage.JsonUserPrefsStorage;
 import seedu.address.storage.StorageManager;
@@ -56,6 +66,32 @@ public class LogicManagerTest {
         JsonUserPrefsStorage userPrefsStorage = new JsonUserPrefsStorage(temporaryFolder.resolve("userPrefs.json"));
         StorageManager storage = new StorageManager(addressBookStorage, userPrefsStorage);
         logic = new LogicManager(model, storage);
+    }
+
+    @Test
+    public void execute_commandsNotifyUiGroupAndSessionObservers() throws Exception {
+        ReadOnlyObjectProperty<Group> activeGroup = logic.activeGroupProperty();
+        ObservableList<Session> sessions = logic.getSessionList();
+        List<Group> groupChanges = new ArrayList<>();
+        List<Session> addedSessions = new ArrayList<>();
+        activeGroup.addListener((observable, oldGroup, newGroup) -> groupChanges.add(newGroup));
+        sessions.addListener((ListChangeListener<Session>) change -> {
+            while (change.next()) {
+                addedSessions.addAll(change.getAddedSubList());
+            }
+        });
+
+        logic.execute("init grp/T09");
+        assertEquals(new Group("T09"), activeGroup.get());
+        logic.execute("session grp/T09 w/1 d/2026-08-11");
+        Session expected = new Session(new Group("T09"), new Week(1), new SessionDate("2026-08-11"));
+        assertEquals(List.of(expected), sessions);
+        assertEquals(List.of(expected), addedSessions);
+        logic.execute("list");
+        assertNull(activeGroup.get());
+        assertEquals(2, groupChanges.size());
+        assertEquals(new Group("T09"), groupChanges.getFirst());
+        assertNull(groupChanges.getLast());
     }
 
     @Test

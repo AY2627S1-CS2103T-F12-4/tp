@@ -2,14 +2,12 @@ package seedu.address.logic.commands;
 
 import static java.util.Objects.requireNonNull;
 
-import java.util.Comparator;
-
 import seedu.address.commons.util.ToStringBuilder;
 import seedu.address.model.Model;
 import seedu.address.model.person.NameContainsQueryPredicate;
 
 /**
- * Finds students whose names contain the search phrase, with whole-word matches before partial matches.
+ * Finds students whose names contain the search phrase, ordered by matriculation number.
  */
 public class FindCommand extends Command {
 
@@ -17,7 +15,7 @@ public class FindCommand extends Command {
 
     public static final String MESSAGE_USAGE = COMMAND_WORD + ": Finds students whose names contain "
             + "the search phrase (case-insensitive) and displays them as a list with index numbers.\n"
-            + "Whole-word matches appear before partial matches.\n"
+            + "Results are ordered by matriculation number across all tutorial groups.\n"
             + "Parameters: n/KEYWORD\n"
             + "Example: " + COMMAND_WORD + " n/john tan";
 
@@ -34,8 +32,7 @@ public class FindCommand extends Command {
     @Override
     public CommandResult execute(Model model) {
         requireNonNull(model);
-        model.updateFilteredPersonList(predicate, Comparator.comparing(predicate::isWholeWordMatch).reversed()
-                .thenComparingInt(person -> model.getAddressBook().getPersonList().indexOf(person)));
+        model.updateFilteredPersonList(predicate);
         int count = model.getFilteredPersonList().size();
         String message = count == 0
                 ? String.format(MESSAGE_NO_RESULTS, predicate.getQuery())

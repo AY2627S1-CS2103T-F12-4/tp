@@ -30,8 +30,7 @@ public class InitCommandTest {
         Model model = new ModelManager(getTypicalAddressBook(), new UserPrefs());
         Model expectedModel = new ModelManager(getTypicalAddressBook(), new UserPrefs());
         expectedModel.addGroup(T99);
-        expectedModel.setActiveGroup(T99);
-        expectedModel.updateFilteredPersonList(Model.PREDICATE_SHOW_NO_PERSONS);
+        expectedModel.showGroup(T99);
 
         assertCommandSuccess(new InitCommand(T99), model,
                 String.format(InitCommand.MESSAGE_SUCCESS, T99), expectedModel);

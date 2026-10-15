@@ -15,17 +15,21 @@ import java.util.function.Predicate;
 
 import org.junit.jupiter.api.Test;
 
+import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.collections.ObservableList;
 import seedu.address.commons.core.GuiSettings;
 import seedu.address.logic.commands.exceptions.CommandException;
 import seedu.address.model.AddressBook;
 import seedu.address.model.Model;
+import seedu.address.model.ModelManager;
 import seedu.address.model.ReadOnlyAddressBook;
 import seedu.address.model.ReadOnlyUserPrefs;
+import seedu.address.model.UserPrefs;
 import seedu.address.model.person.Group;
 import seedu.address.model.person.Person;
 import seedu.address.model.session.Session;
 import seedu.address.model.session.Week;
+import seedu.address.testutil.AddressBookBuilder;
 import seedu.address.testutil.PersonBuilder;
 
 public class AddCommandTest {
@@ -45,6 +49,20 @@ public class AddCommandTest {
         assertEquals(String.format(AddCommand.MESSAGE_SUCCESS, validPerson.getName(),
                 validPerson.getMatric(), validPerson.getGroup()), commandResult.getFeedbackToUser());
         assertEquals(List.of(validPerson), modelStub.personsAdded);
+    }
+
+    @Test
+    public void execute_emailOfAnotherStudent_throwsCommandException() {
+        Person existingStudent = new PersonBuilder().withMatric("A0000001A").withEmail("amy@gmail.com").build();
+        Model model = new ModelManager(new AddressBookBuilder().withPerson(existingStudent).build(), new UserPrefs());
+        // emails are compared ignoring case
+        Person newStudent = new PersonBuilder().withMatric("A0000002B").withEmail("AMY@gmail.com").build();
+        AddCommand addCommand = new AddCommand(newStudent);
+
+        assertThrows(CommandException.class,
+                String.format(AddCommand.MESSAGE_DUPLICATE_EMAIL, newStudent.getEmail()), ()
+                        -> addCommand.execute(model));
+        assertEquals(List.of(existingStudent), model.getAddressBook().getPersonList());
     }
 
     @Test
@@ -93,6 +111,16 @@ public class AddCommandTest {
      * A default model stub that has all of the methods failing.
      */
     private class ModelStub implements Model {
+        @Override
+        public void showGroup(Group group) {
+            throw new AssertionError("This method should not be called.");
+        }
+
+        @Override
+        public ReadOnlyObjectProperty<Group> activeGroupProperty() {
+            throw new AssertionError("This method should not be called.");
+        }
+
         @Override
         public ReadOnlyUserPrefs getUserPrefs() {
             throw new AssertionError("This method should not be called.");
@@ -180,6 +208,11 @@ public class AddCommandTest {
 
         @Override
         public ObservableList<Person> getFilteredPersonList() {
+            throw new AssertionError("This method should not be called.");
+        }
+
+        @Override
+        public boolean hasSession(Session session) {
             throw new AssertionError("This method should not be called.");
         }
 
