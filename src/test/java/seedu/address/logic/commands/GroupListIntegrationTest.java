@@ -41,11 +41,14 @@ public class GroupListIntegrationTest {
     public Path temporaryFolder;
 
     private final Group group = new Group("T09");
-    private final Person later = new PersonBuilder().withName("Later Student").withMatric("A0000009Z")
+    private final Person later = new PersonBuilder().withName("Later Student")
+            .withEmail("later@example.com").withMatric("A0000009Z")
             .withGroup("T09").build();
-    private final Person earlier = new PersonBuilder().withName("Earlier Student").withMatric("A0000002Z")
+    private final Person earlier = new PersonBuilder().withName("Earlier Student")
+            .withEmail("earlier@example.com").withMatric("A0000002Z")
             .withGroup("T09").build();
-    private final Person otherGroup = new PersonBuilder().withName("Other Student").withMatric("A0000001Z")
+    private final Person otherGroup = new PersonBuilder().withName("Other Student")
+            .withEmail("other@example.com").withMatric("A0000001Z")
             .withGroup("T10").build();
     private ModelManager model;
 
