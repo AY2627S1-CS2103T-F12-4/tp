@@ -83,17 +83,17 @@ public class FindCommandUiTest {
                 assertNull(groups(stage).getSelectionModel().getSelectedItem());
                 assertEquals("All groups", ((Label) stage.getScene().lookup("#groupScope")).getText());
                 assertEquals(List.of(
-                        List.of("1. ", "John Tan", "A0000001X", "T10", "W1: A"),
-                        List.of("2. ", "John Tan", "A0000002X", "T09", "W1: P")), visibleRows(stage));
+                        List.of("1. ", "John Tan", "A0000001X", "T10", "W1: \u2717"),
+                        List.of("2. ", "John Tan", "A0000002X", "T09", "W1: \u2713")), visibleRows(stage));
                 assertEquals(book, model.getAddressBook());
                 assertEquals(book, addressBookStorage.readAddressBook().orElseThrow());
 
                 enterCommand(stage, "mark 1 w/1 s/present");
                 assertEquals(List.of(
-                        List.of("1. ", "John Tan", "A0000001X", "T10", "W1: P"),
-                        List.of("2. ", "John Tan", "A0000002X", "T09", "W1: P")), visibleRows(stage));
+                        List.of("1. ", "John Tan", "A0000001X", "T10", "W1: \u2713"),
+                        List.of("2. ", "John Tan", "A0000002X", "T09", "W1: \u2713")), visibleRows(stage));
                 enterCommand(stage, "delete 1");
-                assertEquals(List.of(List.of("1. ", "John Tan", "A0000002X", "T09", "W1: P")),
+                assertEquals(List.of(List.of("1. ", "John Tan", "A0000002X", "T09", "W1: \u2713")),
                         visibleRows(stage));
                 assertEquals(List.of(firstJohn, alice), model.getAddressBook().getPersonList());
                 assertTrue(model.hasGroup(new Group("T10")));
