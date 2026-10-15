@@ -9,6 +9,8 @@ import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.logging.Logger;
 
+import javafx.beans.property.ReadOnlyObjectProperty;
+import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
 import javafx.collections.transformation.SortedList;
@@ -25,11 +27,13 @@ import seedu.address.model.session.Week;
 public class ModelManager implements Model {
     private static final Logger logger = LogsCenter.getLogger(ModelManager.class);
 
+    private static final Comparator<Person> MATRIC_ORDER = Comparator.comparing(person -> person.getMatric().value);
+
     private final AddressBook addressBook;
     private final UserPrefs userPrefs;
     private final FilteredList<Person> filteredPersons;
     private final SortedList<Person> displayedPersons;
-    private Group activeGroup;
+    private final ReadOnlyObjectWrapper<Group> activeGroup = new ReadOnlyObjectWrapper<>();
 
     /**
      * Initializes a ModelManager with the given addressBook and userPrefs.
@@ -42,7 +46,7 @@ public class ModelManager implements Model {
         this.addressBook = new AddressBook(addressBook);
         this.userPrefs = new UserPrefs(userPrefs);
         filteredPersons = new FilteredList<>(this.addressBook.getPersonList());
-        displayedPersons = new SortedList<>(filteredPersons);
+        displayedPersons = new SortedList<>(filteredPersons, MATRIC_ORDER);
     }
 
     public ModelManager() {
@@ -72,7 +76,7 @@ public class ModelManager implements Model {
     @Override
     public void setAddressBook(ReadOnlyAddressBook addressBook) {
         this.addressBook.resetData(addressBook);
-        activeGroup = null;
+        updateFilteredPersonList(PREDICATE_SHOW_ALL_PERSONS);
     }
 
     @Override
@@ -94,7 +98,6 @@ public class ModelManager implements Model {
     @Override
     public void addPerson(Person person) {
         addressBook.addPerson(person);
-        updateFilteredPersonList(PREDICATE_SHOW_ALL_PERSONS);
     }
 
     @Override
@@ -128,12 +131,12 @@ public class ModelManager implements Model {
         if (!hasGroup(group)) {
             throw new IllegalArgumentException("Active tutorial group must be registered");
         }
-        activeGroup = group;
+        activeGroup.set(group);
     }
 
     @Override
     public Optional<Group> getActiveGroup() {
-        return Optional.ofNullable(activeGroup);
+        return Optional.ofNullable(activeGroup.get());
     }
 
     @Override
@@ -152,6 +155,23 @@ public class ModelManager implements Model {
         return addressBook.getSessionList();
     }
 
+    @Override
+    public boolean hasSession(Session session) {
+        return addressBook.hasSession(session);
+    }
+
+    @Override
+    public void showGroup(Group group) {
+        setActiveGroup(group);
+        filteredPersons.setPredicate(person -> person.getGroup().equals(group));
+        displayedPersons.setComparator(MATRIC_ORDER);
+    }
+
+    @Override
+    public ReadOnlyObjectProperty<Group> activeGroupProperty() {
+        return activeGroup.getReadOnlyProperty();
+    }
+
     //=========== Filtered Person List Accessors =============================================================
 
     /**
@@ -165,7 +185,7 @@ public class ModelManager implements Model {
 
     @Override
     public void updateFilteredPersonList(Predicate<Person> predicate) {
-        updateFilteredPersonList(predicate, null);
+        updateFilteredPersonList(predicate, MATRIC_ORDER);
     }
 
     @Override
@@ -173,6 +193,7 @@ public class ModelManager implements Model {
         requireNonNull(predicate);
         filteredPersons.setPredicate(predicate);
         displayedPersons.setComparator(comparator);
+        activeGroup.set(null);
     }
 
     @Override
@@ -188,7 +209,7 @@ public class ModelManager implements Model {
 
         return addressBook.equals(otherModelManager.addressBook)
                 && userPrefs.equals(otherModelManager.userPrefs)
-                && Objects.equals(activeGroup, otherModelManager.activeGroup)
+                && Objects.equals(activeGroup.get(), otherModelManager.activeGroup.get())
                 && displayedPersons.equals(otherModelManager.displayedPersons);
     }
 

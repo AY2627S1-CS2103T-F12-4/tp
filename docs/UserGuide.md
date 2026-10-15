@@ -87,16 +87,44 @@ Examples:
 * `add n/John Doe p/98765432 e/johnd@example.com a/John street, block 123, #01-01`
 * `add n/Betsy Crowe t/friend e/betsycrowe@example.com a/Newgate Prison p/1234567 t/criminal`
 
-### Listing all students: `list`
+### Listing students: `list`
 
-Shows all records in the roster and clears any previous search filter.
+Shows all students or the students of one registered tutorial group, sorted by matriculation number.
 
-Format: `list`
+Formats:
 
-* Displays `Listed all N students.`, where `N` is the number of records shown.
-* Displays `No students in Roster.` if the roster is empty.
-* Extra arguments, such as `list John`, are rejected with an invalid-format message and usage instructions.
-  The current view and data remain unchanged.
+* `list` — list all students.
+* `list grp/GROUP` — list students in one registered tutorial group.
+
+Examples:
+* `list` shows every student and clears the active group and any previous search filter.
+* `list grp/T09` shows only T09's students and makes T09 the active group.
+* `list grp/t09` works too: group codes ignore letter case and surrounding spaces.
+
+Group codes have one or two letters followed by two digits, such as `T09` or `TG01`.
+The group must already exist. Listing an empty group is allowed; listing a nonexistent group is an error.
+
+| Situation                  | Feedback                                                                          |
+| -------------------------- | --------------------------------------------------------------------------------- |
+| All students               | `Listed all 58 students.` (with the actual count)                                 |
+| One group                  | `Listed 20 students in T09.` (with the actual count and group)                    |
+| Registered but empty group | `Tutorial group T09 has no students yet.`                                         |
+| Empty roster               | `No students in Roster. Create a tutorial group and add students to get started.` |
+| Unknown group              | `Tutorial group T09 does not exist. Create it first with: init grp/T09`           |
+
+Each student's card shows their details and attendance for every session of their group, in teaching-week order:
+A green `✓` means present, a red `✗` means absent, and a grey `—` means unmarked.
+A student added after a session also shows `—` until their attendance is recorded. Weeks with no session have no cell. The list scrolls when needed.
+
+The group scope is shown above the list. `find` searches across groups and clears the active group.
+Adding or deleting a student refreshes the current results without clearing the filter.
+Student indices are the row numbers currently on screen, so check the displayed list before using `delete`, `edit`,
+or `mark`. A successful edit shows all students again in matriculation-number order. Editing a matriculation number
+can therefore change row numbers. Moving a student to another group clears their old attendance records; their
+attendance strip then uses the new group's sessions.
+
+Only one `grp/` parameter is allowed. Missing group values, invalid codes, repeated parameters and unrelated arguments
+are rejected. A rejected list command leaves the data, active group and displayed rows unchanged.
 
 ### Editing a person: `edit`
 
@@ -130,7 +158,7 @@ Format: `find n/KEYWORD`
 * Each search considers all students, including when the previous search returned no matches.
 * Successful searches show `Found COUNT student(s) matching "KEYWORD".` A search with no matches produces an empty list and shows `No students found matching "KEYWORD". Try another name.`
 * Missing or blank queries, repeated `n/` prefixes, unsupported characters, text before `n/`, and other parameters produce an error without changing the displayed list.
-* `delete INDEX` and `edit INDEX` use the displayed result indexes. Search does not change the saved roster order. Use `list` to show everyone again in roster order.
+* `delete INDEX` and `edit INDEX` use the displayed result indexes. Search does not change the saved roster order. Use `list` to show everyone again in ascending matriculation-number order.
 
 Examples:
 * `find n/John` returns `John Doe` before `Johnny Lim`.

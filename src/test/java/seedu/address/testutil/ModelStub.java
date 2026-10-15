@@ -4,6 +4,7 @@ import java.util.Comparator;
 import java.util.Optional;
 import java.util.function.Predicate;
 
+import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.collections.ObservableList;
 import seedu.address.commons.core.GuiSettings;
 import seedu.address.model.Model;
@@ -20,6 +21,26 @@ import seedu.address.model.session.Week;
  * so that any other call to the model fails the test.
  */
 public class ModelStub implements Model {
+    @Override
+    public void showGroup(Group group) {
+        throw new AssertionError("This method should not be called.");
+    }
+
+    @Override
+    public void addGroup(Group group) {
+        throw new AssertionError("This method should not be called.");
+    }
+
+    @Override
+    public boolean hasGroup(Group group) {
+        throw new AssertionError("This method should not be called.");
+    }
+
+    @Override
+    public ReadOnlyObjectProperty<Group> activeGroupProperty() {
+        throw new AssertionError("This method should not be called.");
+    }
+
     @Override
     public ReadOnlyUserPrefs getUserPrefs() {
         throw new AssertionError("This method should not be called.");
@@ -51,31 +72,6 @@ public class ModelStub implements Model {
     }
 
     @Override
-    public boolean hasPerson(Person person) {
-        throw new AssertionError("This method should not be called.");
-    }
-
-    @Override
-    public void deletePerson(Person target) {
-        throw new AssertionError("This method should not be called.");
-    }
-
-    @Override
-    public void setPerson(Person target, Person editedPerson) {
-        throw new AssertionError("This method should not be called.");
-    }
-
-    @Override
-    public boolean hasGroup(Group group) {
-        throw new AssertionError("This method should not be called.");
-    }
-
-    @Override
-    public void addGroup(Group group) {
-        throw new AssertionError("This method should not be called.");
-    }
-
-    @Override
     public ObservableList<Group> getGroupList() {
         throw new AssertionError("This method should not be called.");
     }
@@ -91,17 +87,22 @@ public class ModelStub implements Model {
     }
 
     @Override
-    public Optional<Session> findSession(Group group, Week week) {
-        throw new AssertionError("This method should not be called.");
-    }
-
-    @Override
-    public void addSession(Session session) {
-        throw new AssertionError("This method should not be called.");
-    }
-
-    @Override
     public ObservableList<Session> getSessionList() {
+        throw new AssertionError("This method should not be called.");
+    }
+
+    @Override
+    public boolean hasPerson(Person person) {
+        throw new AssertionError("This method should not be called.");
+    }
+
+    @Override
+    public void deletePerson(Person target) {
+        throw new AssertionError("This method should not be called.");
+    }
+
+    @Override
+    public void setPerson(Person target, Person editedPerson) {
         throw new AssertionError("This method should not be called.");
     }
 
@@ -111,12 +112,27 @@ public class ModelStub implements Model {
     }
 
     @Override
+    public void updateFilteredPersonList(Predicate<Person> predicate, Comparator<Person> comparator) {
+        throw new AssertionError("This method should not be called.");
+    }
+
+    @Override
     public void updateFilteredPersonList(Predicate<Person> predicate) {
         throw new AssertionError("This method should not be called.");
     }
 
     @Override
-    public void updateFilteredPersonList(Predicate<Person> predicate, Comparator<Person> comparator) {
+    public boolean hasSession(Session session) {
+        throw new AssertionError("This method should not be called.");
+    }
+
+    @Override
+    public void addSession(Session session) {
+        throw new AssertionError("This method should not be called.");
+    }
+
+    @Override
+    public Optional<Session> findSession(Group group, Week week) {
         throw new AssertionError("This method should not be called.");
     }
 }
