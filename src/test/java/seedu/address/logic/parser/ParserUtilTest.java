@@ -91,7 +91,7 @@ public class ParserUtilTest {
         assertEquals(new Name("O'Neil"), ParserUtil.parseName(" O'Neil "));
         assertEquals(new Name("Anne-Marie"), ParserUtil.parseName("Anne-Marie"));
     }
- 
+
     @Test
     public void parseMatric_null_throwsNullPointerException() {
         assertThrows(NullPointerException.class, () -> ParserUtil.parseMatric((String) null));
