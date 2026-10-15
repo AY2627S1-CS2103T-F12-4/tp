@@ -35,17 +35,17 @@ import seedu.address.testutil.PersonBuilder;
  */
 public class FindCommandTest {
     private final Person johnny = new PersonBuilder().withName("Johnny Lim")
-            .withMatric("A0000001X").withEmail("student1@example.com").build();
+            .withEmail("johnnylim@example.com").withMatric("A0000011A").build();
     private final Person johnTan = new PersonBuilder().withName("John Tan")
-            .withMatric("A0000002X").withEmail("student2@example.com").build();
+            .withEmail("johntan@example.com").withMatric("A0000012B").build();
     private final Person johnson = new PersonBuilder().withName("Johnson Ng")
-            .withMatric("A0000003X").withEmail("student3@example.com").build();
+            .withEmail("johnsonng@example.com").withMatric("A0000013C").build();
     private final Person johnLim = new PersonBuilder().withName("John Lim")
-            .withMatric("A0000004X").withEmail("student4@example.com").build();
+            .withEmail("johnlim@example.com").withMatric("A0000014D").build();
     private final Person johnTanner = new PersonBuilder().withName("John Tanner")
-            .withMatric("A0000005X").withEmail("student5@example.com").build();
+            .withEmail("johntanner@example.com").withMatric("A0000015E").build();
     private final Person meiTan = new PersonBuilder().withName("Mei Tan")
-            .withMatric("A0000006X").withEmail("student6@example.com").build();
+            .withEmail("meitan@example.com").withMatric("A0000016F").build();
     private final AddressBook roster = new AddressBookBuilder().withPerson(johnny).withPerson(johnTan)
             .withPerson(johnson).withPerson(johnLim).withPerson(johnTanner).withPerson(meiTan).build();
     private final Model model = new ModelManager(roster, new UserPrefs());
@@ -134,7 +134,8 @@ public class FindCommandTest {
     public void parse_invalidSearch_preservesPreviousResultsAndRoster() throws Exception {
         parser.parseCommand("find n/John").execute(model);
         for (String input : new String[]{"find John", "find n/", "find n/John n/Tan",
-            "find n/John grp/T09", "find n/John123"}) {
+            "find n/John grp/T09", "find n/John123", "find\u00a0n/John\u2003grp/T09",
+            "find n/John\n n/Tan", "find\u2003n/John2"}) {
             assertThrows(ParseException.class, () -> parser.parseCommand(input));
             assertEquals(List.of(johnny, johnTan, johnson, johnLim, johnTanner), model.getFilteredPersonList());
             assertEquals(roster, model.getAddressBook());
@@ -179,7 +180,7 @@ public class FindCommandTest {
     @Test
     public void execute_addAfterSearch_preservesResultsAndMatricOrder() throws Exception {
         parser.parseCommand("find n/John").execute(model);
-        Person alice = new PersonBuilder().withName("Alice").build();
+        Person alice = new PersonBuilder().withName("Alice").withEmail("alice@example.com").build();
         new AddCommand(alice).execute(model);
 
         assertEquals(List.of(johnny, johnTan, johnson, johnLim, johnTanner),

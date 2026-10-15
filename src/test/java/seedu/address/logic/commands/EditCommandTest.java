@@ -148,6 +148,14 @@ public class EditCommandTest {
     }
 
     @Test
+    public void execute_unregisteredGroup_failure() {
+        EditCommand editCommand = new EditCommand(INDEX_FIRST_PERSON,
+                new EditPersonDescriptorBuilder().withGroup("T77").build());
+
+        assertCommandFailure(editCommand, model, String.format(AddCommand.MESSAGE_UNKNOWN_GROUP, "T77"));
+    }
+
+    @Test
     public void execute_duplicatePersonFilteredList_failure() {
         showPersonAtIndex(model, INDEX_FIRST_PERSON);
 
@@ -157,6 +165,33 @@ public class EditCommandTest {
                 new EditPersonDescriptorBuilder(personInList).build());
 
         assertCommandFailure(editCommand, model, EditCommand.MESSAGE_DUPLICATE_PERSON);
+    }
+
+    @Test
+    public void execute_emailOfAnotherStudent_failure() {
+        // emails are compared ignoring case
+        String secondPersonEmail = model.getFilteredPersonList().get(INDEX_SECOND_PERSON.getZeroBased())
+                .getEmail().value.toUpperCase();
+        EditCommand editCommand = new EditCommand(INDEX_FIRST_PERSON,
+                new EditPersonDescriptorBuilder().withEmail(secondPersonEmail).build());
+
+        assertCommandFailure(editCommand, model, String.format(AddCommand.MESSAGE_DUPLICATE_EMAIL, secondPersonEmail));
+    }
+
+    @Test
+    public void execute_ownEmailInDifferentCase_success() {
+        Person firstPerson = model.getFilteredPersonList().get(INDEX_FIRST_PERSON.getZeroBased());
+        String upperCaseEmail = firstPerson.getEmail().value.toUpperCase();
+        Person editedPerson = new PersonBuilder(firstPerson).withEmail(upperCaseEmail).build();
+        EditCommand editCommand = new EditCommand(INDEX_FIRST_PERSON,
+                new EditPersonDescriptorBuilder().withEmail(upperCaseEmail).build());
+
+        String expectedMessage = String.format(EditCommand.MESSAGE_EDIT_PERSON_SUCCESS, Messages.format(editedPerson));
+
+        Model expectedModel = new ModelManager(new AddressBook(model.getAddressBook()), new UserPrefs());
+        expectedModel.setPerson(firstPerson, editedPerson);
+
+        assertCommandSuccess(editCommand, model, expectedMessage, expectedModel);
     }
 
     @Test

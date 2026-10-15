@@ -64,6 +64,23 @@ public class PersonTest {
     }
 
     @Test
+    public void hasSameEmail() {
+        // same email, different matriculation number -> returns true
+        Person sameEmail = new PersonBuilder(BOB).withEmail(ALICE.getEmail().value).build();
+        assertTrue(ALICE.hasSameEmail(sameEmail));
+
+        // email differs only in case -> returns true
+        Person upperCaseEmail = new PersonBuilder(BOB).withEmail(ALICE.getEmail().value.toUpperCase()).build();
+        assertTrue(ALICE.hasSameEmail(upperCaseEmail));
+
+        // different email -> returns false
+        assertFalse(ALICE.hasSameEmail(BOB));
+
+        // null -> returns false
+        assertFalse(ALICE.hasSameEmail(null));
+    }
+
+    @Test
     public void equals() {
         // same values -> returns true
         Person aliceCopy = new PersonBuilder(ALICE).build();

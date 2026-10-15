@@ -147,6 +147,7 @@ Format: `find n/KEYWORD`
 
 * The `n/` prefix is required and must appear exactly once. The keyword can contain several words, such as `john tan`.
 * Surrounding whitespace is ignored, and repeated whitespace is treated as one space in both the query and name.
+* Copied commands can use Unicode spaces, including non-breaking spaces, around `find` and `n/`. Line breaks within a search phrase are also treated as spaces.
 * The query must contain 1–100 characters after whitespace normalization: letters, spaces, hyphens, apostrophes or full stops, with at least one letter.
 * The search is case-insensitive and considers only names. Accents and punctuation remain significant.
 * The entire phrase must appear contiguously and in the same order. For example, `john tan` matches `John Tan` and `John Tanner`, but does not match `John Lim`, `Mei Tan` or `Tan John`.

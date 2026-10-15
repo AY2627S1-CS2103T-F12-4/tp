@@ -35,15 +35,15 @@ public class SampleDataUtil {
                 getTagSet("neighbours")),
             new Person(new Name("David Li"), new Phone("91031282"), new Email("lidavid@example.com"),
                 new Address("Blk 436 Serangoon Gardens Street 26, #16-43"),
-                new Matric("A0287404M"), new Group("T10"),
+                new Matric("A0287404M"), new Group("T09"),
                 getTagSet("family")),
             new Person(new Name("Irfan Ibrahim"), new Phone("92492021"), new Email("irfan@example.com"),
                 new Address("Blk 47 Tampines Street 20, #17-35"),
-                new Matric("A0287405N"), new Group("T10"),
+                new Matric("A0287405N"), new Group("T09"),
                 getTagSet("classmates")),
             new Person(new Name("Roy Balakrishnan"), new Phone("92624417"), new Email("royb@example.com"),
                 new Address("Blk 45 Aljunied Street 85, #11-31"),
-                new Matric("A0287406P"), new Group("T10"),
+                new Matric("A0287406P"), new Group("T09"),
                 getTagSet("colleagues"))
         };
     }
