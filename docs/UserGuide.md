@@ -19,7 +19,7 @@ Roster is a **desktop application for NUS teaching assistants to manage students
 
 1. Copy the file to the folder you want to use as Roster's _home folder_.
 
-1. Open a terminal, `cd` to the folder containing the JAR file, and run `java -jar roster.jar`.<br>
+1. Open a terminal, `cd` to the folder containing the JAR file, and run `java -jar addressbook.jar`.<br>
    A GUI similar to the one below should appear in a few seconds. Roster includes sample data on its first launch.<br>
    ![Roster user interface](images/Ui.png)
 
@@ -262,7 +262,7 @@ Examples:
 * `STATUS` must be either `present` or `absent`, case-insensitive.
 * Marking an already marked student replaces the earlier status and reports the previous value.
 * The displayed list and its indexes stay unchanged after a successful mark.
-* The updated attendance cell changes to `✓` or `✗` and is briefly highlighted.
+* The updated attendance cell changes to `✓` or `✗`.
 * Marking never creates a missing session. When the displayed list contains multiple groups, Roster looks up the teaching week in each selected student's own group.
 
 On success, Roster names the student, status, tutorial group, and teaching week so you can verify the updated record.
