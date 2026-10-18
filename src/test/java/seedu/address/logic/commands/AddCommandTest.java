@@ -15,6 +15,7 @@ import java.util.function.Predicate;
 
 import org.junit.jupiter.api.Test;
 
+import javafx.beans.property.ReadOnlyBooleanProperty;
 import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.collections.ObservableList;
 import seedu.address.commons.core.GuiSettings;
@@ -113,6 +114,11 @@ public class AddCommandTest {
     private class ModelStub implements Model {
         @Override
         public void showGroup(Group group) {
+            throw new AssertionError("This method should not be called.");
+        }
+
+        @Override
+        public ReadOnlyBooleanProperty showingAllStudentsProperty() {
             throw new AssertionError("This method should not be called.");
         }
 

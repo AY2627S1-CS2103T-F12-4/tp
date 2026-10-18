@@ -202,6 +202,21 @@ attendance strip then uses the new group's sessions.
 Only one `grp/` parameter is allowed. Missing group values, invalid codes, repeated parameters and unrelated arguments
 are rejected. A rejected list command leaves the data, active group and displayed rows unchanged.
 
+### Navigating tutorial groups
+
+The tutorial-group panel starts with **All students**, followed by registered groups in group-code order.
+
+* Click a group to show its students and attendance, equivalent to `list grp/GROUP`.
+* Click **All students** to show the full roster, equivalent to `list`.
+* Use Tab to focus the group panel, Up/Down to choose an entry, and Enter to open it.
+  Arrow keys alone do not change the displayed roster. Leaving the panel restores the active view's selection.
+* The panel follows typed commands: `list` selects **All students**, `list grp/GROUP` selects that group,
+  and a successful `find` clears the selection, even when every student happens to match.
+* Registered empty groups remain selectable and display the usual empty-group message.
+* Navigation preserves unfinished command text and does not change student or attendance records.
+* Student indices are refreshed for the newly displayed roster. Check the displayed list before running
+  `mark`, `edit` or `delete` with an index.
+
 ### Finding students by name: `find`
 
 Finds students across all tutorial groups whose names contain the search phrase. A search clears the active group.

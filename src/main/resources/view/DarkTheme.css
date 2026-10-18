@@ -372,3 +372,13 @@
 .attendance-cell.attendance-unmarked {
     -fx-text-fill: #d1d5db;
 }
+
+#groupListView .list-cell {
+    -fx-text-fill: white;
+    -fx-font-size: 14px;
+    -fx-padding: 6 8;
+}
+
+#groupListView .list-cell:filled:selected {
+    -fx-background-color: #2563eb;
+}
