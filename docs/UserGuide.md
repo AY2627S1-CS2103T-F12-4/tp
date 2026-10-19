@@ -308,6 +308,28 @@ On success, Roster names the student, status, tutorial group, and teaching week 
 Run `list grp/GROUP` before taking attendance so only that tutorial group's students are displayed.
 </div>
 
+### Marking all displayed students: `mark all`
+
+Records every student in the displayed list as present or absent for the same teaching week.
+
+Format: `mark all w/WEEK s/STATUS`
+
+Examples:
+
+* `list grp/T09` followed by `mark all w/5 s/present` marks every student in T09 present for week 5.
+* `mark all w/5 s/absent` while all students are displayed marks every student absent for week 5 of their own group.
+
+* Each student is marked for the session of their own tutorial group, as with `mark`.
+* Every displayed student's group must have a session for that week. If any group does not, no student is marked.
+* Students who were already marked for that week have their status replaced. The confirmation says how many.
+* The displayed list and its indexes stay unchanged.
+
+On success, Roster displays a confirmation such as `Marked 20 student(s) as PRESENT for week 5 in T09.`
+
+<div markdown="span" class="alert alert-primary">:bulb: **Tip:**
+To record a class where most students attended, run `mark all w/WEEK s/present` first, then `mark INDEX w/WEEK s/absent` for each absent student.
+</div>
+
 ### Exporting attendance records: `export`
 
 Exports student details and attendance to a new UTF-8 CSV file for use outside Roster.
@@ -414,6 +436,7 @@ Action | Format, example
 **Find students** | `find [n/KEYWORD] [m/MATRIC] [grp/GROUP]` (at least one)<br>e.g. `find n/John Tan grp/T09`
 **Delete student** | `delete INDEX`<br>e.g. `delete 3`
 **Mark attendance** | `mark INDEX w/WEEK s/STATUS`<br>e.g. `mark 3 w/5 s/present`
+**Mark all displayed students** | `mark all w/WEEK s/STATUS`<br>e.g. `mark all w/5 s/present`
 **Export attendance** | `export f/FILE_PATH [grp/GROUP]`<br>e.g. `export f/attendance.csv grp/T09`
 **Exit** | `exit`
 **Clear all data** | `clear`
