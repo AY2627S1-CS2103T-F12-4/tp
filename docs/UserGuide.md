@@ -283,6 +283,26 @@ Examples:
 * `list grp/T09` followed by `delete 1` deletes the first displayed student in `T09`.
 * `find n/Betsy` followed by `delete 1` deletes the first student in the search results.
 
+### Deleting all displayed students: `delete all`
+
+Deletes every student in the displayed list, and all of their attendance records. Tutorial groups and their sessions are kept, even if they become empty.
+
+Format: `delete all`
+
+Examples:
+
+* `list grp/T09` followed by `delete all` deletes every student in `T09`, for example at the end of a semester.
+* `find n/Tan` followed by `delete all` deletes every student in the search results.
+
+* Only the students on screen are deleted. Students in other groups, or outside the search results, are kept.
+* `delete all` while all students are displayed deletes every student. Use `clear` instead to also delete all tutorial groups and sessions.
+
+On success, Roster displays a confirmation such as `Deleted 20 student(s) in the displayed list, including all their attendance records.`
+
+<div markdown="span" class="alert alert-warning">:exclamation: **Caution:**
+Deletion happens immediately, with no confirmation and no undo. Check the displayed list before running `delete all`, and back up `data/addressbook.json` first if you may need to restore the data.
+</div>
+
 ### Marking attendance: `mark`
 
 Records a displayed student as present or absent for one of their tutorial group's sessions.
@@ -435,6 +455,7 @@ Action | Format, example
 **List students** | `list [grp/GROUP]`<br>e.g. `list grp/T09`
 **Find students** | `find [n/KEYWORD] [m/MATRIC] [grp/GROUP]` (at least one)<br>e.g. `find n/John Tan grp/T09`
 **Delete student** | `delete INDEX`<br>e.g. `delete 3`
+**Delete all displayed students** | `delete all`
 **Mark attendance** | `mark INDEX w/WEEK s/STATUS`<br>e.g. `mark 3 w/5 s/present`
 **Mark all displayed students** | `mark all w/WEEK s/STATUS`<br>e.g. `mark all w/5 s/present`
 **Export attendance** | `export f/FILE_PATH [grp/GROUP]`<br>e.g. `export f/attendance.csv grp/T09`
