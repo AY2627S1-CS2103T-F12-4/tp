@@ -9,10 +9,13 @@ import javafx.collections.ObservableList;
 import seedu.address.commons.core.GuiSettings;
 import seedu.address.commons.core.LogsCenter;
 import seedu.address.logic.commands.Command;
+import seedu.address.logic.commands.Command.HistoryAction;
 import seedu.address.logic.commands.CommandResult;
+import seedu.address.logic.commands.UndoCommand;
 import seedu.address.logic.commands.exceptions.CommandException;
 import seedu.address.logic.parser.AddressBookParser;
 import seedu.address.logic.parser.exceptions.ParseException;
+import seedu.address.model.AddressBook;
 import seedu.address.model.Model;
 import seedu.address.model.person.Group;
 import seedu.address.model.person.Person;
@@ -47,9 +50,10 @@ public class LogicManager implements Logic {
     public CommandResult execute(String commandText) throws CommandException, ParseException {
         logger.info("----------------[USER COMMAND][" + commandText + "]");
 
-        CommandResult commandResult;
         Command command = addressBookParser.parseCommand(commandText);
-        commandResult = command.execute(model);
+        AddressBook stateBeforeCommand = command.requiresSave()
+                ? new AddressBook(model.getAddressBook()) : null;
+        CommandResult commandResult = command.execute(model);
 
         if (!command.requiresSave()) {
             return commandResult;
@@ -58,12 +62,26 @@ public class LogicManager implements Logic {
         try {
             storage.saveAddressBook(model.getAddressBook());
         } catch (AccessDeniedException e) {
+            rollBackCommand(command, stateBeforeCommand);
             throw new CommandException(String.format(FILE_OPS_PERMISSION_ERROR_FORMAT, e.getMessage()), e);
         } catch (IOException ioe) {
+            rollBackCommand(command, stateBeforeCommand);
             throw new CommandException(String.format(FILE_OPS_ERROR_FORMAT, ioe.getMessage()), ioe);
         }
 
+        if (command.getHistoryAction() == HistoryAction.COMMIT) {
+            model.commitAddressBook(command.getUndoDescription());
+        }
+
         return commandResult;
+    }
+
+    private void rollBackCommand(Command command, AddressBook stateBeforeCommand) {
+        if (command instanceof UndoCommand) {
+            model.redoAddressBook();
+        } else if (command.getHistoryAction() != HistoryAction.NONE) {
+            model.setAddressBook(stateBeforeCommand);
+        }
     }
 
     @Override

@@ -59,6 +59,11 @@ public class ListCommand extends Command {
     }
 
     @Override
+    public boolean requiresSave() {
+        return false;
+    }
+
+    @Override
     public boolean equals(Object other) {
         return other == this || other instanceof ListCommand otherCommand && Objects.equals(group, otherCommand.group);
     }

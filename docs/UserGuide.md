@@ -271,9 +271,10 @@ Format: `delete INDEX`
 
 * `INDEX` refers to the index number in the currently displayed student list.
 * The index must be a positive integer within the displayed list.
-* Deletion happens immediately, with no confirmation and no undo.
+* Deletion happens immediately without confirmation. Use `undo` to restore the student and attendance records.
 * After deletion, the displayed list is refreshed and its indexes are recalculated. Repeating the same command may therefore delete a different student.
-* Re-adding the student creates a new record whose attendance is unmarked; deleted attendance is not restored.
+* Re-adding the student manually creates a new record whose attendance is unmarked; use `undo` instead to restore
+  the original attendance records.
 
 On success, Roster names the deleted student and confirms that their attendance records were also removed.
 
@@ -347,6 +348,34 @@ Rules:
 On success, Roster reports the absolute destination and the number of students and CSV data rows exported.
 The row count excludes the header and includes the placeholder row for a student with no sessions.
 
+### Undoing the previous change: `undo`
+
+Reverses the most recent successful undoable command.
+
+Format: `undo`
+
+Examples:
+
+* `edit 1 n/Alex Tan` followed by `undo` restores the student's previous name.
+* `mark 3 w/5 s/absent` followed by `undo` restores the previous attendance status.
+* `add n/Alex Tan e/alex.tan@example.com m/A0123456X grp/T09`
+  followed by `undo` removes the newly added student.
+* `delete 3` followed by `undo` restores the deleted student and their attendance records.
+* `clear` followed by `undo` restores the entire roster.
+
+* Each `undo` reverses one successful data-changing command, including `delete` and `clear`.
+* Multiple `undo` commands reverse earlier changes one at a time.
+* `list`, `find`, `export`, `help`, `exit`, invalid commands, and failed commands do not affect the undo history.
+* If there are no changes to undo, Roster displays an error without changing any data.
+* Undo history is available only during the current application session.
+* After an undo, a new undoable command discards the states that were undone.
+* Press `Ctrl+Z` to undo without typing the command. On macOS, use `Command+Z`.
+* When the command box has an undoable text edit, the keyboard shortcut edits the command text instead of
+  changing Roster data.
+
+On success, Roster identifies the command that was undone. Restored data is saved automatically and the displayed
+list returns to the full roster in matriculation-number order.
+
 ### Exiting Roster: `exit`
 
 Exits the application.
@@ -359,9 +388,8 @@ Deletes every student, tutorial group, session and attendance record.
 
 Format: `clear`
 
-<div markdown="span" class="alert alert-warning">:exclamation: **Caution:**
-Clearing happens immediately, with no confirmation and no undo. Back up `data/addressbook.json` first if you may need to restore the data.
-</div>
+Clearing happens immediately without confirmation. Use `undo` to restore the cleared roster during the current
+application session.
 
 ### Saving data
 
@@ -415,5 +443,6 @@ Action | Format, example
 **Delete student** | `delete INDEX`<br>e.g. `delete 3`
 **Mark attendance** | `mark INDEX w/WEEK s/STATUS`<br>e.g. `mark 3 w/5 s/present`
 **Export attendance** | `export f/FILE_PATH [grp/GROUP]`<br>e.g. `export f/attendance.csv grp/T09`
+**Undo previous change** | `undo` or `Ctrl+Z` (`Command+Z` on macOS)
 **Exit** | `exit`
 **Clear all data** | `clear`

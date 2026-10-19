@@ -58,6 +58,11 @@ public class SessionCommand extends Command {
     }
 
     @Override
+    public HistoryAction getHistoryAction() {
+        return HistoryAction.COMMIT;
+    }
+
+    @Override
     public boolean equals(Object other) {
         return other == this
                 || (other instanceof SessionCommand otherCommand && session.equals(otherCommand.session));
