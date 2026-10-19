@@ -1,9 +1,11 @@
 package seedu.address.ui;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static seedu.address.testutil.FxTestUtil.onFxThread;
 
 import java.nio.file.Path;
+import java.util.Locale;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -45,7 +47,7 @@ public class UndoShortcutUiTest {
 
                 TextArea result = (TextArea) stage.getScene().lookup("#resultDisplay");
                 result.requestFocus();
-                result.fireEvent(controlZ());
+                result.fireEvent(platformShortcutZ());
 
                 assertEquals(original, model.getAddressBook().getPersonList().getFirst());
                 assertEquals("Undid the most recent edit command.", result.getText());
@@ -70,9 +72,30 @@ public class UndoShortcutUiTest {
                 input.fireEvent(new ActionEvent());
                 input.requestFocus();
                 input.appendText("draft command");
-                input.fireEvent(controlZ());
+                assertTrue(input.isFocused());
+                assertTrue(input.isUndoable());
+                input.fireEvent(platformShortcutZ());
 
                 assertEquals("Alex Lim", model.getAddressBook().getPersonList().getFirst().getName().fullName);
+                assertEquals("", input.getText());
+                return null;
+            });
+        } finally {
+            close(stage);
+        }
+    }
+
+    @Test
+    public void shortcut_withoutHistory_showsErrorAndPreservesRoster() throws Exception {
+        ModelManager model = new ModelManager();
+        Stage stage = createWindow(model);
+        try {
+            onFxThread(() -> {
+                TextArea result = (TextArea) stage.getScene().lookup("#resultDisplay");
+                result.requestFocus();
+                result.fireEvent(platformShortcutZ());
+                assertEquals("There are no changes to undo.", result.getText());
+                assertEquals(new AddressBook(), model.getAddressBook());
                 return null;
             });
         } finally {
@@ -94,8 +117,9 @@ public class UndoShortcutUiTest {
         });
     }
 
-    private static KeyEvent controlZ() {
-        return new KeyEvent(KeyEvent.KEY_PRESSED, "", "", KeyCode.Z, false, true, false, false);
+    private static KeyEvent platformShortcutZ() {
+        boolean isMac = System.getProperty("os.name").toLowerCase(Locale.ROOT).startsWith("mac");
+        return new KeyEvent(KeyEvent.KEY_PRESSED, "", "", KeyCode.Z, false, !isMac, false, isMac);
     }
 
     private static void close(Stage stage) throws Exception {
