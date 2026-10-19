@@ -16,6 +16,7 @@ import java.util.function.Predicate;
 import org.junit.jupiter.api.Test;
 
 import javafx.beans.property.ReadOnlyObjectProperty;
+import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import seedu.address.commons.core.GuiSettings;
 import seedu.address.logic.commands.exceptions.CommandException;
@@ -63,6 +64,56 @@ public class AddCommandTest {
                 String.format(AddCommand.MESSAGE_DUPLICATE_EMAIL, newStudent.getEmail()), ()
                         -> addCommand.execute(model));
         assertEquals(List.of(existingStudent), model.getAddressBook().getPersonList());
+    }
+
+    @Test
+    public void execute_studentOutsideDisplayedGroup_showsTheirGroup() throws Exception {
+        Person existingStudent = new PersonBuilder().withMatric("A0000001A").withEmail("amy@gmail.com")
+                .withGroup("T10").build();
+        Model model = new ModelManager(new AddressBookBuilder().withPerson(existingStudent).build(), new UserPrefs());
+        model.addGroup(new Group("T09"));
+        model.showGroup(new Group("T10"));
+        Person newStudent = new PersonBuilder().withMatric("A0000002B").withEmail("bob@gmail.com")
+                .withGroup("T09").build();
+
+        CommandResult result = new AddCommand(newStudent).execute(model);
+
+        assertEquals(String.format(AddCommand.MESSAGE_SUCCESS_SHOWING_GROUP, newStudent.getName(),
+                newStudent.getMatric(), newStudent.getGroup()), result.getFeedbackToUser());
+        assertEquals(Optional.of(new Group("T09")), model.getActiveGroup());
+        assertEquals(List.of(newStudent), model.getFilteredPersonList());
+    }
+
+    @Test
+    public void execute_studentInDisplayedGroup_keepsView() throws Exception {
+        Person existingStudent = new PersonBuilder().withMatric("A0000001A").withEmail("amy@gmail.com").build();
+        Model model = new ModelManager(new AddressBookBuilder().withPerson(existingStudent).build(), new UserPrefs());
+        model.showGroup(existingStudent.getGroup());
+        Person newStudent = new PersonBuilder().withMatric("A0000002B").withEmail("bob@gmail.com").build();
+
+        CommandResult result = new AddCommand(newStudent).execute(model);
+
+        assertEquals(String.format(AddCommand.MESSAGE_SUCCESS, newStudent.getName(), newStudent.getMatric(),
+                newStudent.getGroup()), result.getFeedbackToUser());
+        assertEquals(Optional.of(existingStudent.getGroup()), model.getActiveGroup());
+        assertEquals(List.of(existingStudent, newStudent), model.getFilteredPersonList());
+    }
+
+    @Test
+    public void execute_allStudentsDisplayed_keepsAllStudentsView() throws Exception {
+        Person existingStudent = new PersonBuilder().withMatric("A0000001A").withEmail("amy@gmail.com")
+                .withGroup("T10").build();
+        Model model = new ModelManager(new AddressBookBuilder().withPerson(existingStudent).build(), new UserPrefs());
+        model.addGroup(new Group("T09"));
+        Person newStudent = new PersonBuilder().withMatric("A0000002B").withEmail("bob@gmail.com")
+                .withGroup("T09").build();
+
+        CommandResult result = new AddCommand(newStudent).execute(model);
+
+        assertEquals(String.format(AddCommand.MESSAGE_SUCCESS, newStudent.getName(), newStudent.getMatric(),
+                newStudent.getGroup()), result.getFeedbackToUser());
+        assertEquals(Optional.empty(), model.getActiveGroup());
+        assertEquals(List.of(existingStudent, newStudent), model.getFilteredPersonList());
     }
 
     @Test
@@ -276,6 +327,11 @@ public class AddCommandTest {
         @Override
         public ReadOnlyAddressBook getAddressBook() {
             return new AddressBook();
+        }
+
+        @Override
+        public ObservableList<Person> getFilteredPersonList() {
+            return FXCollections.observableArrayList(personsAdded);
         }
     }
 

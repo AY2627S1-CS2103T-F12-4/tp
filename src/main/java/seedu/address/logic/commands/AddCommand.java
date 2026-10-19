@@ -35,6 +35,8 @@ public class AddCommand extends Command {
             + PREFIX_TAG + "owesMoney";
 
     public static final String MESSAGE_SUCCESS = "Added %1$s (%2$s) to tutorial group %3$s.";
+    public static final String MESSAGE_SUCCESS_SHOWING_GROUP =
+            "Added %1$s (%2$s) to tutorial group %3$s. Now showing %3$s.";
     public static final String MESSAGE_DUPLICATE_PERSON =
             "A student with matriculation number %1$s already exists.";
     public static final String MESSAGE_DUPLICATE_EMAIL = "A student with email %1$s already exists.";
@@ -70,6 +72,12 @@ public class AddCommand extends Command {
         }
 
         model.addPerson(toAdd);
+        // A student outside the displayed list would be added out of sight, so their group is shown instead
+        if (!model.getFilteredPersonList().contains(toAdd)) {
+            model.showGroup(toAdd.getGroup());
+            return new CommandResult(String.format(MESSAGE_SUCCESS_SHOWING_GROUP,
+                    toAdd.getName(), toAdd.getMatric(), toAdd.getGroup()));
+        }
         return new CommandResult(String.format(MESSAGE_SUCCESS,
                 toAdd.getName(), toAdd.getMatric(), toAdd.getGroup()));
     }
