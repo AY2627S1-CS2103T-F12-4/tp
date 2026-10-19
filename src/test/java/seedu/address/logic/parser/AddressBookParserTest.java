@@ -25,6 +25,7 @@ import seedu.address.logic.commands.InitCommand;
 import seedu.address.logic.commands.ListCommand;
 import seedu.address.logic.commands.MarkCommand;
 import seedu.address.logic.commands.SessionCommand;
+import seedu.address.logic.commands.UndoCommand;
 import seedu.address.logic.parser.exceptions.ParseException;
 import seedu.address.model.attendance.Status;
 import seedu.address.model.person.Group;
@@ -162,6 +163,17 @@ public class AddressBookParserTest {
                 "session grp/T09 w/5 d/2026-09-15");
         Session expectedSession = new Session(new Group("T09"), new Week(5), new SessionDate("2026-09-15"));
         assertEquals(new SessionCommand(expectedSession), command);
+    }
+
+    @Test
+    public void parseCommand_undo() throws Exception {
+        assertTrue(parser.parseCommand(UndoCommand.COMMAND_WORD) instanceof UndoCommand);
+    }
+
+    @Test
+    public void parseCommand_undoWithArguments_throwsParseException() {
+        String expectedMessage = String.format(MESSAGE_INVALID_COMMAND_FORMAT, UndoCommand.MESSAGE_USAGE);
+        assertThrows(ParseException.class, expectedMessage, () -> parser.parseCommand("undo 1"));
     }
 
     @Test

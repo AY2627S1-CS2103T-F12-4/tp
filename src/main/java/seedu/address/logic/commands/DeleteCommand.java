@@ -49,6 +49,11 @@ public class DeleteCommand extends Command {
         return new CommandResult(generateSuccessMessage(personToDelete));
     }
 
+    @Override
+    public HistoryAction getHistoryAction() {
+        return HistoryAction.CLEAR;
+    }
+
     /**
      * Returns the message shown after {@code deletedPerson} is deleted.
      */

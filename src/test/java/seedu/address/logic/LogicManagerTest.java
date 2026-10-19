@@ -2,6 +2,7 @@ package seedu.address.logic;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static seedu.address.logic.Messages.MESSAGE_INVALID_COMMAND_FORMAT;
 import static seedu.address.logic.Messages.MESSAGE_INVALID_PERSON_DISPLAYED_INDEX;
 import static seedu.address.logic.Messages.MESSAGE_UNKNOWN_COMMAND;
@@ -33,8 +34,10 @@ import javafx.collections.ObservableList;
 import seedu.address.logic.commands.AddCommand;
 import seedu.address.logic.commands.CommandResult;
 import seedu.address.logic.commands.ListCommand;
+import seedu.address.logic.commands.UndoCommand;
 import seedu.address.logic.commands.exceptions.CommandException;
 import seedu.address.logic.parser.exceptions.ParseException;
+import seedu.address.model.AddressBook;
 import seedu.address.model.Model;
 import seedu.address.model.ModelManager;
 import seedu.address.model.ReadOnlyAddressBook;
@@ -110,6 +113,60 @@ public class LogicManagerTest {
     public void execute_validCommand_success() throws Exception {
         String listCommand = ListCommand.COMMAND_WORD;
         assertCommandSuccess(listCommand, ListCommand.MESSAGE_EMPTY, model);
+    }
+
+    @Test
+    public void execute_undo_restoresMultipleUndoableCommandsAndSavesState() throws Exception {
+        logic.execute("init grp/T09");
+        logic.execute("add n/Alex Tan p/91234567 e/alex@example.com a/Kent Ridge "
+                + "m/A0123456X grp/T09");
+        logic.execute("edit 1 n/Alex Lim");
+
+        assertEquals("Undid the most recent edit command.", logic.execute("undo").getFeedbackToUser());
+        assertEquals("Alex Tan", model.getAddressBook().getPersonList().getFirst().getName().fullName);
+        assertEquals("Undid the most recent add command.", logic.execute("undo").getFeedbackToUser());
+        assertTrue(model.getAddressBook().getPersonList().isEmpty());
+        assertEquals("Undid the most recent init command.", logic.execute("undo").getFeedbackToUser());
+        assertTrue(model.getGroupList().isEmpty());
+
+        JsonAddressBookStorage savedStorage = new JsonAddressBookStorage(temporaryFolder.resolve("addressBook.json"));
+        assertEquals(new AddressBook(), savedStorage.readAddressBook().orElseThrow());
+    }
+
+    @Test
+    public void execute_undoAfterReadOnlyAndFailedCommands_restoresLastChange() throws Exception {
+        logic.execute("init grp/T09");
+        logic.execute("list");
+        assertCommandException("init grp/T09", "This tutorial group already exists: T09");
+
+        assertEquals("Undid the most recent init command.", logic.execute("undo").getFeedbackToUser());
+        assertTrue(model.getGroupList().isEmpty());
+    }
+
+    @Test
+    public void execute_deleteClearsUndoHistoryAndCannotBeUndone() throws Exception {
+        logic.execute("init grp/T09");
+        logic.execute("add n/Alex Tan p/91234567 e/alex@example.com a/Kent Ridge "
+                + "m/A0123456X grp/T09");
+        logic.execute("delete 1");
+
+        assertThrows(CommandException.class, UndoCommand.MESSAGE_NOTHING_TO_UNDO, () -> logic.execute("undo"));
+        assertTrue(model.getAddressBook().getPersonList().isEmpty());
+        assertTrue(model.hasGroup(new Group("T09")));
+    }
+
+    @Test
+    public void execute_clearClearsUndoHistoryAndCannotBeUndone() throws Exception {
+        logic.execute("init grp/T09");
+        logic.execute("clear");
+
+        assertCommandException("undo", UndoCommand.MESSAGE_NOTHING_TO_UNDO);
+        assertTrue(model.getGroupList().isEmpty());
+    }
+
+    @Test
+    public void execute_undoWithNoHistory_throwsCommandException() {
+        assertCommandException("undo", UndoCommand.MESSAGE_NOTHING_TO_UNDO);
     }
 
     @Test
@@ -225,7 +282,6 @@ public class LogicManagerTest {
         model.addGroup(expectedPerson.getGroup());
         ModelManager expectedModel = new ModelManager();
         expectedModel.addGroup(expectedPerson.getGroup());
-        expectedModel.addPerson(expectedPerson);
         assertCommandFailure(addCommand, CommandException.class, expectedMessage, expectedModel);
     }
 }

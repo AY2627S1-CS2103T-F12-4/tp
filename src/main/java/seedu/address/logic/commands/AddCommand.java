@@ -81,6 +81,11 @@ public class AddCommand extends Command {
     }
 
     @Override
+    public HistoryAction getHistoryAction() {
+        return HistoryAction.COMMIT;
+    }
+
+    @Override
     public boolean equals(Object other) {
         if (other == this) {
             return true;

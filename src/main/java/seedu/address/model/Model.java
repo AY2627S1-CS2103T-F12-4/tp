@@ -41,6 +41,21 @@ public interface Model {
      */
     void setAddressBook(ReadOnlyAddressBook addressBook);
 
+    /** Saves the current address book state as the result of an undoable command. */
+    void commitAddressBook(String commandDescription);
+
+    /** Returns whether an earlier committed address book state can be restored. */
+    boolean canUndoAddressBook();
+
+    /** Restores the previous address book state and returns the command that was undone. */
+    String undoAddressBook();
+
+    /** Reapplies the next address book state after an undo. */
+    void redoAddressBook();
+
+    /** Discards all undo history and keeps the current address book as the new starting state. */
+    void resetAddressBookHistory();
+
     /** Returns the AddressBook */
     ReadOnlyAddressBook getAddressBook();
 
