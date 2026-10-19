@@ -196,6 +196,28 @@ public class LogicManagerTest {
         assertThrows(UnsupportedOperationException.class, () -> logic.getFilteredPersonList().remove(0));
     }
 
+    @Test
+    public void execute_undoSaveFails_restoresStateAndAllowsRetry() throws Exception {
+        logic.execute("init grp/T09");
+        AddressBook beforeUndo = new AddressBook(model.getAddressBook());
+        JsonAddressBookStorage failingStorage = new JsonAddressBookStorage(temporaryFolder.resolve("failed.json")) {
+            @Override
+            public void saveAddressBook(ReadOnlyAddressBook addressBook) throws IOException {
+                throw DUMMY_IO_EXCEPTION;
+            }
+        };
+        Logic failingLogic = new LogicManager(model, new StorageManager(failingStorage,
+                new JsonUserPrefsStorage(temporaryFolder.resolve("failedPrefs.json"))));
+
+        assertThrows(CommandException.class, () -> failingLogic.execute("undo"));
+        assertEquals(beforeUndo, model.getAddressBook());
+        assertTrue(model.canUndoAddressBook());
+        assertEquals("Undid the most recent init command.", logic.execute("undo").getFeedbackToUser());
+        assertTrue(model.getGroupList().isEmpty());
+        JsonAddressBookStorage savedStorage = new JsonAddressBookStorage(temporaryFolder.resolve("addressBook.json"));
+        assertEquals(new AddressBook(), savedStorage.readAddressBook().orElseThrow());
+    }
+
     /**
      * Executes the command and confirms that
      * - no exceptions are thrown <br>
