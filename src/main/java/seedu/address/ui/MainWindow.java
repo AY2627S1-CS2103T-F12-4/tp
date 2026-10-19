@@ -189,6 +189,9 @@ public class MainWindow extends UiPart<Stage> {
             CommandResult commandResult = logic.execute(commandText);
             logger.info("Result: " + commandResult.getFeedbackToUser());
             resultDisplay.setFeedbackToUser(commandResult.getFeedbackToUser());
+            // A highlight is only kept until the next command, so it never marks an unrelated student
+            commandResult.getPersonToShow()
+                    .ifPresentOrElse(personListPanel::scrollTo, personListPanel::clearSelection);
 
             if (commandResult.isShowHelp()) {
                 handleHelp();

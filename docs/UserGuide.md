@@ -176,6 +176,7 @@ Examples:
 * Matriculation numbers and email addresses must be unique across all tutorial groups.
 * Names do not need to be unique because different students may share a name.
 * If the new student is not in the list on screen, for example because another group or a search is shown, Roster switches to the new student's tutorial group so that you can see them.
+* Roster scrolls the list to the new student and highlights their card until your next command. The list is sorted by matriculation number, so the new student may appear anywhere in it.
 
 On success, Roster displays a confirmation such as `Added Alex Tan (A0123456X) to tutorial group T09.` When Roster switches to the student's group, the confirmation ends with `Now showing T09.`
 

@@ -82,6 +82,7 @@ public class AddCommandTest {
                 newStudent.getMatric(), newStudent.getGroup()), result.getFeedbackToUser());
         assertEquals(Optional.of(new Group("T09")), model.getActiveGroup());
         assertEquals(List.of(newStudent), model.getFilteredPersonList());
+        assertEquals(Optional.of(newStudent), result.getPersonToShow());
     }
 
     @Test
@@ -97,6 +98,7 @@ public class AddCommandTest {
                 newStudent.getGroup()), result.getFeedbackToUser());
         assertEquals(Optional.of(existingStudent.getGroup()), model.getActiveGroup());
         assertEquals(List.of(existingStudent, newStudent), model.getFilteredPersonList());
+        assertEquals(Optional.of(newStudent), result.getPersonToShow());
     }
 
     @Test
@@ -114,6 +116,7 @@ public class AddCommandTest {
                 newStudent.getGroup()), result.getFeedbackToUser());
         assertEquals(Optional.empty(), model.getActiveGroup());
         assertEquals(List.of(existingStudent, newStudent), model.getFilteredPersonList());
+        assertEquals(Optional.of(newStudent), result.getPersonToShow());
     }
 
     @Test

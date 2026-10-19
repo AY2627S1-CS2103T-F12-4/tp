@@ -76,10 +76,11 @@ public class AddCommand extends Command {
         if (!model.getFilteredPersonList().contains(toAdd)) {
             model.showGroup(toAdd.getGroup());
             return new CommandResult(String.format(MESSAGE_SUCCESS_SHOWING_GROUP,
-                    toAdd.getName(), toAdd.getMatric(), toAdd.getGroup()));
+                    toAdd.getName(), toAdd.getMatric(), toAdd.getGroup()), toAdd);
         }
+        // The list is sorted by matriculation number, so the new student can be anywhere in it
         return new CommandResult(String.format(MESSAGE_SUCCESS,
-                toAdd.getName(), toAdd.getMatric(), toAdd.getGroup()));
+                toAdd.getName(), toAdd.getMatric(), toAdd.getGroup()), toAdd);
     }
 
     @Override

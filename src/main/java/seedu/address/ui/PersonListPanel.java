@@ -2,6 +2,7 @@ package seedu.address.ui;
 
 import java.util.logging.Logger;
 
+import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.collections.ListChangeListener;
@@ -42,6 +43,28 @@ public class PersonListPanel extends UiPart<Region> {
         personListView.setItems(personList);
         sessions.addListener((ListChangeListener<Session>) change -> personListView.refresh());
         personListView.setCellFactory(listView -> new PersonListViewCell());
+    }
+
+    /**
+     * Scrolls the list to {@code person} and highlights their card, if they are displayed.
+     */
+    public void scrollTo(Person person) {
+        int index = personListView.getItems().indexOf(person);
+        if (index < 0) {
+            return;
+        }
+        personListView.getSelectionModel().select(index);
+        personListView.scrollTo(index);
+        // Cards differ in height, so the first scroll uses estimated heights and can stop short of the card.
+        // Scrolling again once the cards have been laid out brings the whole card into view.
+        Platform.runLater(() -> personListView.scrollTo(index));
+    }
+
+    /**
+     * Removes the highlight from any highlighted card.
+     */
+    public void clearSelection() {
+        personListView.getSelectionModel().clearSelection();
     }
 
     /**
