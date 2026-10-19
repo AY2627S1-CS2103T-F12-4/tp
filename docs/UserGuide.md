@@ -162,6 +162,37 @@ Examples:
 
 On success, Roster displays a confirmation such as `Added Alex Tan (A0123456X) to tutorial group T09.`
 
+### Editing a student: `edit`
+
+Edits the details of the student identified by their index in the currently displayed student list. Only the provided fields are changed; all other details remain unchanged.
+
+Format: `edit INDEX [n/NAME] [m/MATRIC] [e/EMAIL] [grp/GROUP] [t/TAG]...`
+
+Examples:
+
+* `edit 1 n/Alex Tan`
+* `edit 2 m/A0123456X e/alex@example.com`
+* `edit 3 grp/T10`
+* `edit 1 t/class-rep t/needs-follow-up`
+* `edit 2 e/bernice@example.com n/Bernice Tan grp/T09`
+
+* `INDEX` must identify a student in the currently displayed student list.
+* At least one field must be provided.
+* Parameters may be provided in any order.
+* Fields that are not provided remain unchanged.
+* The edited matriculation number and email address must remain unique across all students.
+* The specified tutorial group must already exist.
+* Each of `n/NAME`, `m/MATRIC`, `e/EMAIL`, and `grp/GROUP` may appear only once.
+* The `t/TAG` parameter may be repeated to assign multiple tags.
+* Providing tags replaces all the student's existing tags.
+* Use an empty `t/` parameter to remove all tags.
+* Attendance cannot be changed using `edit`; use the `mark` command instead.
+* Moving a student to another tutorial group removes their attendance records from the previous group. Attendance for sessions in the new group starts as unmarked.
+* Invalid values, unsupported parameters, and duplicate information are rejected without changing the student.
+* A successful edit can be reversed using the `undo` command or <kbd>Ctrl</kbd>+<kbd>Z</kbd>.
+
+On success, Roster displays the updated student details.
+
 
 ### Listing students: `list`
 
@@ -362,7 +393,7 @@ Action | Format, example
 **Create tutorial group** | `init grp/GROUP`<br>e.g. `init grp/T09`
 **Create session** | `session grp/GROUP w/WEEK d/DATE`<br>e.g. `session grp/T09 w/5 d/2026-09-15`
 **Add student** | `add n/NAME p/PHONE e/EMAIL a/ADDRESS m/MATRIC grp/GROUP [t/TAG]...`<br>e.g. `add n/Alex Tan p/12345678 e/alex.tan@example.com a/Kent Ridge m/A0123456X grp/T09`
-**Edit student** | `edit INDEX [n/NAME] [p/PHONE] [e/EMAIL] [a/ADDRESS] [m/MATRIC] [grp/GROUP] [t/TAG]...`<br>e.g. `edit 1 e/alex.tan@example.com`
+**Edit student** | `edit INDEX [n/NAME] [m/MATRIC] [e/EMAIL] [grp/GROUP] [t/TAG]...`<br>e.g. `edit 1 e/alex.tan@example.com`
 **List students** | `list [grp/GROUP]`<br>e.g. `list grp/T09`
 **Find students** | `find n/KEYWORD`<br>e.g. `find n/John Tan`
 **Delete student** | `delete INDEX`<br>e.g. `delete 3`
