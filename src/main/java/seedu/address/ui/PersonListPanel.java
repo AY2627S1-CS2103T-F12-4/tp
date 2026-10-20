@@ -29,6 +29,8 @@ public class PersonListPanel extends UiPart<Region> {
     private ListView<Person> personListView;
     @FXML
     private Label groupScope;
+    @FXML
+    private Label studentCount;
 
     /**
      * Creates a {@code PersonListPanel} with the given {@code ObservableList}.
@@ -39,6 +41,7 @@ public class PersonListPanel extends UiPart<Region> {
         this.sessions = sessions;
         groupScope.textProperty().bind(Bindings.createStringBinding(() -> activeGroup.get() == null
                 ? "All groups" : "Tutorial group " + activeGroup.get(), activeGroup));
+        studentCount.textProperty().bind(Bindings.size(personList).asString("%d students"));
         personListView.setItems(personList);
         sessions.addListener((ListChangeListener<Session>) change -> personListView.refresh());
         personListView.setCellFactory(listView -> new PersonListViewCell());

@@ -1,8 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.scene.control.ListView?>
-<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.HBox?>
 
-<VBox xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1">
-  <ListView fx:id="groupListView" VBox.vgrow="ALWAYS" />
-</VBox>
+<HBox alignment="CENTER_LEFT" spacing="10" styleClass="group-strip"
+      xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1">
+  <Label text="Tutorial groups" styleClass="group-strip-label" />
+  <ListView fx:id="groupListView" orientation="HORIZONTAL" HBox.hgrow="ALWAYS" />
+</HBox>

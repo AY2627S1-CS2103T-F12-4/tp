@@ -6,7 +6,9 @@
 
 <GridPane styleClass="status-bar" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1">
   <columnConstraints>
+    <ColumnConstraints minWidth="10" />
     <ColumnConstraints hgrow="SOMETIMES" minWidth="10" />
   </columnConstraints>
-  <Label fx:id="saveLocationStatus" />
+  <Label text="Saved to " />
+  <Label fx:id="saveLocationStatus" GridPane.columnIndex="1" />
 </GridPane>
