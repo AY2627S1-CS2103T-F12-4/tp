@@ -7,8 +7,10 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
+import seedu.address.commons.core.LogsCenter;
 import seedu.address.commons.util.ToStringBuilder;
 import seedu.address.logic.commands.exceptions.CommandException;
 import seedu.address.model.Model;
@@ -28,6 +30,8 @@ public class MarkAllCommand extends Command {
     public static final String MESSAGE_SUCCESS_WITH_REMARKS =
             "Marked %1$d student(s) as %2$s for week %3$s in %4$s (%5$d already marked).";
     public static final String MESSAGE_NO_STUDENTS = "There are no students in the displayed list to mark.";
+
+    private static final Logger logger = LogsCenter.getLogger(MarkAllCommand.class);
 
     private final Week week;
     private final Status status;
@@ -56,9 +60,11 @@ public class MarkAllCommand extends Command {
             if (!sessionsByGroup.containsKey(group)) {
                 Session session = model.findSession(group, week).orElseThrow(() -> new CommandException(
                         String.format(MarkCommand.MESSAGE_NO_SESSION, group, week)));
+                assert session.isFor(group, week) : "The session found should be for that group and week";
                 sessionsByGroup.put(group, session);
             }
         }
+        assert !sessionsByGroup.isEmpty() : "Every displayed student's group should have a session";
 
         int remarkCount = 0;
         for (Person student : studentsToMark) {
@@ -70,6 +76,8 @@ public class MarkAllCommand extends Command {
         }
 
         String groups = sessionsByGroup.keySet().stream().map(Group::toString).collect(Collectors.joining(", "));
+        logger.fine("Marked " + studentsToMark.size() + " student(s) as " + status + " for week " + week + " in "
+                + groups + ", replacing " + remarkCount + " earlier record(s)");
         return new CommandResult(remarkCount == 0
                 ? String.format(MESSAGE_SUCCESS, studentsToMark.size(), status, week, groups)
                 : String.format(MESSAGE_SUCCESS_WITH_REMARKS, studentsToMark.size(), status, week, groups,

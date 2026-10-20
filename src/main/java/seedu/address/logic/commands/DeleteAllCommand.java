@@ -3,7 +3,9 @@ package seedu.address.logic.commands;
 import static java.util.Objects.requireNonNull;
 
 import java.util.List;
+import java.util.logging.Logger;
 
+import seedu.address.commons.core.LogsCenter;
 import seedu.address.logic.commands.exceptions.CommandException;
 import seedu.address.model.Model;
 import seedu.address.model.person.Person;
@@ -18,6 +20,8 @@ public class DeleteAllCommand extends Command {
             "Deleted %1$d student(s) in the displayed list, including all their attendance records.";
     public static final String MESSAGE_NO_STUDENTS = "There are no students in the displayed list to delete.";
 
+    private static final Logger logger = LogsCenter.getLogger(DeleteAllCommand.class);
+
     @Override
     public CommandResult execute(Model model) throws CommandException {
         requireNonNull(model);
@@ -30,6 +34,8 @@ public class DeleteAllCommand extends Command {
         for (Person student : studentsToDelete) {
             model.deletePerson(student);
         }
+        assert studentsToDelete.stream().noneMatch(model::hasPerson) : "No deleted student should remain in Roster";
+        logger.fine("Deleted " + studentsToDelete.size() + " displayed student(s)");
         return new CommandResult(String.format(MESSAGE_SUCCESS, studentsToDelete.size()));
     }
 
