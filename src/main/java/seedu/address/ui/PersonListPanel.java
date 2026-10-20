@@ -1,5 +1,7 @@
 package seedu.address.ui;
 
+import static java.util.Objects.requireNonNull;
+
 import java.util.logging.Logger;
 
 import javafx.application.Platform;
@@ -49,8 +51,11 @@ public class PersonListPanel extends UiPart<Region> {
      * Scrolls the list to {@code person} and highlights their card, if they are displayed.
      */
     public void scrollTo(Person person) {
+        requireNonNull(person);
         int index = personListView.getItems().indexOf(person);
         if (index < 0) {
+            // Commands only ask to show students they have displayed, so this points to a bug in a command
+            logger.warning("Cannot scroll to " + person.getMatric() + ", who is not in the displayed list");
             return;
         }
         personListView.getSelectionModel().select(index);
