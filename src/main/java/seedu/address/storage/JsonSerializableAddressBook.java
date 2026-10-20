@@ -3,12 +3,14 @@ package seedu.address.storage;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonRootName;
 
+import seedu.address.commons.core.LogsCenter;
 import seedu.address.commons.exceptions.IllegalValueException;
 import seedu.address.model.AddressBook;
 import seedu.address.model.ReadOnlyAddressBook;
@@ -31,6 +33,8 @@ class JsonSerializableAddressBook {
             "A session refers to a tutorial group that is not registered.";
     public static final String MESSAGE_UNKNOWN_SESSION =
             "Attendance records refer to a session that is not in the sessions list.";
+
+    private static final Logger logger = LogsCenter.getLogger(JsonSerializableAddressBook.class);
 
     private final List<JsonAdaptedPerson> persons = new ArrayList<>();
     private final List<String> groups = new ArrayList<>();
@@ -106,6 +110,8 @@ class JsonSerializableAddressBook {
             // Data files saved before groups were stored, such as the saved sample data, list students
             // without their groups. Registering the group keeps those files loadable.
             if (!addressBook.hasGroup(person.getGroup())) {
+                logger.info("Registered tutorial group " + person.getGroup() + ", which " + person.getMatric()
+                        + " belongs to but the groups list in the data file does not include");
                 addressBook.addGroup(person.getGroup());
             }
             addressBook.addPerson(person);

@@ -8,7 +8,9 @@ import static seedu.address.logic.parser.CliSyntax.PREFIX_WEEK;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.logging.Logger;
 
+import seedu.address.commons.core.LogsCenter;
 import seedu.address.commons.core.index.Index;
 import seedu.address.commons.util.ToStringBuilder;
 import seedu.address.logic.Messages;
@@ -42,6 +44,8 @@ public class MarkCommand extends Command {
     public static final String MESSAGE_REMARK_SUCCESS = "Marked %1$s as %2$s for %3$s week %4$s (was %5$s).";
     public static final String MESSAGE_NO_SESSION =
             "%1$s has no session for week %2$s. Create it first with: session grp/%1$s w/%2$s d/YYYY-MM-DD";
+
+    private static final Logger logger = LogsCenter.getLogger(MarkCommand.class);
 
     private final Index index;
     private final Week week;
@@ -82,6 +86,8 @@ public class MarkCommand extends Command {
 
         // The displayed list is left as it is, so that the indexes the TA sees do not change
         model.setPerson(personToMark, markedPerson);
+        logger.fine("Marked " + markedPerson.getMatric() + " as " + status + " for " + group + " week " + week
+                + previousAttendance.map(previous -> " (was " + previous.getStatus() + ")").orElse(""));
 
         return new CommandResult(generateSuccessMessage(markedPerson, previousAttendance));
     }

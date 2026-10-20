@@ -14,7 +14,9 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.logging.Logger;
 
+import seedu.address.commons.core.LogsCenter;
 import seedu.address.commons.core.index.Index;
 import seedu.address.commons.util.CollectionUtil;
 import seedu.address.commons.util.ToStringBuilder;
@@ -53,6 +55,8 @@ public class EditCommand extends Command {
     public static final String MESSAGE_DUPLICATE_PERSON = "This student already exists in Roster.";
     public static final String MESSAGE_UNKNOWN_PARAMETER =
             "Unexpected input. Use only: n/, e/, m/, grp/ and t/.";
+
+    private static final Logger logger = LogsCenter.getLogger(EditCommand.class);
 
     private final Index index;
     private final EditPersonDescriptor editPersonDescriptor;
@@ -99,6 +103,11 @@ public class EditCommand extends Command {
         }
 
         model.setPerson(personToEdit, editedPerson);
+        int clearedRecordCount = personToEdit.getAttendances().size() - editedPerson.getAttendances().size();
+        if (clearedRecordCount > 0) {
+            logger.info("Cleared " + clearedRecordCount + " attendance record(s) of " + editedPerson.getMatric()
+                    + " after moving them from " + personToEdit.getGroup() + " to " + editedPerson.getGroup());
+        }
         model.updateFilteredPersonList(PREDICATE_SHOW_ALL_PERSONS);
         return new CommandResult(String.format(MESSAGE_EDIT_PERSON_SUCCESS, Messages.format(editedPerson)));
     }
