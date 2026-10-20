@@ -193,5 +193,12 @@ public class DeleteCommandTest {
             requireNonNull(target);
             deletedPersons.add(target);
         }
+
+        @Override
+        public boolean hasPerson(Person person) {
+            requireNonNull(person);
+            return displayedPersons.stream().anyMatch(person::isSamePerson)
+                    && deletedPersons.stream().noneMatch(person::isSamePerson);
+        }
     }
 }

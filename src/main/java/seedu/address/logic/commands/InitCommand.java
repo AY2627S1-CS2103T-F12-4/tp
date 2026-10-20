@@ -41,6 +41,8 @@ public class InitCommand extends Command {
 
         model.addGroup(group);
         model.showGroup(group);
+        assert model.hasGroup(group) : "The new tutorial group should be registered";
+        assert model.getFilteredPersonList().isEmpty() : "A new tutorial group should have no students to show";
         return new CommandResult(String.format(MESSAGE_SUCCESS, group));
     }
 

@@ -80,6 +80,8 @@ public class EditCommand extends Command {
 
         Person personToEdit = lastShownList.get(index.getZeroBased());
         Person editedPerson = createEditedPerson(personToEdit, editPersonDescriptor);
+        assert editedPerson.getGroup().equals(personToEdit.getGroup()) || editedPerson.getAttendances().isEmpty()
+                : "A student moved to another group should have no attendance records left";
 
         if (!model.hasGroup(editedPerson.getGroup())) {
             throw new CommandException(String.format(AddCommand.MESSAGE_UNKNOWN_GROUP, editedPerson.getGroup()));

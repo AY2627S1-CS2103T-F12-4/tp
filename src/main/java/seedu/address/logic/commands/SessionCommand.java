@@ -54,6 +54,7 @@ public class SessionCommand extends Command {
         }
 
         model.addSession(session);
+        assert model.findSession(group, session.getWeek()).isPresent() : "The new session should be findable";
         return new CommandResult(String.format(MESSAGE_SUCCESS, group, session.getWeek(), session.getDate()));
     }
 

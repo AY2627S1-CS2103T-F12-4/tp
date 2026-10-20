@@ -49,6 +49,7 @@ public class DeleteCommand extends Command {
         Person personToDelete = lastShownList.get(targetIndex.getZeroBased());
         // Attendance records are stored inside the person, so deleting the person deletes them too
         model.deletePerson(personToDelete);
+        assert !model.hasPerson(personToDelete) : "The deleted student should no longer be in Roster";
         return new CommandResult(generateSuccessMessage(personToDelete));
     }
 
