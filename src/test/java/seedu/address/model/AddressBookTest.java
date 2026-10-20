@@ -70,16 +70,36 @@ public class AddressBookTest {
 
     @Test
     public void hasPerson_personInAddressBook_returnsTrue() {
+        addressBook.addGroup(ALICE.getGroup());
         addressBook.addPerson(ALICE);
         assertTrue(addressBook.hasPerson(ALICE));
     }
 
     @Test
     public void hasPerson_personWithSameIdentityFieldsInAddressBook_returnsTrue() {
+        addressBook.addGroup(ALICE.getGroup());
         addressBook.addPerson(ALICE);
         Person editedAlice = new PersonBuilder(ALICE).withTags(VALID_TAG_HUSBAND)
                 .build();
         assertTrue(addressBook.hasPerson(editedAlice));
+    }
+
+    @Test
+    public void addPerson_unregisteredGroup_throwsIllegalArgumentException() {
+        assertThrows(IllegalArgumentException.class, AddressBook.MESSAGE_UNREGISTERED_PERSON_GROUP, () ->
+                addressBook.addPerson(ALICE));
+        assertFalse(addressBook.hasPerson(ALICE));
+    }
+
+    @Test
+    public void setPerson_unregisteredGroup_throwsIllegalArgumentException() {
+        addressBook.addGroup(ALICE.getGroup());
+        addressBook.addPerson(ALICE);
+        Person aliceInUnregisteredGroup = new PersonBuilder(ALICE).withGroup("T99").build();
+
+        assertThrows(IllegalArgumentException.class, AddressBook.MESSAGE_UNREGISTERED_PERSON_GROUP, () ->
+                addressBook.setPerson(ALICE, aliceInUnregisteredGroup));
+        assertEquals(List.of(ALICE), addressBook.getPersonList());
     }
 
     @Test

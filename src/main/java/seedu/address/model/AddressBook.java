@@ -23,6 +23,8 @@ import seedu.address.model.session.Week;
  */
 public class AddressBook implements ReadOnlyAddressBook {
 
+    public static final String MESSAGE_UNREGISTERED_PERSON_GROUP = "Student's tutorial group must be registered";
+
     private final UniquePersonList persons = new UniquePersonList();
     private final ObservableList<Group> groups = FXCollections.observableArrayList();
     private final UniqueSessionList sessions = new UniqueSessionList();
@@ -89,9 +91,11 @@ public class AddressBook implements ReadOnlyAddressBook {
 
     /**
      * Adds a person to the address book.
-     * The person must not already exist in the address book.
+     * The person must not already exist in the address book, and their tutorial group must be registered.
      */
     public void addPerson(Person p) {
+        requireNonNull(p);
+        requireRegisteredGroup(p);
         persons.add(p);
     }
 
@@ -99,11 +103,23 @@ public class AddressBook implements ReadOnlyAddressBook {
      * Replaces the given person {@code target} in the list with {@code editedPerson}.
      * {@code target} must exist in the address book.
      * The person identity of {@code editedPerson} must not be the same as another existing person in the address book.
+     * The tutorial group of {@code editedPerson} must be registered.
      */
     public void setPerson(Person target, Person editedPerson) {
         requireNonNull(editedPerson);
+        requireRegisteredGroup(editedPerson);
 
         persons.setPerson(target, editedPerson);
+    }
+
+    /**
+     * Throws an {@code IllegalArgumentException} if the tutorial group of {@code person} is not registered.
+     * Every student must belong to a registered group, so that the group's sessions can be found for them.
+     */
+    private void requireRegisteredGroup(Person person) {
+        if (!hasGroup(person.getGroup())) {
+            throw new IllegalArgumentException(MESSAGE_UNREGISTERED_PERSON_GROUP);
+        }
     }
 
     /**
@@ -141,6 +157,8 @@ public class AddressBook implements ReadOnlyAddressBook {
      * Returns the session for {@code group} and {@code week}, if it exists.
      */
     public Optional<Session> findSession(Group group, Week week) {
+        requireNonNull(group);
+        requireNonNull(week);
         return sessions.find(group, week);
     }
 

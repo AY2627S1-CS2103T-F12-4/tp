@@ -14,6 +14,7 @@ import seedu.address.model.Model;
 import seedu.address.model.ModelManager;
 import seedu.address.model.UserPrefs;
 import seedu.address.model.person.Group;
+import seedu.address.model.person.Person;
 import seedu.address.testutil.PersonBuilder;
 
 /**
@@ -51,7 +52,9 @@ public class ListCommandTest {
     @Test
     public void execute_singleStudent_showsCount() {
         model = new ModelManager();
-        model.addPerson(new PersonBuilder().build());
+        Person student = new PersonBuilder().build();
+        model.addGroup(student.getGroup());
+        model.addPerson(student);
         expectedModel = new ModelManager(model.getAddressBook(), new UserPrefs());
         assertCommandSuccess(new ListCommand(), model, "Listed all 1 students.", expectedModel);
     }
