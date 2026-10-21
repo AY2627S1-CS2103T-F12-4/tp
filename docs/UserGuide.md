@@ -175,8 +175,10 @@ Examples:
 * The tutorial group must already exist.
 * Matriculation numbers and email addresses must be unique across all tutorial groups.
 * Names do not need to be unique because different students may share a name.
+* If the new student is not in the list on screen, for example because another group or a search is shown, Roster switches to the new student's tutorial group so that you can see them.
+* Roster scrolls the list to the new student and highlights their card until your next command. The list is sorted by matriculation number, so the new student may appear anywhere in it.
 
-On success, Roster displays a confirmation such as `Added Alex Tan (A0123456X) to tutorial group T09.`
+On success, Roster displays a confirmation such as `Added Alex Tan (A0123456X) to tutorial group T09.` When Roster switches to the student's group, the confirmation ends with `Now showing T09.`
 
 
 ### Listing students: `list`
@@ -209,7 +211,7 @@ A green `✓` means present, a red `✗` means absent, and a grey `—` means un
 A student added after a session also shows `—` until their attendance is recorded. Weeks with no session have no cell. The list scrolls when needed.
 
 The group scope is shown above the list. `find` searches across groups and clears the active group.
-Adding or deleting a student refreshes the current results without clearing the filter.
+Deleting a student refreshes the current results without clearing the filter. Adding a student keeps the current results if the new student belongs in them, and otherwise shows the new student's tutorial group.
 Student indices are the row numbers currently on screen, so check the displayed list before using `delete`, `edit`,
 or `mark`. A successful edit shows all students again in matriculation-number order. Editing a matriculation number
 can therefore change row numbers. Moving a student to another group clears their old attendance records; their
