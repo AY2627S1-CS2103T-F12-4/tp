@@ -106,6 +106,16 @@ public class NameContainsQueryPredicateTest {
     }
 
     @Test
+    public void test_unicodeCaseVariants_doNotDependOnWordPosition() {
+        for (String[] example : new String[][]{{"ΝΙΚΟΣ", "Σ"}, {"ΟΣΑ", "ΟΣ"}, {"ΒΑΣΙΛΗΣ", "ΒΑΣ"},
+            {"ΒΑΣΙΛΗΣ", "ΑΣ"}, {"Νίκος", "ς"}, {"𐐀𐐁", "𐐨"}}) {
+            assertTrue(new NameContainsQueryPredicate(example[1]).test(person(example[0])), example[1]);
+        }
+        assertTrue(new NameContainsQueryPredicate("ΝΙΚΟΣ").isWholeWordMatch(person("Νικος Tan")));
+        assertFalse(new NameContainsQueryPredicate("ΟΣ").isWholeWordMatch(person("ΟΣΑ")));
+    }
+
+    @Test
     public void isWholeWordMatch_singleWord_respectsWordBoundaries() {
         NameContainsQueryPredicate predicate = new NameContainsQueryPredicate("john");
         assertTrue(predicate.isWholeWordMatch(person("John")));
