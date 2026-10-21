@@ -107,6 +107,22 @@ Parameter | Accepted value
 `s/STATUS` | `present` or `absent`, case-insensitive.
 `INDEX` | A positive integer identifying a student in the currently displayed list.
 
+### Completing command fields
+
+As you type, the command box suggests command names (e.g. `ad` completes to `add`),
+field prefixes supported by the current command,
+registered group codes after `grp/`, and `present` or `absent` after `s/`.
+For example, `list gr` suggests `grp/`, `list grp/T` suggests matching groups,
+and `mark 1 w/3 s/p` suggests `present`.
+
+* Press Up/Down to select a suggestion and Tab to insert it, or click a suggestion.
+* Press Escape to dismiss suggestions. Enter always executes the current command.
+* Completion replaces the field fragment at the cursor and preserves other fields.
+* Group suggestions reflect the currently registered groups, including empty groups.
+* `init grp/` accepts a new group code without suggesting existing groups.
+* You can continue typing any value normally; existing validation rules still apply.
+* Suggestions use prefix matching, without fuzzy matching or spelling correction.
+
 ### Viewing help: `help`
 
 Shows a message explaining how to access this User Guide.

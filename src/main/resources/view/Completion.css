@@ -1,0 +1,17 @@
+#fieldCompletionList {
+    -fx-background-color: #293442;
+    -fx-border-color: #94a3b8;
+}
+
+#fieldCompletionList .list-cell {
+    -fx-background-color: #293442;
+    -fx-text-fill: #f9fafb;
+    -fx-font-size: 14px;
+    -fx-padding: 4 10;
+}
+
+#fieldCompletionList .list-cell:filled:hover,
+#fieldCompletionList .list-cell:filled:selected {
+    -fx-background-color: #2563eb;
+    -fx-text-fill: white;
+}
