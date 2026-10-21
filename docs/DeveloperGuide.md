@@ -183,7 +183,8 @@ the model is updated. A valid search replaces the predicate and clears the activ
   Exceptions handle invalid user input; assertions detect inconsistent internal model behavior.
 
 `FindCommand.requiresSave()` returns false. `LogicManager` therefore returns the search result
-without rewriting the roster file. Other commands retain their existing save behaviour.
+without rewriting the roster file or copying the roster for undo history. Other read-only commands use the same
+approach, while data-changing commands retain their existing save behaviour.
 Assertions are enabled for Gradle tests and `./gradlew run`. When running a packaged JAR for testing,
 use `java -ea -jar roster.jar`; enable VM option `-ea` in an IDE run configuration as well.
 
@@ -217,8 +218,8 @@ creation, writing or publication are reported to the caller; cleanup runs when a
 * Assert that summary counts are non-negative and contain at least one row per exported student.
   Command diagnostics distinguish unknown groups, existing destinations and unexpected file failures.
 
-`Command.requiresSave()` defaults to true. Export overrides it to false because it does not change
-roster records. `LogicManager` therefore returns the result without saving the roster file.
+`Command.requiresSave()` defaults to true. Export and other read-only commands override it to false because they do
+not change roster records. `LogicManager` therefore returns their results without saving or making an undo snapshot.
 
 `CsvFileAccess` confines CSV output to the JAR's home folder (the working folder for development
 runs). It resolves relative paths from this root and rejects outside paths and symbolic-link components

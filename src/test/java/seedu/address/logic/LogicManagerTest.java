@@ -116,8 +116,7 @@ public class LogicManagerTest {
     @Test
     public void execute_undo_restoresMultipleUndoableCommandsAndSavesState() throws Exception {
         logic.execute("init grp/T09");
-        logic.execute("add n/Alex Tan p/91234567 e/alex@example.com a/Kent Ridge "
-                + "m/A0123456X grp/T09");
+        logic.execute("add n/Alex Tan e/alex@example.com m/A0123456X grp/T09");
         logic.execute("edit 1 n/Alex Lim");
 
         assertEquals("Undid the most recent edit command.", logic.execute("undo").getFeedbackToUser());
@@ -142,23 +141,42 @@ public class LogicManagerTest {
     }
 
     @Test
-    public void execute_deleteClearsUndoHistoryAndCannotBeUndone() throws Exception {
+    public void execute_readOnlyCommands_doNotCopyRosterForHistory() throws Exception {
+        CountingModelManager countingModel = new CountingModelManager();
+        JsonAddressBookStorage addressBookStorage =
+                new JsonAddressBookStorage(temporaryFolder.resolve("readOnlyAddressBook.json"));
+        Logic countingLogic = new LogicManager(countingModel, new StorageManager(addressBookStorage,
+                new JsonUserPrefsStorage(temporaryFolder.resolve("readOnlyUserPrefs.json"))));
+
+        countingLogic.execute("list");
+        countingLogic.execute("find n/Alex");
+        countingLogic.execute("help");
+        countingLogic.execute("exit");
+
+        assertEquals(0, countingModel.addressBookReadCount);
+    }
+
+    @Test
+    public void execute_delete_canBeUndoneWithoutClearingEarlierHistory() throws Exception {
         logic.execute("init grp/T09");
-        logic.execute("add n/Alex Tan p/91234567 e/alex@example.com a/Kent Ridge "
-                + "m/A0123456X grp/T09");
+        logic.execute("add n/Alex Tan e/alex@example.com m/A0123456X grp/T09");
         logic.execute("delete 1");
 
-        assertThrows(CommandException.class, UndoCommand.MESSAGE_NOTHING_TO_UNDO, () -> logic.execute("undo"));
+        assertEquals("Undid the most recent delete command.", logic.execute("undo").getFeedbackToUser());
+        assertEquals("Alex Tan", model.getAddressBook().getPersonList().getFirst().getName().fullName);
+        assertEquals("Undid the most recent add command.", logic.execute("undo").getFeedbackToUser());
         assertTrue(model.getAddressBook().getPersonList().isEmpty());
         assertTrue(model.hasGroup(new Group("T09")));
     }
 
     @Test
-    public void execute_clearClearsUndoHistoryAndCannotBeUndone() throws Exception {
+    public void execute_clear_canBeUndoneWithoutClearingEarlierHistory() throws Exception {
         logic.execute("init grp/T09");
         logic.execute("clear");
 
-        assertCommandException("undo", UndoCommand.MESSAGE_NOTHING_TO_UNDO);
+        assertEquals("Undid the most recent clear command.", logic.execute("undo").getFeedbackToUser());
+        assertTrue(model.hasGroup(new Group("T09")));
+        assertEquals("Undid the most recent init command.", logic.execute("undo").getFeedbackToUser());
         assertTrue(model.getGroupList().isEmpty());
     }
 
@@ -303,5 +321,15 @@ public class LogicManagerTest {
         ModelManager expectedModel = new ModelManager();
         expectedModel.addGroup(expectedPerson.getGroup());
         assertCommandFailure(addCommand, CommandException.class, expectedMessage, expectedModel);
+    }
+
+    private static class CountingModelManager extends ModelManager {
+        private int addressBookReadCount;
+
+        @Override
+        public ReadOnlyAddressBook getAddressBook() {
+            addressBookReadCount++;
+            return super.getAddressBook();
+        }
     }
 }
