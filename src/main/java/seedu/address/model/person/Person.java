@@ -26,12 +26,10 @@ public class Person {
 
     // Identity fields
     private final Name name;
-    private final Phone phone;
     private final Email email;
     private final Matric matric;
 
     // Data fields
-    private final Address address;
     private final Group group;
     private final Set<Tag> tags = new HashSet<>();
     private final Set<Attendance> attendances = new HashSet<>();
@@ -40,23 +38,20 @@ public class Person {
      * Creates a person with no attendance records.
      * Every field must be present and not null.
      */
-    public Person(Name name, Phone phone, Email email, Address address, Matric matric, Group group,
-            Set<Tag> tags) {
-        this(name, phone, email, address, matric, group, tags, Collections.emptySet());
+    public Person(Name name, Email email, Matric matric, Group group, Set<Tag> tags) {
+        this(name, email, matric, group, tags, Collections.emptySet());
     }
 
     /**
      * Every field must be present and not null.
      * {@code attendances} must satisfy {@link #areValidAttendances(Group, Collection)}.
      */
-    public Person(Name name, Phone phone, Email email, Address address, Matric matric, Group group,
+    public Person(Name name, Email email, Matric matric, Group group,
             Set<Tag> tags, Set<Attendance> attendances) {
-        requireAllNonNull(name, phone, email, address, matric, group, tags, attendances);
+        requireAllNonNull(name, email, matric, group, tags, attendances);
         checkArgument(areValidAttendances(group, attendances), MESSAGE_INVALID_ATTENDANCES);
         this.name = name;
-        this.phone = phone;
         this.email = email;
-        this.address = address;
         this.matric = matric;
         this.group = group;
         this.tags.addAll(tags);
@@ -84,16 +79,8 @@ public class Person {
         return name;
     }
 
-    public Phone getPhone() {
-        return phone;
-    }
-
     public Email getEmail() {
         return email;
-    }
-
-    public Address getAddress() {
-        return address;
     }
 
     public Matric getMatric() {
@@ -138,7 +125,7 @@ public class Person {
         Set<Attendance> updatedAttendances = new HashSet<>(attendances);
         updatedAttendances.removeIf(existing -> existing.isForSession(attendance.getSession()));
         updatedAttendances.add(attendance);
-        return new Person(name, phone, email, address, matric, group, tags, updatedAttendances);
+        return new Person(name, email, matric, group, tags, updatedAttendances);
     }
 
     /**
@@ -182,9 +169,7 @@ public class Person {
         }
 
         return name.equals(otherPerson.name)
-                && phone.equals(otherPerson.phone)
                 && email.equals(otherPerson.email)
-                && address.equals(otherPerson.address)
                 && matric.equals(otherPerson.matric)
                 && group.equals(otherPerson.group)
                 && tags.equals(otherPerson.tags)
@@ -194,16 +179,14 @@ public class Person {
     @Override
     public int hashCode() {
         // use this method for custom fields hashing instead of implementing your own
-        return Objects.hash(name, phone, email, address, matric, group, tags, attendances);
+        return Objects.hash(name, email, matric, group, tags, attendances);
     }
 
     @Override
     public String toString() {
         return new ToStringBuilder(this)
                 .add("name", name)
-                .add("phone", phone)
                 .add("email", email)
-                .add("address", address)
                 .add("matric", matric)
                 .add("group", group)
                 .add("tags", tags)

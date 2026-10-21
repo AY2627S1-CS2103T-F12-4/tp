@@ -72,7 +72,7 @@ public class FindCommandUiTest {
             onFxThread(() -> {
                 enterCommand(stage, "list grp/T09");
                 assertEquals(new Group("T09"), groups(stage).getSelectionModel().getSelectedItem());
-                for (String command : List.of("find n/", "find n/John n/Tan", "find n/John grp/T10")) {
+                for (String command : List.of("find n/", "find n/John n/Tan", "find n/John e/invalid")) {
                     enterCommand(stage, command);
                     assertEquals(new Group("T09"), groups(stage).getSelectionModel().getSelectedItem());
                     assertEquals(List.of(firstJohn, alice), model.getFilteredPersonList());
@@ -87,6 +87,15 @@ public class FindCommandUiTest {
                         List.of("2. ", "John Tan", "A0000002X", "T09", "W1: \u2713")), visibleRows(stage));
                 assertEquals(book, model.getAddressBook());
                 assertEquals(book, addressBookStorage.readAddressBook().orElseThrow());
+
+                enterCommand(stage, "find n/John grp/T10");
+                assertNull(groups(stage).getSelectionModel().getSelectedItem());
+                assertEquals(List.of(List.of("1. ", "John Tan", "A0000001X", "T10", "W1: \u2717")),
+                        visibleRows(stage));
+                enterCommand(stage, "find m/a0000002x");
+                assertEquals(List.of(List.of("1. ", "John Tan", "A0000002X", "T09", "W1: \u2713")),
+                        visibleRows(stage));
+                enterCommand(stage, "find n/John");
 
                 enterCommand(stage, "mark 1 w/1 s/present");
                 assertEquals(List.of(
