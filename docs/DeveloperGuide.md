@@ -169,6 +169,20 @@ The exporter writes UTF-8 rows ordered by matriculation number and session week,
 It first writes a temporary sibling file, then moves the completed file to its destination without
 replacing existing files. A finally block removes temporary output on both success and failure.
 
+The activity diagram shows the validation and publication paths. Failures during temporary-file
+creation, writing or publication are reported to the caller; cleanup runs when a temporary file exists.
+
+![Attendance CSV validation, writing and failure handling](images/CsvExportActivityDiagram.png)
+
+**Design choices**
+
+* Export the full roster or an explicit group instead of the displayed search results, avoiding incomplete reports.
+* Write a temporary sibling before publication rather than writing the destination directly, so a failed write
+  does not leave a partial report under the requested filename. Moving without replacement preserves existing files.
+* Keep a fixed UTF-8 schema and deterministic ordering so coordinators can compare reports from different runs.
+* Assert that summary counts are non-negative and contain at least one row per exported student.
+  Command diagnostics distinguish unknown groups, existing destinations and unexpected file failures.
+
 `Command.requiresSave()` defaults to true. Export overrides it to false because it does not change
 roster records. `LogicManager` therefore returns the result without saving the roster file.
 
