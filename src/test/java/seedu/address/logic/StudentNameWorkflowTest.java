@@ -32,8 +32,8 @@ public class StudentNameWorkflowTest {
                 "Arun a/l Ravi", "Meena A/P Kumar", "E\u0301lodie Tan");
         for (int i = 0; i < names.size(); i++) {
             String name = names.get(i);
-            logic.execute("add n/" + name + " p/91234567 e/student" + i + "@example.com"
-                    + " a/Block 1 m/A000000" + i + "X grp/T09");
+            logic.execute("add n/" + name + " e/student" + i + "@example.com"
+                    + " m/A000000" + i + "X grp/T09");
             logic.execute("find n/" + name);
             assertEquals(1, model.getFilteredPersonList().size(), name);
             assertEquals(name, model.getFilteredPersonList().getFirst().getName().fullName);
@@ -56,7 +56,7 @@ public class StudentNameWorkflowTest {
         for (String input : List.of("s/other", "s/oops", "x/foo")) {
             assertEquals(AddCommand.MESSAGE_UNKNOWN_PARAMETER,
                     assertThrows(ParseException.class, () -> logic.execute("add n/Ravi " + input
-                            + " p/91234567 e/ravi@example.com a/Block 1 m/A0000001X grp/T09")).getMessage());
+                            + " e/ravi@example.com m/A0000001X grp/T09")).getMessage());
             assertEquals(FindCommand.MESSAGE_UNKNOWN_PARAMETER,
                     assertThrows(ParseException.class, () -> logic.execute("find n/Ravi " + input)).getMessage());
             assertEquals(0, model.getAddressBook().getPersonList().size());
