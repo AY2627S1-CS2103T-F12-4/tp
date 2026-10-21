@@ -9,10 +9,14 @@ import static seedu.address.commons.util.AppUtil.checkArgument;
  */
 public class Name {
 
-    public static final String MESSAGE_CONSTRAINTS = "Names must be 1-70 characters, contain only letters, "
-            + "spaces, apostrophes or hyphens, and begin and end with a letter.";
+    public static final String MESSAGE_CONSTRAINTS = "Names must be 1-70 characters, "
+            + "contain letters and their accents, "
+            + "spaces, apostrophes, hyphens, full stops or s/o, d/o, a/l, a/p abbreviations, "
+            + "begin with a letter, and end with a letter, accent or full stop.";
 
-    public static final String VALIDATION_REGEX = "\\p{L}(?:[\\p{L} '\u2019-]*\\p{L})?";
+    public static final String VALIDATION_REGEX = "\\p{L}(?:[\\p{L}\\p{M} .'\u2019-]*[\\p{L}\\p{M}.])?";
+    // Match complete name words so that s/o is accepted without treating s/other as a name abbreviation.
+    public static final String RELATIONSHIP_CONNECTOR_REGEX = "(?iU)(?<!\\S)(?:s/o|d/o|a/l|a/p)(?!\\S)";
 
     public final String fullName;
 
@@ -34,7 +38,7 @@ public class Name {
     public static boolean isValidName(String test) {
         String normalizedName = normalizeWhitespace(test);
         return normalizedName.codePointCount(0, normalizedName.length()) <= 70
-                && normalizedName.matches(VALIDATION_REGEX);
+                && normalizedName.replaceAll(RELATIONSHIP_CONNECTOR_REGEX, "relative").matches(VALIDATION_REGEX);
     }
 
     private static String normalizeWhitespace(String name) {

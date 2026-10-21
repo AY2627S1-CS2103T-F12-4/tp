@@ -98,7 +98,8 @@ The MVP does not support returning a recorded status to unmarked. You can, howev
 Parameter | Accepted value
 ----------|---------------
 `grp/GROUP` | One or two letters followed by two digits, e.g. `T09` or `TG01`. Surrounding spaces are removed and letters are converted to uppercase.
-`n/NAME` | 1–70 characters. Letters, spaces, hyphens and apostrophes only; must begin and end with a letter. Surrounding spaces are removed, repeated spaces become one space, and letter case is preserved.
+`n/NAME` | 1–70 characters. Letters and their accents, spaces, hyphens, apostrophes, full stops and the relationship abbreviations `s/o`, `d/o`, `a/l`, `a/p` (in any letter case). Must begin with a letter and end with a letter, accent or full stop. Examples: `J. Tan`, `Ravi s/o Kumar`. Surrounding spaces are removed, repeated spaces become one space, and letter case is preserved.
+`p/PHONE` | At least three digits, with no spaces or other characters.
 `m/MATRIC` | `A`, followed by seven digits and one letter, e.g. `A0287654J`. Surrounding spaces are removed and letters are converted to uppercase.
 `e/EMAIL` | A valid email address such as `alex.tan@example.com`. Surrounding spaces are removed and the address is converted to lowercase.
 `t/TAG` | One or more letters or digits, with no spaces or other characters. Repeat `t/` to give a student multiple tags.
@@ -228,8 +229,9 @@ Format: `find [n/KEYWORD] [m/MATRIC] [grp/GROUP]`
 * `n/KEYWORD` retains the existing case-insensitive name search. The entire phrase must appear contiguously
   and in the same order: `john tan` matches `John Tan` and `John Tanner`, but not `John Lim` or `Tan John`.
   Accents and punctuation remain significant.
-* A name query must contain 1–100 characters after whitespace normalization: letters, spaces, hyphens,
-  apostrophes or full stops, with at least one letter.
+* A name query must contain 1–100 characters after whitespace normalization:
+  letters and their accents, spaces, hyphens, apostrophes, full stops,
+  or complete `s/o`, `d/o`, `a/l`, `a/p` abbreviations, with at least one letter.
 * Surrounding whitespace is ignored, and repeated whitespace is treated as one space. Copied commands
   may use Unicode spaces; line breaks within search arguments are also treated as spaces.
 * `m/MATRIC` matches the complete matriculation number. Letter case is ignored; partial numbers are rejected.
