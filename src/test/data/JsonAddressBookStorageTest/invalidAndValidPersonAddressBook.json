@@ -1,17 +1,13 @@
 {
   "persons": [ {
     "name": "Valid Person",
-    "phone": "9482424",
     "email": "hans@example.com",
     "matric": "A0000101Z",
-    "group": "T09",
-    "address": "4th street"
+    "group": "T09"
   }, {
     "name": "Person With Invalid Phone Field",
-    "phone": "948asdf2424",
     "email": "hans@example.com",
     "matric": "A0000102Z",
-    "group": "T09",
-    "address": "4th street"
+    "group": "T09"
   } ]
 }

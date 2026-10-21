@@ -49,12 +49,6 @@ public class AddressBookParserTest {
     }
 
     @Test
-    public void parseCommand_add_preservesAddressWhitespace() throws Exception {
-        Person person = new PersonBuilder().withAddress("Block  12, Kent Ridge").build();
-        assertEquals(new AddCommand(person), parser.parseCommand(PersonUtil.getAddCommand(person)));
-    }
-
-    @Test
     public void parseCommand_clear() throws Exception {
         assertTrue(parser.parseCommand(ClearCommand.COMMAND_WORD) instanceof ClearCommand);
         assertTrue(parser.parseCommand(ClearCommand.COMMAND_WORD + " 3") instanceof ClearCommand);

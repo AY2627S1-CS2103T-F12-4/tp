@@ -28,7 +28,7 @@ Roster is a **desktop application for NUS teaching assistants to manage students
 1. Try this typical attendance workflow:
 
    * `init grp/T09` : Creates tutorial group `T09`.
-   * `add n/Alex Tan p/12345678 e/alex.tan@example.com a/Kent Ridge m/A0123456X grp/T09` : Adds Alex Tan to `T09`.
+   * `add n/Alex Tan e/alex.tan@example.com m/A0123456X grp/T09` : Adds Alex Tan to `T09`.
    * `session grp/T09 w/5 d/2026-09-15` : Creates the week 5 session for `T09`.
    * `list grp/T09` : Shows the students in `T09` and makes it the active group.
    * `mark 1 w/5 s/present` : Marks the first displayed student present for week 5.
@@ -99,10 +99,8 @@ Parameter | Accepted value
 ----------|---------------
 `grp/GROUP` | One or two letters followed by two digits, e.g. `T09` or `TG01`. Surrounding spaces are removed and letters are converted to uppercase.
 `n/NAME` | 1–70 characters. Letters, spaces, hyphens and apostrophes only; must begin and end with a letter. Surrounding spaces are removed, repeated spaces become one space, and letter case is preserved.
-`p/PHONE` | At least three digits, with no spaces or other characters.
 `m/MATRIC` | `A`, followed by seven digits and one letter, e.g. `A0287654J`. Surrounding spaces are removed and letters are converted to uppercase.
 `e/EMAIL` | A valid email address such as `alex.tan@example.com`. Surrounding spaces are removed and the address is converted to lowercase.
-`a/ADDRESS` | Any non-blank text.
 `t/TAG` | One or more letters or digits, with no spaces or other characters. Repeat `t/` to give a student multiple tags.
 `w/WEEK` | A whole number from `1` to `13`, without a leading zero.
 `d/DATE` | A real calendar date in `YYYY-MM-DD` format.
@@ -151,11 +149,12 @@ On success, Roster displays a confirmation such as `Created session: T09 week 5 
 
 Adds a student to an existing tutorial group. The student is unmarked for every existing session in that group.
 
-Format: `add n/NAME p/PHONE e/EMAIL a/ADDRESS m/MATRIC grp/GROUP [t/TAG]...`
+Format: `add n/NAME e/EMAIL m/MATRIC grp/GROUP [t/TAG]...`
 
 Examples:
 
-* `add n/Alex Tan p/12345678 e/alex.tan@example.com a/Kent Ridge m/A0123456X grp/T09`
+* `add n/Alex Tan e/alex.tan@example.com m/A0123456X grp/T09`
+* `add n/Bernice Yu e/bernice@example.com m/A0287402K grp/T09 t/exchange`
 * The tutorial group must already exist.
 * Matriculation numbers and email addresses must be unique across all tutorial groups.
 * Names do not need to be unique because different students may share a name.
@@ -390,8 +389,8 @@ Action | Format, example
 **Help** | `help`
 **Create tutorial group** | `init grp/GROUP`<br>e.g. `init grp/T09`
 **Create session** | `session grp/GROUP w/WEEK d/DATE`<br>e.g. `session grp/T09 w/5 d/2026-09-15`
-**Add student** | `add n/NAME p/PHONE e/EMAIL a/ADDRESS m/MATRIC grp/GROUP [t/TAG]...`<br>e.g. `add n/Alex Tan p/12345678 e/alex.tan@example.com a/Kent Ridge m/A0123456X grp/T09`
-**Edit student** | `edit INDEX [n/NAME] [p/PHONE] [e/EMAIL] [a/ADDRESS] [m/MATRIC] [grp/GROUP] [t/TAG]...`<br>e.g. `edit 1 e/alex.tan@example.com`
+**Add student** | `add n/NAME e/EMAIL m/MATRIC grp/GROUP [t/TAG]...`<br>e.g. `add n/Alex Tan e/alex.tan@example.com m/A0123456X grp/T09`
+**Edit student** | `edit INDEX [n/NAME] [e/EMAIL] [m/MATRIC] [grp/GROUP] [t/TAG]...`<br>e.g. `edit 1 e/alex.tan@example.com`
 **List students** | `list [grp/GROUP]`<br>e.g. `list grp/T09`
 **Find students** | `find [n/KEYWORD] [m/MATRIC] [grp/GROUP]` (at least one)<br>e.g. `find n/John Tan grp/T09`
 **Delete student** | `delete INDEX`<br>e.g. `delete 3`

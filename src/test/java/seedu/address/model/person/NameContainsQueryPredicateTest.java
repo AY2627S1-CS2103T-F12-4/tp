@@ -87,8 +87,7 @@ public class NameContainsQueryPredicateTest {
 
     @Test
     public void test_nonNameFields_doNotMatch() {
-        Person student = new PersonBuilder().withName("Alice").withEmail("john@example.com")
-                .withAddress("John Street").withTags("John").build();
+        Person student = new PersonBuilder().withName("Alice").withEmail("john@example.com").withTags("John").build();
         assertFalse(new NameContainsQueryPredicate("John").test(student));
     }
 
