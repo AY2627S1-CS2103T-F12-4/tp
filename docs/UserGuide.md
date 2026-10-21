@@ -290,6 +290,45 @@ On success, Roster names the student, status, tutorial group, and teaching week 
 Run `list grp/GROUP` before taking attendance so only that tutorial group's students are displayed.
 </div>
 
+### Exporting attendance records: `export`
+
+Exports student details and attendance to a new UTF-8 CSV file for use outside Roster.
+
+Format: `export f/FILE_PATH [grp/GROUP]`
+
+Examples:
+
+* `export f/attendance.csv` exports all students, even when a group or search is currently displayed.
+* `export f/T09-attendance.csv grp/T09` exports only registered group T09.
+* `export grp/t10 f/"reports/T10 attendance.csv"` accepts parameters in either order and paths with spaces.
+
+Rules:
+
+* Supply exactly one non-empty `f/FILE_PATH`. The filename must end in `.csv` (case-insensitive).
+* Relative paths are resolved against the folder containing Roster's JAR. Absolute paths are accepted only
+  inside that folder or its subfolders. The destination's parent folder must already exist. Paths through
+  symbolic links and paths outside this folder are rejected.
+* Wrap paths containing spaces in double quotes, especially when a directory name could resemble a command
+  parameter. Internal spaces are preserved. For example, `export f/"My reports/T09 attendance.csv"`.
+* Supply at most one `grp/GROUP`. Group codes ignore letter case. Unknown groups are rejected.
+* Existing files are never replaced. Choose a new filename to export an updated copy.
+* The header is always `matric,name,email,group,week,date,attendance`.
+* Each student has one row per existing session of their own group. Rows are ordered by matriculation
+  number and then teaching week. Dates use `YYYY-MM-DD`.
+* Attendance is `present`, `absent`, or `unmarked`. A missing record for an existing session is `unmarked`,
+  including when the student was added after that session.
+* A student whose group has no sessions appears once, with empty week, date and attendance fields.
+  These empty fields do not mean the student was absent.
+* An empty roster or registered but empty group produces only the header. Feedback reports zero students
+  and zero data rows.
+* CSV values containing commas, double quotes or line breaks are quoted, with double quotes escaped.
+* Invalid arguments and write failures produce clear errors. The destination is published only after
+  the complete CSV has been written, and temporary output is cleaned up if writing fails.
+* Exporting leaves roster records, the displayed list and the active group unchanged.
+
+On success, Roster reports the absolute destination and the number of students and CSV data rows exported.
+The row count excludes the header and includes the placeholder row for a student with no sessions.
+
 ### Exiting Roster: `exit`
 
 Exits the application.
@@ -357,5 +396,6 @@ Action | Format, example
 **Find students** | `find [n/KEYWORD] [m/MATRIC] [grp/GROUP]` (at least one)<br>e.g. `find n/John Tan grp/T09`
 **Delete student** | `delete INDEX`<br>e.g. `delete 3`
 **Mark attendance** | `mark INDEX w/WEEK s/STATUS`<br>e.g. `mark 3 w/5 s/present`
+**Export attendance** | `export f/FILE_PATH [grp/GROUP]`<br>e.g. `export f/attendance.csv grp/T09`
 **Exit** | `exit`
 **Clear all data** | `clear`

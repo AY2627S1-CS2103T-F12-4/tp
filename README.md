@@ -29,6 +29,7 @@ The initial MVP is planned to support:
 - **Roster views:** List students across all groups or view the students in one tutorial group.
 - **Student search:** Find students by complete or partial name, exact matriculation number, tutorial group, or a combination of these filters.
 - **Attendance:** Record a student as present or absent for a tutorial session, while keeping unrecorded attendance distinct from confirmed absence.
+- **CSV export:** Export attendance for all students or a specified tutorial group to a new CSV file.
 
 Participation records and assignment-completion tracking are part of the broader product direction, beyond the initial MVP. Roster does not cover grading or communicating with students.
 

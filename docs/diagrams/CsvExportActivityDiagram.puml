@@ -1,0 +1,45 @@
+@startuml
+skinparam ActivityFontSize 15
+skinparam ArrowFontSize 12
+skinparam Shadowing false
+title Exporting attendance without replacing an existing file
+start
+:Parse destination and optional group;
+if (Arguments valid?) then (yes)
+else (no)
+    :Report a parsing error;
+    stop
+endif
+if (Requested group is registered or no group supplied?) then (yes)
+else (no)
+    :Report an unknown group;\nPreserve the current view;
+    stop
+endif
+:Resolve destination inside the JAR home;\nReject child symbolic links and missing parent folders;
+if (Destination is valid and does not exist?) then (yes)
+else (no)
+    :Report a file error;\nPreserve any existing destination;
+    stop
+endif
+:Select students from the full roster;\nSort by matriculation number;
+:Create a temporary sibling file;\nWrite the UTF-8 header and attendance rows;\nClose the writer;
+note right
+  Sessions are ordered by teaching week.
+  No sessions: one row with empty session fields.
+  No students: header only.
+end note
+:Move the completed file to the destination\nwithout replacing an existing file;
+if (Writing and publishing succeeded?) then (yes)
+    :Remove the temporary file if it remains;
+    :Return student and row counts;
+else (no)
+    :Remove the temporary file if created;
+    :Report the I/O error;
+endif
+note right
+  Roster records and the displayed view are unchanged.
+  An I/O error during temporary-file creation,
+  writing or publishing follows the failure path.
+end note
+stop
+@enduml
