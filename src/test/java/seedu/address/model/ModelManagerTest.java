@@ -180,6 +180,35 @@ public class ModelManagerTest {
     }
 
     @Test
+    public void setActiveGroup_unknownGroup_preservesSelectionAndRows() {
+        modelManager.addGroup(ALICE.getGroup());
+        modelManager.addPerson(ALICE);
+        modelManager.showGroup(ALICE.getGroup());
+        ObservableList<Person> displayed = modelManager.getFilteredPersonList();
+
+        assertThrows(IllegalArgumentException.class, () -> modelManager.setActiveGroup(new Group("T99")));
+        assertEquals(Optional.of(ALICE.getGroup()), modelManager.getActiveGroup());
+        assertSame(displayed, modelManager.getFilteredPersonList());
+        assertEquals(List.of(ALICE), displayed);
+    }
+
+    @Test
+    public void equals_sameRosterAndRowsButDifferentActiveGroup_returnsFalse() {
+        AddressBook roster = new AddressBookBuilder().withPerson(ALICE).build();
+        roster.addGroup(new Group("T10"));
+        ModelManager first = new ModelManager(roster, new UserPrefs());
+        ModelManager second = new ModelManager(roster, new UserPrefs());
+        first.setActiveGroup(ALICE.getGroup());
+        second.setActiveGroup(new Group("T10"));
+
+        assertEquals(first.getFilteredPersonList(), second.getFilteredPersonList());
+        assertFalse(first.equals(second));
+        assertFalse(second.equals(first));
+        second.setActiveGroup(ALICE.getGroup());
+        assertEquals(first, second);
+    }
+
+    @Test
     public void equals() {
         AddressBook addressBook = new AddressBookBuilder().withPerson(ALICE).withPerson(BENSON).build();
         AddressBook differentAddressBook = new AddressBook();
