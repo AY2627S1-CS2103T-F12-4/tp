@@ -27,13 +27,13 @@ public class ArgumentTokenizerTest {
     public void tokenize_relationshipAbbreviations_remainInTheNameValue() {
         for (String name : new String[]{"Arun a/l Ravi", "Meena a/p Kumar", "Ravi s/o Kumar", "Rani D/O Kumar"}) {
             ArgumentMultimap arguments = ArgumentTokenizer.tokenize(" n/" + name + " a/Block 1",
-                    CliSyntax.PREFIX_NAME, CliSyntax.PREFIX_ADDRESS);
+                    CliSyntax.PREFIX_NAME, new Prefix("a/"));
             assertArgumentPresent(arguments, CliSyntax.PREFIX_NAME, name);
-            assertArgumentPresent(arguments, CliSyntax.PREFIX_ADDRESS, "Block 1");
+            assertArgumentPresent(arguments, new Prefix("a/"), "Block 1");
         }
         ArgumentMultimap addressOnly = ArgumentTokenizer.tokenize(" p/91234567 a/l",
-                CliSyntax.PREFIX_PHONE, CliSyntax.PREFIX_ADDRESS);
-        assertArgumentPresent(addressOnly, CliSyntax.PREFIX_ADDRESS, "l");
+                new Prefix("p/"), new Prefix("a/"));
+        assertArgumentPresent(addressOnly, new Prefix("a/"), "l");
     }
 
     private void assertPreamblePresent(ArgumentMultimap argMultimap, String expectedPreamble) {
