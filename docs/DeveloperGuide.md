@@ -153,6 +153,39 @@ Classes used by multiple components are in the `seedu.address.commons` package.
 
 ## **Implementation**
 
+### Filtered student search
+
+`FindCommandParser` accepts optional `n/`, `m/` and `grp/` filters, rejects duplicate or empty fields,
+and uses the shared parsing utilities to normalize matriculation numbers and group codes.
+`StudentMatchesFiltersPredicate` combines the supplied conditions using AND. It delegates name matching
+to `NameContainsQueryPredicate`, so future changes to the shared name matcher also apply to filtered search.
+The matcher uses a quoted literal regular expression with Unicode case-insensitive matching, avoiding
+context-dependent lowercasing errors such as Greek final sigma. Accents and punctuation remain significant.
+
+`FindCommand` checks that an explicitly requested group is registered before changing the view.
+`ModelManager` applies the predicate to the full roster and exposes the results in matriculation-number order.
+The active group is cleared because even a group-filtered search may display only part of a group.
+The observable list reflects additions and removals while the search predicate is active. A modifying
+command can subsequently choose another view; its own command specification defines that behavior.
+
+The sequence below follows `find n/John grp/T09` after parsing. An unknown group is rejected before
+the model is updated. A valid search replaces the predicate and clears the active-group selection.
+
+![Combined search execution, including the unknown-group branch](images/FilteredFindSequenceDiagram.png)
+
+**Design choices**
+
+* Search the full roster rather than the current view, so a search after an empty result can recover students.
+* Combine fields with AND. Matriculation number and group are exact matches; names use a literal substring.
+* Keep one observable view instead of copying results, so displayed indexes remain correct after add or delete.
+* Assert the model's global-search contract and log match counts and rejected groups at `FINE` level.
+  Exceptions handle invalid user input; assertions detect inconsistent internal model behavior.
+
+`FindCommand.requiresSave()` returns false. `LogicManager` therefore returns the search result
+without rewriting the roster file. Other commands retain their existing save behaviour.
+Assertions are enabled for Gradle tests and `./gradlew run`. When running a packaged JAR for testing,
+use `java -ea -jar roster.jar`; enable VM option `-ea` in an IDE run configuration as well.
+
 This section describes some noteworthy details on how certain features are implemented.
 
 ### \[Proposed\] Undo/redo feature
@@ -596,6 +629,24 @@ testers are expected to do more *exploratory* testing.
        Expected: The most recent window size and location are retained.
 
 1. _{ more test cases …​ }_
+
+### Filtered student search
+
+Use a disposable copy of the JAR in an empty folder. Run `clear` to remove sample data, then create:
+
+```text
+init grp/T09
+init grp/T10
+add n/John Tan p/91234567 e/john@example.com a/Block 1 m/A0000002X grp/T09
+add n/Johnny Lim p/81234567 e/johnny@example.com a/Block 2 m/A0000001X grp/T10
+```
+
+1. Run `find n/John grp/t09`, then `find m/a0000001x`, then `find n/Nobody`.
+   Expected: John, then Johnny, then no results. Every search uses the complete roster and clears the active group.
+2. Run `list grp/T09`, followed by `find n/John grp/T99` and `find n/John grp/T09 grp/T10`.
+   Expected: both commands report errors, preserving the T09 view and active group.
+3. Run `find n/John m/A0000001X grp/T09`.
+   Expected: no matches because every supplied filter must match.
 
 ### Deleting a person
 

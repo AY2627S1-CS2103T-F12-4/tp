@@ -134,7 +134,7 @@ public class FindCommandTest {
     public void parse_invalidSearch_preservesPreviousResultsAndRoster() throws Exception {
         parser.parseCommand("find n/John").execute(model);
         for (String input : new String[]{"find John", "find n/", "find n/John n/Tan",
-            "find n/John grp/T09", "find n/John123", "find\u00a0n/John\u2003grp/T09",
+            "find n/John e/john@example.com", "find n/John123", "find\u00a0n/John\u2003x/T09",
             "find n/John\n n/Tan", "find\u2003n/John2"}) {
             assertThrows(ParseException.class, () -> parser.parseCommand(input));
             assertEquals(List.of(johnny, johnTan, johnson, johnLim, johnTanner), model.getFilteredPersonList());
@@ -236,7 +236,7 @@ public class FindCommandTest {
     public void toStringMethod() {
         NameContainsQueryPredicate predicate = new NameContainsQueryPredicate("keyword");
         FindCommand command = new FindCommand(predicate);
-        String expected = FindCommand.class.getCanonicalName() + "{predicate=" + predicate + "}";
+        String expected = FindCommand.class.getCanonicalName() + "{predicate=n/\"keyword\"}";
         assertEquals(expected, command.toString());
     }
 }

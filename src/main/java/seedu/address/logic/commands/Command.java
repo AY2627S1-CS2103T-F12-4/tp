@@ -17,4 +17,11 @@ public abstract class Command {
      */
     public abstract CommandResult execute(Model model) throws CommandException;
 
+    /**
+     * Returns whether successful execution requires saving the roster to disk.
+     */
+    public boolean requiresSave() {
+        return true;
+    }
+
 }
