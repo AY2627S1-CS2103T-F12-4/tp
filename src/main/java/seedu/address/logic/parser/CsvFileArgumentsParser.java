@@ -46,7 +46,7 @@ class CsvFileArgumentsParser {
             throw new ParseException(CsvFileAccess.MESSAGE_INVALID_PATH);
         }
         if (value.codePoints().anyMatch(Character::isISOControl)) {
-            throw invalidFormat();
+            throw new ParseException(CsvFileAccess.MESSAGE_INVALID_PATH);
         }
         if (!CsvFileAccess.isCsvPath(path)) {
             throw new ParseException(CsvFileAccess.MESSAGE_INVALID_PATH);

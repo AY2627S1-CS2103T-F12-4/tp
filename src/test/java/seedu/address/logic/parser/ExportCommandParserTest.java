@@ -58,7 +58,7 @@ public class ExportCommandParserTest {
     public void parse_invalidPathAndControlCharacters_reportClearErrors() {
         assertEquals(ExportCommand.MESSAGE_INVALID_PATH,
                 assertThrows(ParseException.class, () -> parser.parse("f/a\u0000.csv")).getMessage());
-        assertEquals(String.format(Messages.MESSAGE_INVALID_COMMAND_FORMAT, ExportCommand.MESSAGE_USAGE),
+        assertEquals(ExportCommand.MESSAGE_INVALID_PATH,
                 assertThrows(ParseException.class, () -> parser.parse("f/\"a\tb.csv\"")).getMessage());
     }
 
