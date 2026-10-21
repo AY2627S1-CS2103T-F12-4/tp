@@ -2,17 +2,22 @@ package seedu.address.ui;
 
 import static java.util.Objects.requireNonNull;
 
+import java.util.Optional;
 import java.util.logging.Logger;
 
-import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
+import javafx.geometry.Bounds;
+import javafx.scene.Node;
+import javafx.scene.Scene;
+import javafx.scene.control.IndexedCell;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
+import javafx.scene.control.skin.VirtualFlow;
 import javafx.scene.layout.Region;
 import seedu.address.commons.core.LogsCenter;
 import seedu.address.model.person.Group;
@@ -24,9 +29,15 @@ import seedu.address.model.session.Session;
  */
 public class PersonListPanel extends UiPart<Region> {
     private static final String FXML = "PersonListPanel.fxml";
+    /** Number of layouts to wait for a card to come fully into view, so a card that never fits cannot loop. */
+    private static final int MAX_SCROLL_ATTEMPTS = 10;
+    /** Pixels a card may extend past the visible area and still count as fully visible, for rounding. */
+    private static final double VISIBILITY_TOLERANCE = 0.5;
+
     private final Logger logger = LogsCenter.getLogger(PersonListPanel.class);
 
     private final ObservableList<Session> sessions;
+    private Runnable pendingScroll;
 
     @FXML
     private ListView<Person> personListView;
@@ -58,18 +69,72 @@ public class PersonListPanel extends UiPart<Region> {
             logger.warning("Cannot scroll to " + person.getMatric() + ", who is not in the displayed list");
             return;
         }
+        cancelPendingScroll();
         personListView.getSelectionModel().select(index);
         personListView.scrollTo(index);
-        // Cards differ in height, so the first scroll uses estimated heights and can stop short of the card.
-        // Scrolling again once the cards have been laid out brings the whole card into view.
-        Platform.runLater(() -> personListView.scrollTo(index));
+        scrollIntoViewAfterLayout(person);
     }
 
     /**
      * Removes the highlight from any highlighted card.
      */
     public void clearSelection() {
+        cancelPendingScroll();
         personListView.getSelectionModel().clearSelection();
+    }
+
+    /**
+     * Keeps scrolling to {@code person}'s card after each layout of the list until the whole card is in view.
+     * Cards differ in height, and the list only knows a card's real height once it has been laid out, so a
+     * scroll made before then, such as right after the displayed list changes, can leave the card clipped.
+     */
+    private void scrollIntoViewAfterLayout(Person person) {
+        Scene scene = personListView.getScene();
+        if (scene == null) {
+            return;
+        }
+        int[] attemptsLeft = {MAX_SCROLL_ATTEMPTS};
+        pendingScroll = () -> {
+            int index = personListView.getItems().indexOf(person);
+            attemptsLeft[0]--;
+            if (index < 0 || isFullyVisible(index) || attemptsLeft[0] < 0) {
+                cancelPendingScroll();
+                return;
+            }
+            getVirtualFlow().ifPresent(flow -> flow.scrollTo(index));
+        };
+        scene.addPostLayoutPulseListener(pendingScroll);
+    }
+
+    private void cancelPendingScroll() {
+        if (pendingScroll != null && personListView.getScene() != null) {
+            personListView.getScene().removePostLayoutPulseListener(pendingScroll);
+        }
+        pendingScroll = null;
+    }
+
+    /**
+     * Returns true if the card at {@code index} is drawn and lies entirely within the visible part of the list.
+     */
+    private boolean isFullyVisible(int index) {
+        Optional<VirtualFlow<?>> flow = getVirtualFlow();
+        Node visibleArea = personListView.lookup(".clipped-container");
+        if (flow.isEmpty() || visibleArea == null) {
+            return false;
+        }
+        IndexedCell<?> cell = flow.get().getVisibleCell(index);
+        if (cell == null) {
+            return false;
+        }
+        Bounds viewport = visibleArea.localToScene(visibleArea.getBoundsInLocal());
+        Bounds card = cell.localToScene(cell.getBoundsInLocal());
+        return card.getMinY() >= viewport.getMinY() - VISIBILITY_TOLERANCE
+                && card.getMaxY() <= viewport.getMaxY() + VISIBILITY_TOLERANCE;
+    }
+
+    private Optional<VirtualFlow<?>> getVirtualFlow() {
+        Node flow = personListView.lookup(".virtual-flow");
+        return flow instanceof VirtualFlow<?> virtualFlow ? Optional.of(virtualFlow) : Optional.empty();
     }
 
     /**
