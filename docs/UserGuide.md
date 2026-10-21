@@ -99,7 +99,6 @@ Parameter | Accepted value
 ----------|---------------
 `grp/GROUP` | One or two letters followed by two digits, e.g. `T09` or `TG01`. Surrounding spaces are removed and letters are converted to uppercase.
 `n/NAME` | 1–70 characters. Letters and their accents, spaces, hyphens, apostrophes, full stops and the relationship abbreviations `s/o`, `d/o`, `a/l`, `a/p` (in any letter case). Must begin with a letter and end with a letter, accent or full stop. Examples: `J. Tan`, `Ravi s/o Kumar`. Surrounding spaces are removed, repeated spaces become one space, and letter case is preserved.
-`p/PHONE` | At least three digits, with no spaces or other characters.
 `m/MATRIC` | `A`, followed by seven digits and one letter, e.g. `A0287654J`. Surrounding spaces are removed and letters are converted to uppercase.
 `e/EMAIL` | A valid email address such as `alex.tan@example.com`. Surrounding spaces are removed and the address is converted to lowercase.
 `t/TAG` | One or more letters or digits, with no spaces or other characters. Repeat `t/` to give a student multiple tags.
@@ -370,7 +369,7 @@ Roster automatically saves changes to its data. You do not need to save manually
 
 ### Editing the data file
 
-Roster data is saved as `[JAR file location]/data/addressbook.json`. Advanced users may edit this JSON file directly.
+Roster data is saved as `data/addressbook.json` inside the folder from which Roster is launched. To keep it beside the JAR, open a terminal in the JAR folder and run `java -jar roster.jar`. Close Roster and back up the file before editing it directly.
 
 <div markdown="span" class="alert alert-warning">:exclamation: **Caution:**
 If your changes make the data file invalid, Roster starts with an empty roster the next time it runs. The invalid file remains on disk until a successful command causes Roster to save again. Back up the file before editing it.<br>
@@ -382,7 +381,7 @@ Manual edits can also produce unexpected behavior if values do not follow Roster
 ## FAQ
 
 **Q**: How do I transfer my data to another computer?<br>
-**A**: Install Roster on the other computer and replace its `data/addressbook.json` file with the file from your previous Roster home folder.
+**A**: Install Roster on the other computer, launch it once, close it, and replace its `data/addressbook.json` file with your saved copy. Use the data folder described in [Saving data](#saving-data).
 
 **Q**: How do I correct a student's details?<br>
 **A**: Use `edit INDEX` followed by the fields to change, for example `edit 1 e/alex.tan@example.com`.
