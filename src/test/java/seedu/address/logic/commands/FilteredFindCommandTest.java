@@ -118,12 +118,13 @@ public class FilteredFindCommandTest {
     }
 
     @Test
-    public void execute_addAndDeleteAfterCombinedSearch_keepEveryFilterAndCorrectIndexes() throws Exception {
+    public void execute_rosterUpdatesAndDisplayedCommands_keepEveryFilterAndCorrectIndexes() throws Exception {
         run("find n/John grp/T09");
-        new AddCommand(new PersonBuilder().withName("Other Student").withMatric("A0000004X")
-                .withEmail("other@example.com").build()).execute(model);
-        new AddCommand(new PersonBuilder().withName("John Other Group").withMatric("A0000005X")
-                .withEmail("another@example.com").withGroup("T10").build()).execute(model);
+        // Test live filtering independently of AddCommand's policy for revealing a hidden student.
+        model.addPerson(new PersonBuilder().withName("Other Student").withMatric("A0000004X")
+                .withEmail("other@example.com").build());
+        model.addPerson(new PersonBuilder().withName("John Other Group").withMatric("A0000005X")
+                .withEmail("another@example.com").withGroup("T10").build());
         assertEquals(List.of(john), model.getFilteredPersonList());
 
         Person added = new PersonBuilder().withName("John New").withMatric("A0000000X")

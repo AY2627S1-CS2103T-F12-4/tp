@@ -230,9 +230,9 @@ Format: `find [n/KEYWORD] [m/MATRIC] [grp/GROUP]`
   No-match searches show an empty list and feedback suggesting another name or filter.
 * Blank or malformed values, repeated prefixes, unsupported parameters, text before the first prefix,
   and `find` without filters are rejected without changing the displayed list or active group.
-* `mark INDEX`, `delete INDEX` and `edit INDEX` use the displayed result indexes. Adding or deleting a student
-  refreshes the results using every search filter. A successful edit retains its existing behaviour of showing
-  all students again.
+* `mark INDEX`, `delete INDEX` and `edit INDEX` use the displayed result indexes. Deleting a student refreshes
+  the current results. After an addition, the view follows the behavior described under
+  [Adding a student](#adding-a-student-add). A successful edit shows all students again.
 * `list` clears the search and shows everyone. `list grp/GROUP` replaces the search with that group's view.
   Searching does not change student records, attendance or saved roster order.
 

@@ -165,7 +165,8 @@ context-dependent lowercasing errors such as Greek final sigma. Accents and punc
 `FindCommand` checks that an explicitly requested group is registered before changing the view.
 `ModelManager` applies the predicate to the full roster and exposes the results in matriculation-number order.
 The active group is cleared because even a group-filtered search may display only part of a group.
-The observable list keeps add/delete results current without discarding the combined predicate.
+The observable list reflects additions and removals while the search predicate is active. A modifying
+command can subsequently choose another view; its own command specification defines that behavior.
 
 The sequence below follows `find n/John grp/T09` after parsing. An unknown group is rejected before
 the model is updated. A valid search replaces the predicate and clears the active-group selection.
