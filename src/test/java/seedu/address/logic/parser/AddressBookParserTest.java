@@ -108,7 +108,7 @@ public class AddressBookParserTest {
     @Test
     public void parseCommand_findWithWhitespace_keepsQueryValidation() {
         assertThrows(ParseException.class, FindCommand.MESSAGE_UNKNOWN_PARAMETER, () ->
-                parser.parseCommand("find\u00a0n/John\u2003grp/T09"));
+                parser.parseCommand("find\u00a0n/John\u2003e/john@example.com"));
         assertThrows(ParseException.class, Messages.getErrorMessageForDuplicatePrefixes(PREFIX_NAME), () ->
                 parser.parseCommand("find n/John\n n/Tan"));
         assertThrows(ParseException.class, NameContainsQueryPredicate.MESSAGE_CONSTRAINTS, () ->

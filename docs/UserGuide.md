@@ -202,29 +202,48 @@ attendance strip then uses the new group's sessions.
 Only one `grp/` parameter is allowed. Missing group values, invalid codes, repeated parameters and unrelated arguments
 are rejected. A rejected list command leaves the data, active group and displayed rows unchanged.
 
-### Finding students by name: `find`
+### Finding students with filters: `find`
 
-Finds students across all tutorial groups whose names contain the search phrase. A search clears the active group.
+Finds students by name, complete matriculation number, tutorial group, or a combination of these fields.
+Every supplied filter must match (AND). A search clears the active group and its selection in the group panel.
 
-Format: `find n/KEYWORD`
+Format: `find [n/KEYWORD] [m/MATRIC] [grp/GROUP]`
 
-* The `n/` prefix is required and must appear exactly once. The keyword may contain several words, such as `john tan`.
-* Surrounding whitespace is ignored, and repeated whitespace is treated as one space in both the query and name.
-* Copied commands can use Unicode spaces, including non-breaking spaces, around `find` and `n/`. Line breaks within a search phrase are also treated as spaces.
-* The query must contain 1–100 characters after whitespace normalization: letters, spaces, hyphens, apostrophes or full stops, with at least one letter.
-* The search is case-insensitive and considers only names. Accents and punctuation remain significant.
-* The entire phrase must appear contiguously and in the same order. For example, `john tan` matches `John Tan` and `John Tanner`, but does not match `John Lim`, `Mei Tan` or `Tan John`.
-* Results are sorted by matriculation number in ascending order, including both complete and partial name matches. For example, `find n/john` lists `Johnny Lim` with matriculation number `A0000001X` before `John Tan` with `A0000002X`.
-* A successful search clears the active tutorial group and its selection in the group panel. Each result shows the student's matriculation number, tutorial group and attendance for that group's sessions.
-* Each search considers all students, including when the previous search returned no matches.
-* Successful searches show `Found COUNT student(s) matching "KEYWORD".` A search with no matches produces an empty list and shows `No students found matching "KEYWORD". Try another name.`
-* Missing or blank queries, repeated `n/` prefixes, unsupported characters, text before `n/`, and other parameters produce an error without changing the displayed list or active tutorial group.
-* `mark INDEX`, `delete INDEX` and `edit INDEX` use the displayed result indexes. Search does not change the saved roster order. Use `list` to show everyone again in ascending matriculation-number order.
+* Supply at least one filter. Each prefix may appear only once, and parameters may be in any order.
+* `n/KEYWORD` retains the existing case-insensitive name search. The entire phrase must appear contiguously
+  and in the same order: `john tan` matches `John Tan` and `John Tanner`, but not `John Lim` or `Tan John`.
+  Accents and punctuation remain significant.
+* A name query must contain 1–100 characters after whitespace normalization: letters, spaces, hyphens,
+  apostrophes or full stops, with at least one letter.
+* Surrounding whitespace is ignored, and repeated whitespace is treated as one space. Copied commands
+  may use Unicode spaces; line breaks within search arguments are also treated as spaces.
+* `m/MATRIC` matches the complete matriculation number. Letter case is ignored; partial numbers are rejected.
+* `grp/GROUP` matches one registered tutorial group. Group codes ignore letter case. A nonexistent group
+  is an error; a registered but empty group returns no matches.
+* Each search considers the complete roster, including after a group view, a previous search, or empty results.
+  To restrict a search to a group, supply `grp/GROUP` explicitly.
+* Results are sorted by matriculation number in ascending order and show each student's group and attendance.
+* A successful search clears the active group even when `grp/GROUP` is supplied, because search results
+  may contain only a subset of that group's students.
+* Name-only searches retain feedback such as `Found 2 student(s) matching "John".` Other searches report
+  the result count and normalized filters, for example `Found 1 student(s) matching filters: n/"John" grp/T09.`
+  No-match searches show an empty list and feedback suggesting another name or filter.
+* Blank or malformed values, repeated prefixes, unsupported parameters, text before the first prefix,
+  and `find` without filters are rejected without changing the displayed list or active group.
+* `mark INDEX`, `delete INDEX` and `edit INDEX` use the displayed result indexes. Adding or deleting a student
+  refreshes the results using every search filter. A successful edit retains its existing behaviour of showing
+  all students again.
+* `list` clears the search and shows everyone. `list grp/GROUP` replaces the search with that group's view.
+  Searching does not change student records, attendance or saved roster order.
 
 Examples:
 * `find n/John` returns `John Doe` and `Johnny Lim`, sorted by matriculation number.
 * `find n/john tan` returns `John Tan` and `John Tanner`, sorted by matriculation number.
 * `find n/joh` returns names containing `joh`, including `John Tan` and `Johnny Lim`.
+* `find m/a0123456x` finds the student with matriculation number `A0123456X`.
+* `find grp/T09` finds every student in registered group T09.
+* `find n/John grp/T09` finds students in T09 whose names contain `John`.
+* `find grp/T09 m/A0123456X n/John` requires all three conditions to match.
 
 ### Deleting a student: `delete`
 
@@ -289,7 +308,7 @@ Clearing happens immediately, with no confirmation and no undo. Back up `data/ad
 
 ### Saving data
 
-Roster automatically saves its data after each successful command. You do not need to save manually.
+Roster automatically saves changes to its data. You do not need to save manually.
 
 ### Editing the data file
 
@@ -335,7 +354,7 @@ Action | Format, example
 **Add student** | `add n/NAME p/PHONE e/EMAIL a/ADDRESS m/MATRIC grp/GROUP [t/TAG]...`<br>e.g. `add n/Alex Tan p/12345678 e/alex.tan@example.com a/Kent Ridge m/A0123456X grp/T09`
 **Edit student** | `edit INDEX [n/NAME] [p/PHONE] [e/EMAIL] [a/ADDRESS] [m/MATRIC] [grp/GROUP] [t/TAG]...`<br>e.g. `edit 1 e/alex.tan@example.com`
 **List students** | `list [grp/GROUP]`<br>e.g. `list grp/T09`
-**Find students** | `find n/KEYWORD`<br>e.g. `find n/John Tan`
+**Find students** | `find [n/KEYWORD] [m/MATRIC] [grp/GROUP]` (at least one)<br>e.g. `find n/John Tan grp/T09`
 **Delete student** | `delete INDEX`<br>e.g. `delete 3`
 **Mark attendance** | `mark INDEX w/WEEK s/STATUS`<br>e.g. `mark 3 w/5 s/present`
 **Exit** | `exit`
