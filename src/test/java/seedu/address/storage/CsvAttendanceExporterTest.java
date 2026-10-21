@@ -101,6 +101,7 @@ public class CsvAttendanceExporterTest {
         assertEquals("\"Tan, Sarah\"", CsvAttendanceExporter.escape("Tan, Sarah"));
         assertEquals("\"a\"\"b\"", CsvAttendanceExporter.escape("a\"b"));
         assertEquals("\"first\r\nsecond\"", CsvAttendanceExporter.escape("first\r\nsecond"));
+        assertEquals("\"first\rsecond\"", CsvAttendanceExporter.escape("first\rsecond"));
         assertEquals("Élodie 李", CsvAttendanceExporter.escape("Élodie 李"));
     }
 

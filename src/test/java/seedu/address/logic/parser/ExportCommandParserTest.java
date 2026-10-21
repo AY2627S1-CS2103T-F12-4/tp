@@ -55,6 +55,14 @@ public class ExportCommandParserTest {
     }
 
     @Test
+    public void parse_invalidPathAndControlCharacters_reportClearErrors() {
+        assertEquals(ExportCommand.MESSAGE_INVALID_PATH,
+                assertThrows(ParseException.class, () -> parser.parse("f/a\u0000.csv")).getMessage());
+        assertEquals(String.format(Messages.MESSAGE_INVALID_COMMAND_FORMAT, ExportCommand.MESSAGE_USAGE),
+                assertThrows(ParseException.class, () -> parser.parse("f/\"a\tb.csv\"")).getMessage());
+    }
+
+    @Test
     public void parseCommand_dispatchesExportAndRejectsMultilinePaths() throws Exception {
         AddressBookParser commandParser = new AddressBookParser();
         assertEquals(new ExportCommand(Path.of("attendance.csv"), new Group("T09")),

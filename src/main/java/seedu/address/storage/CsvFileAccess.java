@@ -4,6 +4,7 @@ import static java.util.Objects.requireNonNull;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.LinkOption;
 import java.nio.file.Path;
@@ -20,7 +21,7 @@ public class CsvFileAccess {
     private final Path home;
 
     public CsvFileAccess() {
-        this(applicationHome());
+        this(applicationHome(CsvFileAccess.class.getProtectionDomain().getCodeSource().getLocation()));
     }
 
     /**
@@ -68,9 +69,10 @@ public class CsvFileAccess {
         return target;
     }
 
-    private static Path applicationHome() {
+    /** Resolves the home from the class location, distinguishing packaged and development runs. */
+    static Path applicationHome(URL source) {
         try {
-            Path location = Path.of(CsvFileAccess.class.getProtectionDomain().getCodeSource().getLocation().toURI());
+            Path location = Path.of(requireNonNull(source).toURI());
             // Development runs load classes from a directory; packaged runs load them from the JAR.
             return Files.isDirectory(location) ? Path.of("").toAbsolutePath() : location.getParent();
         } catch (URISyntaxException e) {

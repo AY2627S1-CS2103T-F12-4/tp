@@ -88,6 +88,33 @@ public class ExportCommandTest {
         assertEquals("original", Files.readString(output));
     }
 
+    @Test
+    public void constructor_missingOrNonCsvDestination_rejectsInvalidInput() {
+        assertThrows(NullPointerException.class, () -> new ExportCommand(null, null, files()));
+        assertThrows(IllegalArgumentException.class, () -> new ExportCommand(Path.of("report.txt"), null, files()));
+        assertThrows(NullPointerException.class, () -> new ExportCommand(Path.of("report.csv"), null, null));
+    }
+
+    @Test
+    public void equals_destinationAndScopeDetermineCommandIdentity() {
+        Path path = Path.of("report.csv");
+        ExportCommand all = new ExportCommand(path, null, files());
+        ExportCommand group = new ExportCommand(path, new Group("T09"), files());
+        ExportCommand sameGroup = new ExportCommand(path, new Group("T09"), files());
+        assertTrue(all.equals(all));
+        assertEquals(all, new ExportCommand(path, null, files()));
+        assertEquals(group, sameGroup);
+        assertEquals(sameGroup, group);
+        assertEquals(all.hashCode(), new ExportCommand(path, null, files()).hashCode());
+        assertEquals(group.hashCode(), sameGroup.hashCode());
+        assertFalse(group.equals(null));
+        assertFalse(group.equals("report.csv"));
+        assertFalse(group.equals(new ExportCommand(Path.of("other.csv"), new Group("T09"), files())));
+        assertFalse(group.equals(new ExportCommand(path, new Group("T10"), files())));
+        assertFalse(group.equals(all));
+        assertFalse(all.equals(group));
+    }
+
     private CsvFileAccess files() {
         return new CsvFileAccess(temporaryFolder);
     }

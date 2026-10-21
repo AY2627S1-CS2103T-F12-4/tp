@@ -32,10 +32,11 @@ class CsvFileArgumentsParser {
         ArgumentMultimap arguments = tokenize(args);
         arguments.verifyNoDuplicatePrefixesFor(PREFIX_FILE, PREFIX_GROUP);
         String value = arguments.getValue(PREFIX_FILE).orElse("");
-        if (value.startsWith("\"") && value.endsWith("\"") && value.length() >= 2) {
+        // Tokenization has already verified that any quotes surround the complete path.
+        if (value.startsWith("\"")) {
             value = value.substring(1, value.length() - 1);
         }
-        if (value.isBlank() || value.codePoints().anyMatch(Character::isISOControl)) {
+        if (value.isBlank()) {
             throw invalidFormat();
         }
         Path path;
@@ -43,6 +44,9 @@ class CsvFileArgumentsParser {
             path = Path.of(value);
         } catch (InvalidPathException e) {
             throw new ParseException(CsvFileAccess.MESSAGE_INVALID_PATH);
+        }
+        if (value.codePoints().anyMatch(Character::isISOControl)) {
+            throw invalidFormat();
         }
         if (!CsvFileAccess.isCsvPath(path)) {
             throw new ParseException(CsvFileAccess.MESSAGE_INVALID_PATH);

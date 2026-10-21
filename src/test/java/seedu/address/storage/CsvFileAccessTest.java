@@ -7,6 +7,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import java.io.IOException;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
@@ -67,5 +69,54 @@ public class CsvFileAccessTest {
         }
         assertEquals("keep", Files.readString(target));
         assertTrue(Files.isSymbolicLink(home.resolve("dangling.csv")));
+    }
+
+    @Test
+    public void isCsvPath_filenameRequiredAndExtensionIgnoresCase() {
+        assertTrue(CsvFileAccess.isCsvPath(Path.of("report.csv")));
+        assertTrue(CsvFileAccess.isCsvPath(Path.of("report.CSV")));
+        assertFalse(CsvFileAccess.isCsvPath(Path.of("report.txt")));
+        assertFalse(CsvFileAccess.isCsvPath(temporaryFolder.toAbsolutePath().getRoot()));
+        assertThrows(NullPointerException.class, () -> CsvFileAccess.isCsvPath(null));
+    }
+
+    @Test
+    public void applicationHome_packagedJarWithSpaces_usesJarFolder() throws Exception {
+        Path home = Files.createDirectory(temporaryFolder.resolve("application folder"));
+        Path jar = Files.createFile(home.resolve("roster.jar"));
+        assertEquals(home, CsvFileAccess.applicationHome(jar.toUri().toURL()));
+        assertEquals(home.toRealPath().resolve("report.csv"),
+                new CsvFileAccess(CsvFileAccess.applicationHome(jar.toUri().toURL()))
+                        .forWriting(Path.of("report.csv")));
+    }
+
+    @Test
+    public void applicationHome_developmentClasses_usesWorkingFolder() throws Exception {
+        assertEquals(Path.of("").toAbsolutePath(), CsvFileAccess.applicationHome(temporaryFolder.toUri().toURL()));
+    }
+
+    @Test
+    @SuppressWarnings("deprecation")
+    public void applicationHome_malformedClassLocation_explainsFailure() throws Exception {
+        // A custom class loader can supply a URL containing an unescaped space.
+        URL malformed = new URL("file:/invalid location/roster.jar");
+        IllegalStateException failure = assertThrows(IllegalStateException.class, () ->
+                CsvFileAccess.applicationHome(malformed));
+        assertEquals("Could not determine Roster's home folder.", failure.getMessage());
+        assertTrue(failure.getCause() instanceof URISyntaxException);
+    }
+
+    @Test
+    public void resolve_homeDirectoryAlias_usesCanonicalHomeWithoutFollowingChildLinks() throws Exception {
+        Path home = Files.createDirectory(temporaryFolder.resolve("real-home")).toRealPath();
+        Path alias = temporaryFolder.resolve("alias-home").toAbsolutePath();
+        try {
+            Files.createSymbolicLink(alias, home);
+        } catch (IOException | UnsupportedOperationException | SecurityException e) {
+            assumeTrue(false, "Symbolic links are unavailable: " + e.getMessage());
+        }
+        CsvFileAccess files = new CsvFileAccess(alias);
+        assertEquals(home.resolve("report.csv"), files.forWriting(alias.resolve("report.csv")));
+        assertEquals(home.resolve("relative.csv"), files.forWriting(Path.of("relative.csv")));
     }
 }
