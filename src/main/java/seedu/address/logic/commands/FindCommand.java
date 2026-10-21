@@ -2,6 +2,9 @@ package seedu.address.logic.commands;
 
 import static java.util.Objects.requireNonNull;
 
+import java.util.logging.Logger;
+
+import seedu.address.commons.core.LogsCenter;
 import seedu.address.commons.util.ToStringBuilder;
 import seedu.address.logic.commands.exceptions.CommandException;
 import seedu.address.model.Model;
@@ -29,6 +32,8 @@ public class FindCommand extends Command {
     public static final String MESSAGE_UNKNOWN_PARAMETER =
             "Unexpected parameter. Use only n/KEYWORD, m/MATRIC or grp/GROUP.";
 
+    private static final Logger logger = LogsCenter.getLogger(FindCommand.class);
+
     private final StudentMatchesFiltersPredicate predicate;
 
     public FindCommand(NameContainsQueryPredicate predicate) {
@@ -46,10 +51,13 @@ public class FindCommand extends Command {
     public CommandResult execute(Model model) throws CommandException {
         requireNonNull(model);
         if (predicate.getGroup().isPresent() && !model.hasGroup(predicate.getGroup().get())) {
+            logger.fine("Search rejected: tutorial group is not registered.");
             throw new CommandException(String.format(ListCommand.MESSAGE_GROUP_NOT_FOUND, predicate.getGroup().get()));
         }
         model.updateFilteredPersonList(predicate);
+        assert model.getActiveGroup().isEmpty() : "A global search must clear the active tutorial group";
         int count = model.getFilteredPersonList().size();
+        logger.fine("Student search completed with " + count + " matching students.");
         if (!predicate.isNameOnly()) {
             return new CommandResult(count == 0
                     ? String.format(MESSAGE_FILTER_NO_RESULTS, predicate.describeFilters())
