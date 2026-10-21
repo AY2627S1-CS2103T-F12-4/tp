@@ -1,5 +1,7 @@
 package seedu.address.logic.commands;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static seedu.address.logic.commands.CommandTestUtil.assertCommandSuccess;
 import static seedu.address.logic.commands.CommandTestUtil.showPersonAtIndex;
 import static seedu.address.testutil.TypicalIndexes.INDEX_FIRST_PERSON;
@@ -11,6 +13,7 @@ import org.junit.jupiter.api.Test;
 import seedu.address.model.Model;
 import seedu.address.model.ModelManager;
 import seedu.address.model.UserPrefs;
+import seedu.address.model.person.Group;
 import seedu.address.testutil.PersonBuilder;
 
 /**
@@ -57,5 +60,23 @@ public class ListCommandTest {
     public void execute_noSearchMatches_restoresAllStudents() {
         model.updateFilteredPersonList(person -> false);
         assertCommandSuccess(new ListCommand(), model, "Listed all 7 students.", expectedModel);
+    }
+
+    @Test
+    public void equals_groupScopeDeterminesCommandIdentity() {
+        ListCommand all = new ListCommand();
+        ListCommand group = new ListCommand(new Group("T09"));
+        ListCommand sameGroup = new ListCommand(new Group("T09"));
+        assertEquals(all, all);
+        assertEquals(all, new ListCommand());
+        assertEquals(group, sameGroup);
+        assertEquals(sameGroup, group);
+        assertEquals(all.hashCode(), new ListCommand().hashCode());
+        assertEquals(group.hashCode(), sameGroup.hashCode());
+        assertFalse(all.equals(group));
+        assertFalse(group.equals(all));
+        assertFalse(group.equals(new ListCommand(new Group("T10"))));
+        assertFalse(group.equals(null));
+        assertFalse(group.equals("T09"));
     }
 }

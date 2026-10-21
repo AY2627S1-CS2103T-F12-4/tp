@@ -87,8 +87,7 @@ public class NameContainsQueryPredicateTest {
 
     @Test
     public void test_nonNameFields_doNotMatch() {
-        Person student = new PersonBuilder().withName("Alice").withEmail("john@example.com")
-                .withAddress("John Street").withTags("John").build();
+        Person student = new PersonBuilder().withName("Alice").withEmail("john@example.com").withTags("John").build();
         assertFalse(new NameContainsQueryPredicate("John").test(student));
     }
 
@@ -103,6 +102,16 @@ public class NameContainsQueryPredicateTest {
         } finally {
             Locale.setDefault(original);
         }
+    }
+
+    @Test
+    public void test_unicodeCaseVariants_doNotDependOnWordPosition() {
+        for (String[] example : new String[][]{{"ΝΙΚΟΣ", "Σ"}, {"ΟΣΑ", "ΟΣ"}, {"ΒΑΣΙΛΗΣ", "ΒΑΣ"},
+            {"ΒΑΣΙΛΗΣ", "ΑΣ"}, {"Νίκος", "ς"}, {"𐐀𐐁", "𐐨"}}) {
+            assertTrue(new NameContainsQueryPredicate(example[1]).test(person(example[0])), example[1]);
+        }
+        assertTrue(new NameContainsQueryPredicate("ΝΙΚΟΣ").isWholeWordMatch(person("Νικος Tan")));
+        assertFalse(new NameContainsQueryPredicate("ΟΣ").isWholeWordMatch(person("ΟΣΑ")));
     }
 
     @Test

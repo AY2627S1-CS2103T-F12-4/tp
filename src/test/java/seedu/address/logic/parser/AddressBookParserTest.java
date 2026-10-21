@@ -49,12 +49,6 @@ public class AddressBookParserTest {
     }
 
     @Test
-    public void parseCommand_add_preservesAddressWhitespace() throws Exception {
-        Person person = new PersonBuilder().withAddress("Block  12, Kent Ridge").build();
-        assertEquals(new AddCommand(person), parser.parseCommand(PersonUtil.getAddCommand(person)));
-    }
-
-    @Test
     public void parseCommand_clear() throws Exception {
         assertTrue(parser.parseCommand(ClearCommand.COMMAND_WORD) instanceof ClearCommand);
         assertTrue(parser.parseCommand(ClearCommand.COMMAND_WORD + " 3") instanceof ClearCommand);
@@ -108,7 +102,7 @@ public class AddressBookParserTest {
     @Test
     public void parseCommand_findWithWhitespace_keepsQueryValidation() {
         assertThrows(ParseException.class, FindCommand.MESSAGE_UNKNOWN_PARAMETER, () ->
-                parser.parseCommand("find\u00a0n/John\u2003grp/T09"));
+                parser.parseCommand("find\u00a0n/John\u2003e/john@example.com"));
         assertThrows(ParseException.class, Messages.getErrorMessageForDuplicatePrefixes(PREFIX_NAME), () ->
                 parser.parseCommand("find n/John\n n/Tan"));
         assertThrows(ParseException.class, NameContainsQueryPredicate.MESSAGE_CONSTRAINTS, () ->

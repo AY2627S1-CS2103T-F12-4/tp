@@ -154,7 +154,75 @@ Classes used by multiple components are in the `seedu.address.commons` package.
 
 ## **Implementation**
 
+### Filtered student search
+
+`FindCommandParser` accepts optional `n/`, `m/` and `grp/` filters, rejects duplicate or empty fields,
+and uses the shared parsing utilities to normalize matriculation numbers and group codes.
+`StudentMatchesFiltersPredicate` combines the supplied conditions using AND. It delegates name matching
+to `NameContainsQueryPredicate`, so future changes to the shared name matcher also apply to filtered search.
+The matcher uses a quoted literal regular expression with Unicode case-insensitive matching, avoiding
+context-dependent lowercasing errors such as Greek final sigma. Accents and punctuation remain significant.
+
+`FindCommand` checks that an explicitly requested group is registered before changing the view.
+`ModelManager` applies the predicate to the full roster and exposes the results in matriculation-number order.
+The active group is cleared because even a group-filtered search may display only part of a group.
+The observable list reflects additions and removals while the search predicate is active. A modifying
+command can subsequently choose another view; its own command specification defines that behavior.
+
+The sequence below follows `find n/John grp/T09` after parsing. An unknown group is rejected before
+the model is updated. A valid search replaces the predicate and clears the active-group selection.
+
+![Combined search execution, including the unknown-group branch](images/FilteredFindSequenceDiagram.png)
+
+**Design choices**
+
+* Search the full roster rather than the current view, so a search after an empty result can recover students.
+* Combine fields with AND. Matriculation number and group are exact matches; names use a literal substring.
+* Keep one observable view instead of copying results, so displayed indexes remain correct after add or delete.
+* Assert the model's global-search contract and log match counts and rejected groups at `FINE` level.
+  Exceptions handle invalid user input; assertions detect inconsistent internal model behavior.
+
+`FindCommand.requiresSave()` returns false. `LogicManager` therefore returns the search result
+without rewriting the roster file. Other commands retain their existing save behaviour.
+Assertions are enabled for Gradle tests and `./gradlew run`. When running a packaged JAR for testing,
+use `java -ea -jar roster.jar`; enable VM option `-ea` in an IDE run configuration as well.
+
 This section describes some noteworthy details on how certain features are implemented.
+
+### Attendance CSV export
+
+`ExportCommandParser` accepts a required `f/` destination and optional `grp/` scope. The shared
+`CsvFileArgumentsParser` performs a quote-aware parameter scan that preserves spaces and prefix-like
+directory names inside quoted paths.
+`ExportCommand` validates the requested group and passes the full roster to `CsvAttendanceExporter`,
+independently of the current displayed list.
+
+The exporter writes UTF-8 rows ordered by matriculation number and session week, using the fixed
+`matric,name,email,group,week,date,attendance` header. Missing attendance for an existing session becomes
+`unmarked`; students without sessions receive a row with empty session fields.
+It first writes a temporary sibling file, then moves the completed file to its destination without
+replacing existing files. A finally block removes temporary output on both success and failure.
+
+The activity diagram shows the validation and publication paths. Failures during temporary-file
+creation, writing or publication are reported to the caller; cleanup runs when a temporary file exists.
+
+![Attendance CSV validation, writing and failure handling](images/CsvExportActivityDiagram.png)
+
+**Design choices**
+
+* Export the full roster or an explicit group instead of the displayed search results, avoiding incomplete reports.
+* Write a temporary sibling before publication rather than writing the destination directly, so a failed write
+  does not leave a partial report under the requested filename. Moving without replacement preserves existing files.
+* Keep a fixed UTF-8 schema and deterministic ordering so coordinators can compare reports from different runs.
+* Assert that summary counts are non-negative and contain at least one row per exported student.
+  Command diagnostics distinguish unknown groups, existing destinations and unexpected file failures.
+
+`Command.requiresSave()` defaults to true. Export overrides it to false because it does not change
+roster records. `LogicManager` therefore returns the result without saving the roster file.
+
+`CsvFileAccess` confines CSV output to the JAR's home folder (the working folder for development
+runs). It resolves relative paths from this root and rejects outside paths and symbolic-link components
+before writing a CSV. Directory aliases used by macOS are resolved against the canonical home folder.
 
 ### Updating attendance records
 
@@ -166,7 +234,6 @@ group and requested week, and creates a replacement immutable `Person` containin
 Undo/redo and data archiving are not implemented in this version. Commands do not create a history of
 roster snapshots. New implementation sections should describe the corresponding design and tests
 when those features are added.
-
 
 --------------------------------------------------------------------------------------------------------------------
 
@@ -545,3 +612,41 @@ list
 4. Recovery: close Roster, restore the known-good backup as `data/addressbook.json`, and relaunch.
    Expected: the original groups, students, sessions and attendance are restored. Do not edit JSON while
    Roster is running, because a later save can replace external edits.
+
+### Filtered student search
+
+Use a disposable copy of the JAR in an empty folder. Run `clear` to remove sample data, then create:
+
+```text
+init grp/T09
+init grp/T10
+add n/John Tan p/91234567 e/john@example.com a/Block 1 m/A0000002X grp/T09
+add n/Johnny Lim p/81234567 e/johnny@example.com a/Block 2 m/A0000001X grp/T10
+```
+
+1. Run `find n/John grp/t09`, then `find m/a0000001x`, then `find n/Nobody`.
+   Expected: John, then Johnny, then no results. Every search uses the complete roster and clears the active group.
+2. Run `list grp/T09`, followed by `find n/John grp/T99` and `find n/John grp/T09 grp/T10`.
+   Expected: both commands report errors, preserving the T09 view and active group.
+3. Run `find n/John m/A0000001X grp/T09`.
+   Expected: no matches because every supplied filter must match.
+
+### Attendance CSV export
+
+Use a disposable copy of the JAR in an empty folder. Run `clear` to remove sample data, then create:
+
+```text
+init grp/T09
+init grp/T10
+add n/John Tan p/91234567 e/john@example.com a/Block 1 m/A0000002X grp/T09
+add n/Johnny Lim p/81234567 e/johnny@example.com a/Block 2 m/A0000001X grp/T10
+```
+
+1. Run `list grp/T09`, then `export f/all.csv` and `export f/t09.csv grp/T09`.
+   Expected: all.csv includes both students and t09.csv includes only John, each with empty session fields.
+   The view stays on T09. Repeating `export f/all.csv` fails without changing the existing file.
+2. Create `session grp/T09 w/1 d/2026-08-11`, mark John present with `mark 1 w/1 s/present`,
+   and export to a new filename. Expected: John's row contains `1,2026-08-11,present`.
+3. Try `export f/../outside.csv` and a symbolic-link path to an outside file.
+   Expected: an error, with no outside file created. A missing export parent directory also produces
+   an error without changing roster records or the displayed list.
