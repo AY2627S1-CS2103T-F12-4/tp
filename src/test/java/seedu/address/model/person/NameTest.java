@@ -40,7 +40,12 @@ public class NameTest {
         assertFalse(Name.isValidName("peter the 2nd"));
         assertFalse(Name.isValidName("'Peter"));
         assertFalse(Name.isValidName("Peter-"));
-        assertFalse(Name.isValidName("Peter."));
+        assertFalse(Name.isValidName(".Peter"));
+        assertFalse(Name.isValidName("Ravi s/other Kumar"));
+        assertFalse(Name.isValidName("Ravi s/oKumar"));
+        assertFalse(Name.isValidName("John/Tan"));
+        assertFalse(Name.isValidName("Ravi s/o Kumar/"));
+        assertFalse(Name.isValidName("\u0301Elodie"));
         assertFalse(Name.isValidName("A".repeat(71)));
         assertFalse(Name.isValidName("\ud801\udc00".repeat(71)));
 
@@ -50,11 +55,27 @@ public class NameTest {
         assertTrue(Name.isValidName("O'Neil"));
         assertTrue(Name.isValidName("O\u2019Neil"));
         assertTrue(Name.isValidName("Anne-Marie"));
+        assertTrue(Name.isValidName("J. Tan"));
+        assertTrue(Name.isValidName("Tan J."));
+        assertTrue(Name.isValidName("J."));
+        assertTrue(Name.isValidName("Ravi s/o Kumar"));
+        assertTrue(Name.isValidName("Rani D/O Kumar"));
+        assertTrue(Name.isValidName("Arun a/l Ravi"));
+        assertTrue(Name.isValidName("Meena a/p Kumar"));
+        assertTrue(Name.isValidName("E\u0301lodie Tan"));
         assertTrue(Name.isValidName("\u00c9lodie Tan"));
         assertTrue(Name.isValidName("A".repeat(70)));
         assertTrue(Name.isValidName("\ud801\udc00".repeat(70)));
         assertTrue(Name.isValidName("Capital Tan")); // with capital letters
         assertTrue(Name.isValidName("David Roger Jackson Ray Junior")); // long names
+    }
+
+    @Test
+    public void constructor_nameAbbreviation_countsOriginalCharactersAndPreservesSpelling() {
+        String atLimit = "A".repeat(64) + " s/o B";
+        assertEquals(atLimit, new Name(atLimit).fullName);
+        assertFalse(Name.isValidName("A" + atLimit));
+        assertEquals("Ravi S/O Kumar", new Name("  Ravi   S/O Kumar  ").fullName);
     }
 
     @Test

@@ -8,6 +8,7 @@ import java.util.regex.Pattern;
 
 import seedu.address.logic.commands.FindCommand;
 import seedu.address.logic.parser.exceptions.ParseException;
+import seedu.address.model.person.Name;
 import seedu.address.model.person.NameContainsQueryPredicate;
 
 /**
@@ -24,7 +25,8 @@ public class FindCommandParser implements Parser<FindCommand> {
     public FindCommand parse(String args) throws ParseException {
         // The tokenizer recognizes prefixes preceded by a space.
         String normalizedArgs = " " + args.replaceAll("(?U)\\s+", " ").strip();
-        Matcher prefixMatcher = PREFIX_PATTERN.matcher(normalizedArgs);
+        Matcher prefixMatcher = PREFIX_PATTERN.matcher(
+                normalizedArgs.replaceAll(Name.RELATIONSHIP_CONNECTOR_REGEX, ""));
         while (prefixMatcher.find()) {
             if (!prefixMatcher.group().equals(PREFIX_NAME.getPrefix())) {
                 throw new ParseException(FindCommand.MESSAGE_UNKNOWN_PARAMETER);

@@ -41,7 +41,7 @@ public class AddCommandParser implements Parser<AddCommand> {
      * @throws ParseException if the user input does not conform to the expected format
      */
     public AddCommand parse(String args) throws ParseException {
-        Matcher prefixMatcher = PREFIX_PATTERN.matcher(args);
+        Matcher prefixMatcher = PREFIX_PATTERN.matcher(args.replaceAll(Name.RELATIONSHIP_CONNECTOR_REGEX, ""));
         while (prefixMatcher.find()) {
             if (!SUPPORTED_PREFIXES.contains(prefixMatcher.group())) {
                 throw new ParseException(AddCommand.MESSAGE_UNKNOWN_PARAMETER);

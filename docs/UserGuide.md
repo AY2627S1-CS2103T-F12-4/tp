@@ -98,7 +98,7 @@ The MVP does not support returning a recorded status to unmarked. You can, howev
 Parameter | Accepted value
 ----------|---------------
 `grp/GROUP` | One or two letters followed by two digits, e.g. `T09` or `TG01`. Surrounding spaces are removed and letters are converted to uppercase.
-`n/NAME` | 1–70 characters. Letters, spaces, hyphens and apostrophes only; must begin and end with a letter. Surrounding spaces are removed, repeated spaces become one space, and letter case is preserved.
+`n/NAME` | 1–70 characters. Letters and their accents, spaces, hyphens, apostrophes, full stops and the relationship abbreviations `s/o`, `d/o`, `a/l`, `a/p` (in any letter case). Must begin with a letter and end with a letter, accent or full stop. Examples: `J. Tan`, `Ravi s/o Kumar`. Surrounding spaces are removed, repeated spaces become one space, and letter case is preserved.
 `p/PHONE` | At least three digits, with no spaces or other characters.
 `m/MATRIC` | `A`, followed by seven digits and one letter, e.g. `A0287654J`. Surrounding spaces are removed and letters are converted to uppercase.
 `e/EMAIL` | A valid email address such as `alex.tan@example.com`. Surrounding spaces are removed and the address is converted to lowercase.
@@ -211,7 +211,7 @@ Format: `find n/KEYWORD`
 * The `n/` prefix is required and must appear exactly once. The keyword may contain several words, such as `john tan`.
 * Surrounding whitespace is ignored, and repeated whitespace is treated as one space in both the query and name.
 * Copied commands can use Unicode spaces, including non-breaking spaces, around `find` and `n/`. Line breaks within a search phrase are also treated as spaces.
-* The query must contain 1–100 characters after whitespace normalization: letters, spaces, hyphens, apostrophes or full stops, with at least one letter.
+* The query must contain 1–100 characters after whitespace normalization: letters and their accents, spaces, hyphens, apostrophes, full stops or the relationship abbreviations `s/o`, `d/o`, `a/l`, `a/p`, with at least one letter. For example, `find n/Ravi s/o Kumar` searches the complete name.
 * The search is case-insensitive and considers only names. Accents and punctuation remain significant.
 * The entire phrase must appear contiguously and in the same order. For example, `john tan` matches `John Tan` and `John Tanner`, but does not match `John Lim`, `Mei Tan` or `Tan John`.
 * Results are sorted by matriculation number in ascending order, including both complete and partial name matches. For example, `find n/john` lists `Johnny Lim` with matriculation number `A0000001X` before `John Tan` with `A0000002X`.

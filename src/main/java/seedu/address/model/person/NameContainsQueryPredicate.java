@@ -13,7 +13,8 @@ import seedu.address.commons.util.ToStringBuilder;
  */
 public class NameContainsQueryPredicate implements Predicate<Person> {
     public static final String MESSAGE_CONSTRAINTS = "Invalid search keyword. Use 1-100 characters containing "
-            + "letters, spaces, hyphens, apostrophes or full stops, with at least one letter.";
+            + "letters, spaces, hyphens, apostrophes, full stops or s/o, d/o, a/l, a/p abbreviations, "
+            + "with at least one letter.";
 
     private final String query;
     private final String normalizedQuery;
@@ -35,7 +36,8 @@ public class NameContainsQueryPredicate implements Predicate<Person> {
         requireNonNull(query);
         String normalized = normalizeWhitespace(query);
         return normalized.codePointCount(0, normalized.length()) <= 100
-                && normalized.matches("[\\p{L}\\p{M} .'\u2019-]+")
+                && normalized.replaceAll(Name.RELATIONSHIP_CONNECTOR_REGEX, "relative")
+                        .matches("[\\p{L}\\p{M} .'\u2019-]+")
                 && normalized.matches(".*\\p{L}.*");
     }
 
