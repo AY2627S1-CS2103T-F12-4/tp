@@ -46,7 +46,6 @@ public class CsvAttendanceExporter {
         Path temporary = Files.createTempFile(target.getParent(), ".roster-export-", ".tmp");
         try {
             int rows = writeCsv(temporary, students, roster.getSessionList());
-            assert rows >= students.size() : "Every exported student must have at least one data row";
             // Publish only the completed sibling file, without REPLACE_EXISTING.
             Files.move(temporary, target);
             return new ExportSummary(students.size(), rows);
@@ -102,5 +101,10 @@ public class CsvAttendanceExporter {
      * Counts students and data rows, excluding the CSV header.
      */
     public record ExportSummary(int studentCount, int rowCount) {
+        /** Checks the internal counts before they are used in command feedback. */
+        public ExportSummary {
+            assert studentCount >= 0 : "The exported student count must not be negative";
+            assert rowCount >= studentCount : "Every exported student must have at least one data row";
+        }
     }
 }

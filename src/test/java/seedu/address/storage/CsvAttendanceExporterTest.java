@@ -42,6 +42,14 @@ public class CsvAttendanceExporterTest {
             .withEmail("other@example.com").withGroup("T10").build();
 
     @Test
+    public void exportSummary_incompleteCounts_detectsInternalCountingErrors() {
+        assertThrows(AssertionError.class, () -> new CsvAttendanceExporter.ExportSummary(-1, 0));
+        assertThrows(AssertionError.class, () -> new CsvAttendanceExporter.ExportSummary(2, 1));
+        assertEquals(0, new CsvAttendanceExporter.ExportSummary(0, 0).rowCount());
+        assertEquals(3, new CsvAttendanceExporter.ExportSummary(2, 3).rowCount());
+    }
+
+    @Test
     public void export_allGroups_ordersStudentsAndWeeksAndPreservesAttendanceStates() throws Exception {
         AddressBook roster = roster();
         AddressBook original = new AddressBook(roster);
