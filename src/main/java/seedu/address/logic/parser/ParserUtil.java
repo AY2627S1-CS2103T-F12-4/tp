@@ -12,6 +12,7 @@ import seedu.address.commons.util.StringUtil;
 import seedu.address.logic.parser.exceptions.ParseException;
 import seedu.address.model.attendance.Status;
 import seedu.address.model.person.Address;
+import seedu.address.model.person.Comment;
 import seedu.address.model.person.Email;
 import seedu.address.model.person.Group;
 import seedu.address.model.person.Matric;
@@ -100,6 +101,20 @@ public class ParserUtil {
         return new Matric(normalizedMatric);
     }
 
+
+    /**
+     * Parses a {@code String comment} into a {@code Comment}.
+     * Surrounding whitespace is removed and internal runs of whitespace are collapsed.
+     *
+     * @throws ParseException if the given {@code comment} is invalid.
+     */
+    public static Comment parseComment(String comment) throws ParseException {
+        requireNonNull(comment);
+        if (!Comment.isValidComment(comment)) {
+            throw new ParseException(Comment.MESSAGE_CONSTRAINTS);
+        }
+        return new Comment(comment);
+    }
 
     /**
      * Parses a {@code String email} into an {@code Email}.

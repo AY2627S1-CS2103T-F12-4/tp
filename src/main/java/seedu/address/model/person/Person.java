@@ -33,6 +33,7 @@ public class Person {
     // Data fields
     private final Address address;
     private final Group group;
+    private final Comment comment;
     private final Set<Tag> tags = new HashSet<>();
     private final Set<Attendance> attendances = new HashSet<>();
 
@@ -51,13 +52,23 @@ public class Person {
      */
     public Person(Name name, Phone phone, Email email, Address address, Matric matric, Group group,
             Set<Tag> tags, Set<Attendance> attendances) {
-        requireAllNonNull(name, phone, email, address, matric, group, tags, attendances);
+        this(name, phone, email, address, matric, group, tags, attendances, Comment.EMPTY);
+    }
+
+    /**
+     * Every field must be present and not null.
+     * {@code attendances} must satisfy {@link #areValidAttendances(Group, Collection)}.
+     */
+    public Person(Name name, Phone phone, Email email, Address address, Matric matric, Group group,
+            Set<Tag> tags, Set<Attendance> attendances, Comment comment) {
+        requireAllNonNull(name, phone, email, address, matric, group, tags, attendances, comment);
         checkArgument(areValidAttendances(group, attendances), MESSAGE_INVALID_ATTENDANCES);
         this.name = name;
         this.phone = phone;
         this.email = email;
         this.address = address;
         this.matric = matric;
+        this.comment = comment;
         this.group = group;
         this.tags.addAll(tags);
         this.attendances.addAll(attendances);
@@ -104,6 +115,10 @@ public class Person {
         return group;
     }
 
+    public Comment getComment() {
+        return comment;
+    }
+
     /**
      * Returns an immutable tag set, which throws {@code UnsupportedOperationException}
      * if modification is attempted.
@@ -138,7 +153,15 @@ public class Person {
         Set<Attendance> updatedAttendances = new HashSet<>(attendances);
         updatedAttendances.removeIf(existing -> existing.isForSession(attendance.getSession()));
         updatedAttendances.add(attendance);
-        return new Person(name, phone, email, address, matric, group, tags, updatedAttendances);
+        return new Person(name, phone, email, address, matric, group, tags, updatedAttendances, comment);
+    }
+
+    /**
+     * Returns a copy of this person carrying {@code updatedComment} in place of their current one.
+     */
+    public Person withComment(Comment updatedComment) {
+        requireAllNonNull(updatedComment);
+        return new Person(name, phone, email, address, matric, group, tags, attendances, updatedComment);
     }
 
     /**
@@ -186,6 +209,7 @@ public class Person {
                 && email.equals(otherPerson.email)
                 && address.equals(otherPerson.address)
                 && matric.equals(otherPerson.matric)
+                && comment.equals(otherPerson.comment)
                 && group.equals(otherPerson.group)
                 && tags.equals(otherPerson.tags)
                 && attendances.equals(otherPerson.attendances);
@@ -194,7 +218,7 @@ public class Person {
     @Override
     public int hashCode() {
         // use this method for custom fields hashing instead of implementing your own
-        return Objects.hash(name, phone, email, address, matric, group, tags, attendances);
+        return Objects.hash(name, phone, email, address, matric, group, tags, attendances, comment);
     }
 
     @Override
@@ -206,6 +230,7 @@ public class Person {
                 .add("address", address)
                 .add("matric", matric)
                 .add("group", group)
+                .add("comment", comment)
                 .add("tags", tags)
                 .add("attendances", attendances)
                 .toString();

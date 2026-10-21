@@ -15,6 +15,7 @@ import org.junit.jupiter.api.Test;
 import seedu.address.logic.Messages;
 import seedu.address.logic.commands.AddCommand;
 import seedu.address.logic.commands.ClearCommand;
+import seedu.address.logic.commands.CommentCommand;
 import seedu.address.logic.commands.DeleteCommand;
 import seedu.address.logic.commands.EditCommand;
 import seedu.address.logic.commands.EditCommand.EditPersonDescriptor;
@@ -27,6 +28,7 @@ import seedu.address.logic.commands.MarkCommand;
 import seedu.address.logic.commands.SessionCommand;
 import seedu.address.logic.parser.exceptions.ParseException;
 import seedu.address.model.attendance.Status;
+import seedu.address.model.person.Comment;
 import seedu.address.model.person.Group;
 import seedu.address.model.person.NameContainsQueryPredicate;
 import seedu.address.model.person.Person;
@@ -65,6 +67,20 @@ public class AddressBookParserTest {
         DeleteCommand command = (DeleteCommand) parser.parseCommand(
                 DeleteCommand.COMMAND_WORD + " " + INDEX_FIRST_PERSON.getOneBased());
         assertEquals(new DeleteCommand(INDEX_FIRST_PERSON), command);
+    }
+
+    @Test
+    public void parseCommand_comment() throws Exception {
+        CommentCommand command = (CommentCommand) parser.parseCommand(
+                CommentCommand.COMMAND_WORD + " " + INDEX_FIRST_PERSON.getOneBased() + " c/attentive");
+        assertEquals(new CommentCommand(INDEX_FIRST_PERSON, new Comment("attentive"), false), command);
+    }
+
+    @Test
+    public void parseCommand_commentReplace() throws Exception {
+        CommentCommand command = (CommentCommand) parser.parseCommand(
+                CommentCommand.COMMAND_WORD + " " + INDEX_FIRST_PERSON.getOneBased() + " c-/");
+        assertEquals(new CommentCommand(INDEX_FIRST_PERSON, Comment.EMPTY, true), command);
     }
 
     @Test

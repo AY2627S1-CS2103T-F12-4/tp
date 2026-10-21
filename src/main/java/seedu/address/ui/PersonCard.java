@@ -45,6 +45,8 @@ public class PersonCard extends UiPart<Region> {
     @FXML
     private Label group;
     @FXML
+    private Label comment;
+    @FXML
     private FlowPane tags;
     @FXML
     private FlowPane attendance;
@@ -62,6 +64,10 @@ public class PersonCard extends UiPart<Region> {
         email.setText(person.getEmail().value);
         matric.setText(person.getMatric().value);
         group.setText(person.getGroup().value);
+        // An empty comment leaves no gap: an unmanaged node takes up no space in the layout.
+        comment.setText(person.getComment().value);
+        comment.setVisible(!person.getComment().isEmpty());
+        comment.setManaged(!person.getComment().isEmpty());
         for (AttendanceCell cell : AttendanceCell.forStudent(person, sessions)) {
             Label label = new Label("W" + cell.week() + ": " + cell.symbol());
             label.getStyleClass().addAll("attendance-cell", cell.styleClass());
