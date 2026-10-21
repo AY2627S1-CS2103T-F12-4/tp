@@ -293,7 +293,7 @@ Roster automatically saves its data after each successful command. You do not ne
 
 ### Editing the data file
 
-Roster data is saved as `[JAR file location]/data/addressbook.json`. Advanced users may edit this JSON file directly.
+Roster data is saved as `data/addressbook.json` inside the folder from which Roster is launched. To keep it beside the JAR, open a terminal in the JAR folder and run `java -jar roster.jar`. Close Roster and back up the file before editing it directly.
 
 <div markdown="span" class="alert alert-warning">:exclamation: **Caution:**
 If your changes make the data file invalid, Roster starts with an empty roster the next time it runs. The invalid file remains on disk until a successful command causes Roster to save again. Back up the file before editing it.<br>
@@ -305,7 +305,7 @@ Manual edits can also produce unexpected behavior if values do not follow Roster
 ## FAQ
 
 **Q**: How do I transfer my data to another computer?<br>
-**A**: Install Roster on the other computer and replace its `data/addressbook.json` file with the file from your previous Roster home folder.
+**A**: Install Roster on the other computer, launch it once, close it, and replace its `data/addressbook.json` file with your saved copy. Use the data folder described in [Saving data](#saving-data).
 
 **Q**: How do I correct a student's details?<br>
 **A**: Use `edit INDEX` followed by the fields to change, for example `edit 1 e/alex.tan@example.com`.
