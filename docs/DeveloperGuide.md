@@ -155,6 +155,27 @@ Classes used by multiple components are in the `seedu.address.commons` package.
 
 This section describes some noteworthy details on how certain features are implemented.
 
+### Attendance CSV export
+
+`ExportCommandParser` accepts a required `f/` destination and optional `grp/` scope. The shared
+`CsvFileArgumentsParser` performs a quote-aware parameter scan that preserves spaces and prefix-like
+directory names inside quoted paths.
+`ExportCommand` validates the requested group and passes the full roster to `CsvAttendanceExporter`,
+independently of the current displayed list.
+
+The exporter writes UTF-8 rows ordered by matriculation number and session week, using the fixed
+`matric,name,email,group,week,date,attendance` header. Missing attendance for an existing session becomes
+`unmarked`; students without sessions receive a row with empty session fields.
+It first writes a temporary sibling file, then moves the completed file to its destination without
+replacing existing files. A finally block removes temporary output on both success and failure.
+
+`Command.requiresSave()` defaults to true. Export overrides it to false because it does not change
+roster records. `LogicManager` therefore returns the result without saving the roster file.
+
+`CsvFileAccess` confines CSV output to the JAR's home folder (the working folder for development
+runs). It resolves relative paths from this root and rejects outside paths and symbolic-link components
+before writing a CSV. Directory aliases used by macOS are resolved against the canonical home folder.
+
 ### \[Proposed\] Undo/redo feature
 
 #### Proposed Implementation
@@ -613,6 +634,26 @@ testers are expected to do more *exploratory* testing.
       Expected: Similar to previous.
 
 1. _{ more test cases …​ }_
+
+### Attendance CSV export
+
+Use a disposable copy of the JAR in an empty folder. Run `clear` to remove sample data, then create:
+
+```text
+init grp/T09
+init grp/T10
+add n/John Tan p/91234567 e/john@example.com a/Block 1 m/A0000002X grp/T09
+add n/Johnny Lim p/81234567 e/johnny@example.com a/Block 2 m/A0000001X grp/T10
+```
+
+1. Run `list grp/T09`, then `export f/all.csv` and `export f/t09.csv grp/T09`.
+   Expected: all.csv includes both students and t09.csv includes only John, each with empty session fields.
+   The view stays on T09. Repeating `export f/all.csv` fails without changing the existing file.
+2. Create `session grp/T09 w/1 d/2026-08-11`, mark John present with `mark 1 w/1 s/present`,
+   and export to a new filename. Expected: John's row contains `1,2026-08-11,present`.
+3. Try `export f/../outside.csv` and a symbolic-link path to an outside file.
+   Expected: an error, with no outside file created. A missing export parent directory also produces
+   an error without changing roster records or the displayed list.
 
 ### Saving data
 
