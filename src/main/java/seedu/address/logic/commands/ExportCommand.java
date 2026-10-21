@@ -8,7 +8,10 @@ import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Path;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
+import seedu.address.commons.core.LogsCenter;
 import seedu.address.logic.commands.exceptions.CommandException;
 import seedu.address.model.Model;
 import seedu.address.model.person.Group;
@@ -27,6 +30,8 @@ public class ExportCommand extends Command {
     public static final String MESSAGE_SUCCESS = "Exported %1$d student(s) in %2$d CSV row(s) to %3$s.";
     public static final String MESSAGE_FILE_EXISTS = "File already exists: %s. Choose another destination.";
     public static final String MESSAGE_WRITE_FAILURE = "Could not export attendance to %1$s: %2$s";
+
+    private static final Logger logger = LogsCenter.getLogger(ExportCommand.class);
 
     private final Path destination;
     private final Optional<Group> group;
@@ -59,16 +64,21 @@ public class ExportCommand extends Command {
     public CommandResult execute(Model model) throws CommandException {
         requireNonNull(model);
         if (group.isPresent() && !model.hasGroup(group.get())) {
+            logger.fine("CSV export rejected: tutorial group is not registered.");
             throw new CommandException(String.format(ListCommand.MESSAGE_GROUP_NOT_FOUND, group.get()));
         }
         try {
             Path target = files.forWriting(destination);
             ExportSummary summary = new CsvAttendanceExporter().export(model.getAddressBook(), target, group);
+            logger.fine("Attendance CSV export completed for " + summary.studentCount()
+                    + " students in " + summary.rowCount() + " data rows.");
             return new CommandResult(String.format(MESSAGE_SUCCESS, summary.studentCount(), summary.rowCount(),
                     target));
         } catch (FileAlreadyExistsException e) {
+            logger.fine("CSV export rejected: destination already exists.");
             throw new CommandException(String.format(MESSAGE_FILE_EXISTS, destination), e);
         } catch (IOException | SecurityException e) {
+            logger.log(Level.WARNING, "Attendance CSV export failed.", e);
             throw new CommandException(String.format(MESSAGE_WRITE_FAILURE, destination, e.getMessage()), e);
         }
     }

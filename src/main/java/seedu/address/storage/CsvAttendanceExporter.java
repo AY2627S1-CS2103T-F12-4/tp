@@ -46,6 +46,7 @@ public class CsvAttendanceExporter {
         Path temporary = Files.createTempFile(target.getParent(), ".roster-export-", ".tmp");
         try {
             int rows = writeCsv(temporary, students, roster.getSessionList());
+            assert rows >= students.size() : "Every exported student must have at least one data row";
             // Publish only the completed sibling file, without REPLACE_EXISTING.
             Files.move(temporary, target);
             return new ExportSummary(students.size(), rows);
