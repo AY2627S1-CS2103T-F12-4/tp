@@ -8,6 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Optional;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -46,6 +47,18 @@ public class FilteredFindCommandTest {
             .withPerson(johnny).build();
     private final ModelManager model = new ModelManager(roster, new UserPrefs());
     private final AddressBookParser parser = new AddressBookParser();
+
+    @Test
+    public void execute_modelRetainsGroupSelection_detectsViolationOfGlobalSearchContract() {
+        ModelManager inconsistentModel = new ModelManager(roster, new UserPrefs()) {
+            @Override
+            public Optional<Group> getActiveGroup() {
+                // Simulate a model implementation that exposes a stale selection after filtering.
+                return Optional.of(new Group("T09"));
+            }
+        };
+        assertThrows(AssertionError.class, () -> parser.parseCommand("find n/John").execute(inconsistentModel));
+    }
 
     @Test
     public void execute_eachFieldAndAllFilters_matchesExactFieldsAndCombinesWithAnd() throws Exception {
