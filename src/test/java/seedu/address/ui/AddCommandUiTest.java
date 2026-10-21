@@ -3,15 +3,13 @@ package seedu.address.ui;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static seedu.address.testutil.FxTestUtil.onFxThread;
+import static seedu.address.testutil.FxTestUtil.waitForRenderingCycles;
 
 import java.nio.file.Path;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
-import javafx.animation.AnimationTimer;
 import javafx.event.ActionEvent;
 import javafx.geometry.Bounds;
 import javafx.scene.Node;
@@ -88,11 +86,11 @@ public class AddCommandUiTest {
         openWindow(new AddressBookBuilder().withPerson(new PersonBuilder().build()).build());
         try {
             enterCommand("add n/Second Student e/second@u.nus.edu m/A0999999Z grp/T09");
-            waitForRenderingCycles();
+            waitForRenderingCycles(RENDERING_CYCLES_TO_WAIT);
             assertEquals(1, onFxThread(() -> personList().getSelectionModel().getSelectedIndex()));
 
             enterCommand("delete 999");
-            waitForRenderingCycles();
+            waitForRenderingCycles(RENDERING_CYCLES_TO_WAIT);
             assertEquals(-1, onFxThread(() -> personList().getSelectionModel().getSelectedIndex()));
         } finally {
             onFxThread(() -> {
@@ -134,33 +132,11 @@ public class AddCommandUiTest {
     }
 
     /**
-     * Waits for real rendering cycles, so that any scrolling queued by the command has taken effect.
-     */
-    private void waitForRenderingCycles() throws Exception {
-        CountDownLatch cycles = new CountDownLatch(RENDERING_CYCLES_TO_WAIT);
-        AnimationTimer timer = onFxThread(() -> {
-            AnimationTimer counter = new AnimationTimer() {
-                @Override
-                public void handle(long now) {
-                    cycles.countDown();
-                }
-            };
-            counter.start();
-            return counter;
-        });
-        assertTrue(cycles.await(10, TimeUnit.SECONDS), "JavaFX did not render");
-        onFxThread(() -> {
-            timer.stop();
-            return null;
-        });
-    }
-
-    /**
      * Asserts that the highlighted card is the student with {@code matric}, and that the whole card lies
      * within the visible part of the list. Being drawn is not enough, as a drawn card can be clipped.
      */
     private void assertAddedCardFullyVisible(String matric) throws Exception {
-        waitForRenderingCycles();
+        waitForRenderingCycles(RENDERING_CYCLES_TO_WAIT);
         onFxThread(() -> {
             ListView<?> list = personList();
             int selectedIndex = list.getSelectionModel().getSelectedIndex();

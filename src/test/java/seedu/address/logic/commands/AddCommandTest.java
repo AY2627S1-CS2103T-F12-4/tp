@@ -120,6 +120,16 @@ public class AddCommandTest {
     }
 
     @Test
+    public void execute_unregisteredGroup_throwsCommandException() {
+        Model model = new ModelManager();
+        Person student = new PersonBuilder().withGroup("T77").build();
+
+        assertThrows(CommandException.class, String.format(AddCommand.MESSAGE_UNKNOWN_GROUP, "T77"), ()
+                -> new AddCommand(student).execute(model));
+        assertEquals(List.of(), model.getAddressBook().getPersonList());
+    }
+
+    @Test
     public void execute_duplicatePerson_throwsCommandException() {
         Person validPerson = new PersonBuilder().build();
         AddCommand addCommand = new AddCommand(validPerson);

@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static seedu.address.testutil.FxTestUtil.onFxThread;
+import static seedu.address.testutil.FxTestUtil.waitForRenderingCycles;
 import static seedu.address.testutil.TypicalPersons.ALICE;
 import static seedu.address.testutil.TypicalSessions.T09_WEEK_1;
 
@@ -15,6 +16,8 @@ import org.junit.jupiter.api.Test;
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.geometry.Bounds;
+import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
@@ -139,6 +142,85 @@ public class PersonListPanelTest {
                 return null;
             });
         }
+    }
+
+    @Test
+    public void scrollTo_firstScrollLeavesCardBelowView_scrollsCardIntoViewAfterLayout() throws Exception {
+        ObservableList<Person> people = createLongList();
+        assertScrollCorrectedAfterLayout(people, people.size() - 1, 0);
+    }
+
+    @Test
+    public void scrollTo_firstScrollLeavesCardAboveView_scrollsCardIntoViewAfterLayout() throws Exception {
+        ObservableList<Person> people = createLongList();
+        assertScrollCorrectedAfterLayout(people, 0, people.size() - 1);
+    }
+
+    /**
+     * Asserts that after scrolling to the student at {@code targetIndex}, the card ends up fully in view even if
+     * the list is moved to {@code otherIndex} before it is laid out, as a first scroll that uses estimated card
+     * heights can do. Only the check after layout can then bring the card into view.
+     */
+    private static void assertScrollCorrectedAfterLayout(ObservableList<Person> people, int targetIndex,
+            int otherIndex) throws Exception {
+        PersonListPanel panel = onFxThread(() -> new PersonListPanel(people, FXCollections.observableArrayList(),
+                new ReadOnlyObjectWrapper<Group>()));
+        Stage stage = onFxThread(() -> {
+            Stage window = new Stage();
+            window.setScene(new Scene(panel.getRoot(), 600, 400));
+            window.show();
+            return window;
+        });
+        try {
+            onFxThread(() -> {
+                panel.scrollTo(people.get(targetIndex));
+                ListView<?> list = (ListView<?>) stage.getScene().getRoot().lookup("#personListView");
+                list.scrollTo(otherIndex);
+                return null;
+            });
+            waitForRenderingCycles(4);
+            onFxThread(() -> {
+                ListView<?> list = (ListView<?>) stage.getScene().getRoot().lookup("#personListView");
+                ListCell<?> targetCell = list.lookupAll(".list-cell").stream().map(node -> (ListCell<?>) node)
+                        .filter(cell -> cell.getIndex() == targetIndex && !cell.isEmpty())
+                        .findFirst().orElseThrow(() -> new AssertionError("The student's card is not drawn"));
+                Node viewport = list.lookup(".clipped-container");
+                Bounds visibleArea = viewport.localToScene(viewport.getBoundsInLocal());
+                Bounds cardArea = targetCell.localToScene(targetCell.getBoundsInLocal());
+                assertTrue(cardArea.getMinY() >= visibleArea.getMinY() - 0.5
+                        && cardArea.getMaxY() <= visibleArea.getMaxY() + 0.5, "The card should be fully in view");
+                return null;
+            });
+        } finally {
+            onFxThread(() -> {
+                stage.close();
+                return null;
+            });
+        }
+    }
+
+    @Test
+    public void scrollTo_panelNotInWindow_highlightsWithoutScrolling() throws Exception {
+        ObservableList<Person> people = createLongList();
+        onFxThread(() -> {
+            PersonListPanel panel = new PersonListPanel(people, FXCollections.observableArrayList(),
+                    new ReadOnlyObjectWrapper<Group>());
+            panel.scrollTo(people.getLast());
+            ListView<?> list = (ListView<?>) panel.getRoot().lookup("#personListView");
+            assertEquals(people.size() - 1, list.getSelectionModel().getSelectedIndex());
+            panel.clearSelection();
+            assertEquals(-1, list.getSelectionModel().getSelectedIndex());
+            return null;
+        });
+    }
+
+    private static ObservableList<Person> createLongList() {
+        ObservableList<Person> people = FXCollections.observableArrayList();
+        for (int i = 0; i < 40; i++) {
+            people.add(new PersonBuilder().withName("Student " + (char) ('A' + i / 26) + (char) ('A' + i % 26))
+                    .withMatric(String.format("A%07dA", i)).withEmail("student" + i + "@u.nus.edu").build());
+        }
+        return people;
     }
 
     private static List<String> visibleAttendance(Stage stage) {

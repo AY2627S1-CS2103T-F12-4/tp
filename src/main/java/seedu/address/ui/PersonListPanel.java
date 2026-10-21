@@ -118,15 +118,12 @@ public class PersonListPanel extends UiPart<Region> {
      */
     private boolean isFullyVisible(int index) {
         Optional<VirtualFlow<?>> flow = getVirtualFlow();
-        Node visibleArea = personListView.lookup(".clipped-container");
-        if (flow.isEmpty() || visibleArea == null) {
-            return false;
-        }
-        IndexedCell<?> cell = flow.get().getVisibleCell(index);
+        IndexedCell<?> cell = flow.map(virtualFlow -> virtualFlow.getVisibleCell(index)).orElse(null);
         if (cell == null) {
             return false;
         }
-        Bounds viewport = visibleArea.localToScene(visibleArea.getBoundsInLocal());
+        // The flow's own bounds are the part of the list that shows cards
+        Bounds viewport = flow.get().localToScene(flow.get().getLayoutBounds());
         Bounds card = cell.localToScene(cell.getBoundsInLocal());
         return card.getMinY() >= viewport.getMinY() - VISIBILITY_TOLERANCE
                 && card.getMaxY() <= viewport.getMaxY() + VISIBILITY_TOLERANCE;
