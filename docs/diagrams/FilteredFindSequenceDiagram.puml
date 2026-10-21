@@ -1,0 +1,44 @@
+@startuml
+skinparam ParticipantFontColor White
+skinparam Shadowing false
+hide footbox
+skinparam ArrowFontStyle plain
+title Applying a combined student search
+participant ":LogicManager" as Logic #3333C4
+participant "command:FindCommand" as Find #3333C4
+participant "model:Model" as Model #9D0012
+
+note over Logic, Find
+  Parsing is omitted. The command already holds
+  a StudentMatchesFiltersPredicate for n/John grp/T09.
+end note
+[-> Logic : execute("find n/John grp/T09")
+activate Logic
+Logic -> Find : execute(model)
+activate Find
+Find -> Model : hasGroup(T09)
+activate Model
+Model --> Find : isRegistered
+deactivate Model
+alt group is not registered
+    Find --> Logic : throws CommandException
+    note over Find, Model : Existing results and group selection are preserved.
+else group is registered
+    Find -> Model : updateFilteredPersonList(predicate)
+    activate Model
+    note right of Model
+      Apply every supplied condition to the full roster.
+      Sort the observable view by matriculation number.
+      Clear the active group.
+    end note
+    Model --> Find
+    deactivate Model
+    Find -> Model : getFilteredPersonList()
+    Model --> Find : matching students
+    Find --> Logic : CommandResult with match count
+    note over Logic : requiresSave() is false; return without saving roster data.
+end
+deactivate Find
+[<-- Logic : result or error
+deactivate Logic
+@enduml

@@ -167,8 +167,23 @@ context-dependent lowercasing errors such as Greek final sigma. Accents and punc
 The active group is cleared because even a group-filtered search may display only part of a group.
 The observable list keeps add/delete results current without discarding the combined predicate.
 
+The sequence below follows `find n/John grp/T09` after parsing. An unknown group is rejected before
+the model is updated. A valid search replaces the predicate and clears the active-group selection.
+
+![Combined search execution, including the unknown-group branch](images/FilteredFindSequenceDiagram.png)
+
+**Design choices**
+
+* Search the full roster rather than the current view, so a search after an empty result can recover students.
+* Combine fields with AND. Matriculation number and group are exact matches; names use a literal substring.
+* Keep one observable view instead of copying results, so displayed indexes remain correct after add or delete.
+* Assert the model's global-search contract and log match counts and rejected groups at `FINE` level.
+  Exceptions handle invalid user input; assertions detect inconsistent internal model behavior.
+
 `FindCommand.requiresSave()` returns false. `LogicManager` therefore returns the search result
 without rewriting the roster file. Other commands retain their existing save behaviour.
+Assertions are enabled for Gradle tests and `./gradlew run`. When running a packaged JAR for testing,
+use `java -ea -jar roster.jar`; enable VM option `-ea` in an IDE run configuration as well.
 
 This section describes some noteworthy details on how certain features are implemented.
 
