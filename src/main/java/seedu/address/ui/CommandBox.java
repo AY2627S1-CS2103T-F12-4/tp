@@ -8,6 +8,7 @@ import javafx.scene.Node;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 import javafx.scene.control.TextField;
+import javafx.scene.control.skin.ListViewSkin;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.Region;
 import javafx.stage.Popup;
@@ -30,6 +31,7 @@ public class CommandBox extends UiPart<Region> {
     private final ObservableList<Group> groups;
     private final Popup completionPopup = new Popup();
     private final ListView<Suggestion> suggestions = new ListView<>();
+    private final CompletionListSkin completionSkin = new CompletionListSkin(suggestions);
     private boolean acceptingCompletion;
 
     @FXML
@@ -43,6 +45,7 @@ public class CommandBox extends UiPart<Region> {
         this.commandExecutor = commandExecutor;
         this.groups = groups;
         suggestions.setId("fieldCompletionList");
+        suggestions.setSkin(completionSkin);
         suggestions.getStylesheets().add(getClass().getResource("/view/Completion.css").toExternalForm());
         suggestions.setFixedCellSize(28);
         suggestions.setPrefWidth(260);
@@ -82,6 +85,7 @@ public class CommandBox extends UiPart<Region> {
             return;
         }
         suggestions.getSelectionModel().selectFirst();
+        suggestions.scrollTo(0);
         suggestions.setPrefHeight(Math.min(6, suggestions.getItems().size()) * 28 + 2);
         Point2D position = commandTextField.localToScreen(0, commandTextField.getHeight());
         if (position != null) {
@@ -100,7 +104,7 @@ public class CommandBox extends UiPart<Region> {
                 int index = Math.floorMod(suggestions.getSelectionModel().getSelectedIndex() + offset,
                         suggestions.getItems().size());
                 suggestions.getSelectionModel().select(index);
-                suggestions.scrollTo(index);
+                completionSkin.ensureVisible(index);
                 break;
             case TAB:
                 acceptCompletion();
@@ -115,6 +119,17 @@ public class CommandBox extends UiPart<Region> {
                 return;
         }
         event.consume();
+    }
+
+    /** Uses the standard list viewport to reveal a row without moving visible rows to the top. */
+    private static class CompletionListSkin extends ListViewSkin<Suggestion> {
+        CompletionListSkin(ListView<Suggestion> list) {
+            super(list);
+        }
+
+        void ensureVisible(int index) {
+            getVirtualFlow().scrollTo(index);
+        }
     }
 
     /** Accepts the highlighted replacement without executing the command. */

@@ -1,5 +1,7 @@
 package seedu.address.logic.parser;
 
+import static seedu.address.logic.parser.CliSyntax.KEYWORD_ALL;
+
 import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
@@ -7,8 +9,8 @@ import java.util.stream.Stream;
 
 /** Supplies field completions without executing or validating commands. */
 public final class FieldCompletion {
-    private static final List<String> COMMANDS = List.of("add", "clear", "delete", "edit", "exit", "find",
-            "help", "init", "list", "mark", "session");
+    private static final List<String> COMMANDS = List.of("add", "clear", "comment", "delete", "edit", "exit",
+            "export", "find", "help", "init", "list", "mark", "session", "undo");
 
     private FieldCompletion() {}
 
@@ -30,12 +32,18 @@ public final class FieldCompletion {
                     .map(command -> new Suggestion(commandStart, end, command)).toList();
         }
         String command = text.substring(commandStart, commandEnd);
+        String fields = command.equals("export") ? maskQuotedPath(text) : text;
+        if (command.equals("export") && text.substring(0, caret).chars().filter(c -> c == '"').count() % 2 != 0) {
+            return List.of();
+        }
         List<String> prefixes = switch (command) {
-            case "add", "edit" -> List.of("n/", "m/", "grp/", "e/", "p/", "a/", "t/");
+            case "add", "edit" -> List.of("n/", "m/", "grp/", "e/", "t/");
+            case "comment" -> List.of("c/", "c-/");
+            case "export" -> List.of("f/", "grp/");
             case "init", "list" -> List.of("grp/");
             case "session" -> List.of("grp/", "w/", "d/");
             case "mark" -> List.of("w/", "s/");
-            case "find" -> List.of("n/");
+            case "find" -> List.of("n/", "m/", "grp/");
             default -> List.of();
         };
         int start = caret;
@@ -50,9 +58,15 @@ public final class FieldCompletion {
         int slash = token.indexOf('/');
         Stream<String> candidates;
         if (slash < 0) {
-            String otherFields = text.substring(0, start) + text.substring(end);
+            String otherFields = fields.substring(0, start) + fields.substring(end);
             candidates = prefixes.stream().filter(prefix -> prefix.equals("t/")
-                    || !otherFields.contains(" " + prefix));
+                    || !otherFields.contains(" " + prefix))
+                    .filter(prefix -> !command.equals("comment")
+                            || !(otherFields.contains(" c/") || otherFields.contains(" c-/")));
+            if ((command.equals("mark") || command.equals("delete"))
+                    && text.substring(commandEnd, start).isBlank()) {
+                candidates = Stream.concat(Stream.of(KEYWORD_ALL), candidates);
+            }
         } else {
             String prefix = token.substring(0, slash + 1);
             if (!prefixes.contains(prefix) || caret < start + slash + 1) {
@@ -72,6 +86,20 @@ public final class FieldCompletion {
         return candidates.distinct().filter(value -> value.toLowerCase(Locale.ROOT).startsWith(fragment))
                 .filter(value -> !value.equals(current))
                 .map(value -> new Suggestion(replaceStart, replaceEnd, value)).toList();
+    }
+
+    /** Hides quoted CSV path contents so prefix-like directory names are not treated as fields. */
+    private static String maskQuotedPath(String text) {
+        StringBuilder masked = new StringBuilder(text);
+        boolean quoted = false;
+        for (int i = 0; i < text.length(); i++) {
+            if (text.charAt(i) == '"') {
+                quoted = !quoted;
+            } else if (quoted) {
+                masked.setCharAt(i, ' ');
+            }
+        }
+        return masked.toString();
     }
 
     /** A replacement range in the original input, with an exclusive end position. */

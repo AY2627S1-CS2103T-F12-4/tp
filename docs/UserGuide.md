@@ -117,6 +117,13 @@ registered group codes after `grp/`, and `present` or `absent` after `s/`.
 For example, `list gr` suggests `grp/`, `list grp/T` suggests matching groups,
 and `mark 1 w/3 s/p` suggests `present`.
 
+Completion also covers `comment`, `export` and `undo`, the `m/` and `grp/` filters for `find`,
+and `all` in place of an index for `mark` and `delete`. For example, `export f` suggests `f/`,
+`find m` suggests `m/`, and `mark al` suggests `all`.
+For `comment`, choose either `c/` to append or `c-/` to replace or clear; once one is supplied,
+the other is not suggested. Phone (`p/`) and address (`a/`) fields are no longer supported or suggested.
+Suggestions are suppressed inside quoted export paths so that directory names are preserved.
+
 * Press Up/Down to select a suggestion and Tab to insert it, or click a suggestion.
 * Press Escape to dismiss suggestions. Enter always executes the current command.
 * Completion replaces the field fragment at the cursor and preserves other fields.
