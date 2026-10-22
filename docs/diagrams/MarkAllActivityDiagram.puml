@@ -1,0 +1,27 @@
+@startuml
+skin rose
+skinparam ActivityFontSize 15
+skinparam ArrowFontSize 12
+start
+:User enters mark all w/WEEK s/STATUS;
+if () then ([displayed list is empty])
+  :Show "no students" error;
+  stop
+else ([else])
+endif
+:Find the session for WEEK
+in each displayed student's group;
+if () then ([some group has no session for WEEK])
+  :Show error naming the group;
+  note right: No student is marked
+  stop
+else ([every group has one])
+endif
+:Mark every displayed student
+for their own group's session;
+:Save Roster and record
+the change for undo;
+:Show how many students were marked
+and how many earlier records were replaced;
+stop
+@enduml

@@ -55,7 +55,7 @@ For each session in a student's tutorial group, their attendance is one of three
 
 Creating a session does not automatically mark any student. A student added after sessions have been created is also unmarked for those earlier sessions.
 
-The MVP does not support returning a recorded status to unmarked. You can, however, replace `present` with `absent`, or vice versa, by running `mark` again.
+Roster does not yet support returning a recorded status to unmarked. You can, however, replace `present` with `absent`, or vice versa, by running `mark` again.
 
 ### Displayed list and active group
 
@@ -166,7 +166,7 @@ Examples:
 * Sessions may be created out of order; attendance is displayed in teaching-week order.
 * The date must be a real date, but Roster does not check whether it falls within the specified teaching week.
 * Creating a session for an empty group is allowed.
-* The MVP does not support editing or deleting sessions.
+* Roster does not yet support editing or deleting sessions.
 
 On success, Roster displays a confirmation such as `Created session: T09 week 5 (2026-09-15)`.
 
@@ -367,6 +367,7 @@ Because `c/` appends, you can add to a note during the tutorial without retyping
 
 <div markdown="span" class="alert alert-warning">:exclamation: **Caution:**
 A comment cannot contain a space followed by `c/` or `c-/`, because Roster reads those as the start of another parameter. A note such as `ask about c/c++` is rejected rather than saved incorrectly.
+</div>
 
 ### Deleting all displayed students: `delete all`
 
@@ -385,7 +386,7 @@ Examples:
 On success, Roster displays a confirmation such as `Deleted 20 student(s) in the displayed list, including all their attendance records.`
 
 <div markdown="span" class="alert alert-warning">:exclamation: **Caution:**
-Deletion happens immediately, with no confirmation and no undo. Check the displayed list before running `delete all`, and back up `data/addressbook.json` first if you may need to restore the data.
+Deletion happens immediately, with no confirmation. Check the displayed list before running `delete all`. If you delete the wrong students, run `undo` straight away to restore them and their attendance records.
 </div>
 
 ### Marking attendance: `mark`
@@ -569,8 +570,8 @@ Action | Format, example
 **Delete student** | `delete INDEX`<br>e.g. `delete 3`
 **Delete all displayed students** | `delete all`
 **Mark attendance** | `mark INDEX w/WEEK s/STATUS`<br>e.g. `mark 3 w/5 s/present`
-**Comment on student** | `comment INDEX c/COMMENT` to add, `comment INDEX c-/COMMENT` to replace, `comment INDEX c-/` to clear<br>e.g. `comment 3 c/attentive`
 **Mark all displayed students** | `mark all w/WEEK s/STATUS`<br>e.g. `mark all w/5 s/present`
+**Comment on student** | `comment INDEX c/COMMENT` to add, `comment INDEX c-/COMMENT` to replace, `comment INDEX c-/` to clear<br>e.g. `comment 3 c/attentive`
 **Export attendance** | `export f/FILE_PATH [grp/GROUP]`<br>e.g. `export f/attendance.csv grp/T09`
 **Undo previous change** | `undo` or `Ctrl+Z` (`Command+Z` on macOS)
 **Exit** | `exit`
