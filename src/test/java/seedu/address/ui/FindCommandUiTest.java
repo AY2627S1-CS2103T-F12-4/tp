@@ -71,10 +71,10 @@ public class FindCommandUiTest {
         try {
             onFxThread(() -> {
                 enterCommand(stage, "list grp/T09");
-                assertEquals(new Group("T09"), groups(stage).getSelectionModel().getSelectedItem());
+                assertEquals("T09", groups(stage).getSelectionModel().getSelectedItem());
                 for (String command : List.of("find n/", "find n/John n/Tan", "find n/John e/invalid")) {
                     enterCommand(stage, command);
-                    assertEquals(new Group("T09"), groups(stage).getSelectionModel().getSelectedItem());
+                    assertEquals("T09", groups(stage).getSelectionModel().getSelectedItem());
                     assertEquals(List.of(firstJohn, alice), model.getFilteredPersonList());
                     assertEquals(book, model.getAddressBook());
                 }

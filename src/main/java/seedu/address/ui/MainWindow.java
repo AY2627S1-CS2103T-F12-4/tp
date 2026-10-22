@@ -118,7 +118,8 @@ public class MainWindow extends UiPart<Stage> {
      * Fills up all the placeholders of this window.
      */
     void fillInnerParts() {
-        groupListPanel = new GroupListPanel(logic.getGroupList(), logic.activeGroupProperty());
+        groupListPanel = new GroupListPanel(logic.getGroupList(), logic.activeGroupProperty(),
+                logic.showingAllStudentsProperty(), this::navigateToGroup);
         groupListPanelPlaceholder.getChildren().add(groupListPanel.getRoot());
 
         personListPanel = new PersonListPanel(logic.getFilteredPersonList(), logic.getSessionList(),
@@ -177,6 +178,15 @@ public class MainWindow extends UiPart<Stage> {
 
     public PersonListPanel getPersonListPanel() {
         return personListPanel;
+    }
+
+    /** Runs navigation through the usual command path without touching unfinished command input. */
+    private void navigateToGroup(String commandText) {
+        try {
+            executeCommand(commandText);
+        } catch (CommandException | ParseException e) {
+            // executeCommand has already displayed and logged the error.
+        }
     }
 
     /**

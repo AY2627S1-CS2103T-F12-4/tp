@@ -4,6 +4,7 @@ import java.util.Comparator;
 import java.util.Optional;
 import java.util.function.Predicate;
 
+import javafx.beans.property.ReadOnlyBooleanProperty;
 import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.collections.ObservableList;
 import seedu.address.commons.core.GuiSettings;
@@ -94,6 +95,9 @@ public interface Model {
 
     /** Selects a registered group and displays its students in matric order. */
     void showGroup(Group group);
+
+    /** Returns whether the displayed view is the full roster, rather than a group or search. */
+    ReadOnlyBooleanProperty showingAllStudentsProperty();
 
     /** Returns the observable active group, or null for all groups. */
     ReadOnlyObjectProperty<Group> activeGroupProperty();

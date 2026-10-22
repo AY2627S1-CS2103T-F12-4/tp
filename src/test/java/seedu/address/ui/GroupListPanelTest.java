@@ -6,14 +6,14 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static seedu.address.testutil.Assert.assertThrows;
 import static seedu.address.testutil.FxTestUtil.onFxThread;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
-import javafx.beans.property.ReadOnlyObjectWrapper;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 import javafx.scene.control.ListView;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import seedu.address.logic.parser.AddressBookParser;
 import seedu.address.logic.parser.exceptions.ParseException;
 import seedu.address.model.AddressBook;
@@ -26,31 +26,57 @@ import seedu.address.testutil.PersonBuilder;
 
 public class GroupListPanelTest {
     @Test
-    public void activeGroup_changesKeepSelectionInSync() throws Exception {
+    public void activeView_commandsAndRegistryChanges_keepSelectionInSync() throws Exception {
         onFxThread(() -> {
-            Group first = new Group("T09");
-            Group second = new Group("T10");
-            ObservableList<Group> groups = FXCollections.observableArrayList(first, second);
-            ReadOnlyObjectWrapper<Group> active = new ReadOnlyObjectWrapper<>(first);
-            GroupListPanel panel = new GroupListPanel(groups, active.getReadOnlyProperty());
+            ModelManager model = new ModelManager();
+            model.addGroup(new Group("T10"));
+            model.addGroup(new Group("T09"));
+            GroupListPanel panel = new GroupListPanel(model.getGroupList(), model.activeGroupProperty(),
+                    model.showingAllStudentsProperty(), command -> {});
             ListView<?> list = groupList(panel);
+            AddressBookParser parser = new AddressBookParser();
 
-            assertEquals(first, list.getSelectionModel().getSelectedItem());
+            assertEquals(List.of("All students", "T09", "T10"), list.getItems());
+            assertEquals("All students", list.getSelectionModel().getSelectedItem());
+            parser.parseCommand("list grp/T09").execute(model);
+            assertEquals("T09", list.getSelectionModel().getSelectedItem());
+            parser.parseCommand("list").execute(model);
+            assertEquals("All students", list.getSelectionModel().getSelectedItem());
+            parser.parseCommand("find n/Missing").execute(model);
+            assertNull(list.getSelectionModel().getSelectedItem());
+            parser.parseCommand("list").execute(model);
+            assertEquals("All students", list.getSelectionModel().getSelectedItem());
+            parser.parseCommand("init grp/T08").execute(model);
+            assertEquals(List.of("All students", "T08", "T09", "T10"), list.getItems());
+            assertEquals("T08", list.getSelectionModel().getSelectedItem());
+            model.setAddressBook(new AddressBook());
+            assertEquals(List.of("All students"), list.getItems());
+            assertEquals("All students", list.getSelectionModel().getSelectedItem());
+            return null;
+        });
+    }
+
+    @Test
+    public void activation_enterRunsListAndEmptySelectionDoesNothing() throws Exception {
+        onFxThread(() -> {
+            ModelManager model = new ModelManager();
+            model.addGroup(new Group("T09"));
+            List<String> commands = new ArrayList<>();
+            GroupListPanel panel = new GroupListPanel(model.getGroupList(), model.activeGroupProperty(),
+                    model.showingAllStudentsProperty(), commands::add);
+            ListView<?> list = groupList(panel);
             list.getSelectionModel().select(1);
-            assertEquals(first, list.getSelectionModel().getSelectedItem());
-            assertEquals(0, list.getSelectionModel().getSelectedIndex());
-            assertEquals(List.of(0), list.getSelectionModel().getSelectedIndices());
-            groups.add(new Group("T11"));
-            assertEquals(first, list.getSelectionModel().getSelectedItem());
-            active.set(second);
-            assertEquals(second, list.getSelectionModel().getSelectedItem());
-            active.set(null);
-            assertNull(list.getSelectionModel().getSelectedItem());
-            assertEquals(-1, list.getSelectionModel().getSelectedIndex());
-            list.getSelectionModel().select(0);
-            assertNull(list.getSelectionModel().getSelectedItem());
-            assertEquals(-1, list.getSelectionModel().getSelectedIndex());
-            assertTrue(list.getSelectionModel().getSelectedIndices().isEmpty());
+            list.fireEvent(new KeyEvent(KeyEvent.KEY_PRESSED, "", "", KeyCode.TAB, false, false, false, false));
+            assertTrue(commands.isEmpty());
+            list.fireEvent(new KeyEvent(KeyEvent.KEY_PRESSED, "", "", KeyCode.ENTER, false, false, false, false));
+            assertEquals(List.of("list grp/T09"), commands);
+            // The callback did not change the model, so selection returns to the actual view.
+            assertEquals("All students", list.getSelectionModel().getSelectedItem());
+            list.fireEvent(new KeyEvent(KeyEvent.KEY_PRESSED, "", "", KeyCode.ENTER, false, false, false, false));
+            assertEquals(List.of("list grp/T09", "list"), commands);
+            list.getSelectionModel().clearSelection();
+            list.fireEvent(new KeyEvent(KeyEvent.KEY_PRESSED, "", "", KeyCode.ENTER, false, false, false, false));
+            assertEquals(2, commands.size());
             return null;
         });
     }
@@ -65,26 +91,25 @@ public class GroupListPanelTest {
             AddressBook book = new AddressBookBuilder().withPerson(john).withPerson(johnny).build();
             ModelManager model = new ModelManager(book, new UserPrefs());
             AddressBookParser parser = new AddressBookParser();
-            GroupListPanel panel = new GroupListPanel(model.getGroupList(), model.activeGroupProperty());
+            GroupListPanel panel = new GroupListPanel(model.getGroupList(), model.activeGroupProperty(),
+                    model.showingAllStudentsProperty(), command -> {});
             ListView<?> list = groupList(panel);
 
             parser.parseCommand("list grp/T09").execute(model);
-            assertEquals(new Group("T09"), list.getSelectionModel().getSelectedItem());
+            assertEquals("T09", list.getSelectionModel().getSelectedItem());
             assertThrows(ParseException.class, () -> parser.parseCommand("find n/"));
-            assertEquals(new Group("T09"), list.getSelectionModel().getSelectedItem());
+            assertEquals("T09", list.getSelectionModel().getSelectedItem());
             assertEquals(List.of(john), model.getFilteredPersonList());
             assertEquals(book, model.getAddressBook());
 
             parser.parseCommand("find n/john").execute(model);
             assertNull(list.getSelectionModel().getSelectedItem());
-            assertEquals(-1, list.getSelectionModel().getSelectedIndex());
             assertEquals(List.of(johnny, john), model.getFilteredPersonList());
             parser.parseCommand("list grp/T10").execute(model);
-            assertEquals(new Group("T10"), list.getSelectionModel().getSelectedItem());
+            assertEquals("T10", list.getSelectionModel().getSelectedItem());
             parser.parseCommand("find n/Missing").execute(model);
             assertNull(list.getSelectionModel().getSelectedItem());
-            assertEquals(-1, list.getSelectionModel().getSelectedIndex());
-            assertEquals(List.of(), model.getFilteredPersonList());
+            assertTrue(model.getFilteredPersonList().isEmpty());
             assertEquals(book, model.getAddressBook());
             return null;
         });
