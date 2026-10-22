@@ -2,6 +2,9 @@ package seedu.address.logic.commands;
 
 import static java.util.Objects.requireNonNull;
 
+import java.util.logging.Logger;
+
+import seedu.address.commons.core.LogsCenter;
 import seedu.address.logic.commands.exceptions.CommandException;
 import seedu.address.model.Model;
 
@@ -14,6 +17,8 @@ public class UndoCommand extends Command {
     public static final String MESSAGE_NOTHING_TO_UNDO = "There are no changes to undo.";
     public static final String MESSAGE_SUCCESS = "Undid the most recent %1$s command.";
 
+    private static final Logger logger = LogsCenter.getLogger(UndoCommand.class);
+
     @Override
     public CommandResult execute(Model model) throws CommandException {
         requireNonNull(model);
@@ -21,6 +26,7 @@ public class UndoCommand extends Command {
             throw new CommandException(MESSAGE_NOTHING_TO_UNDO);
         }
         String undoneCommand = model.undoAddressBook();
+        logger.fine("Undid the most recent " + undoneCommand + " command");
         return new CommandResult(String.format(MESSAGE_SUCCESS, undoneCommand));
     }
 
