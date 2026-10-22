@@ -4,7 +4,9 @@ import static java.util.Objects.requireNonNull;
 import static seedu.address.logic.parser.CliSyntax.KEYWORD_ALL;
 
 import java.util.List;
+import java.util.logging.Logger;
 
+import seedu.address.commons.core.LogsCenter;
 import seedu.address.commons.core.index.Index;
 import seedu.address.commons.util.ToStringBuilder;
 import seedu.address.logic.Messages;
@@ -31,6 +33,8 @@ public class DeleteCommand extends Command {
     public static final String MESSAGE_DELETE_PERSON_SUCCESS =
             "Deleted %1$s (%2$s) from tutorial group %3$s, including all attendance records.";
 
+    private static final Logger logger = LogsCenter.getLogger(DeleteCommand.class);
+
     private final Index targetIndex;
 
     public DeleteCommand(Index targetIndex) {
@@ -49,6 +53,9 @@ public class DeleteCommand extends Command {
         Person personToDelete = lastShownList.get(targetIndex.getZeroBased());
         // Attendance records are stored inside the person, so deleting the person deletes them too
         model.deletePerson(personToDelete);
+        assert !model.hasPerson(personToDelete) : "The deleted student should no longer be in Roster";
+        logger.fine("Deleted " + personToDelete.getMatric() + " and " + personToDelete.getAttendances().size()
+                + " attendance record(s)");
         return new CommandResult(generateSuccessMessage(personToDelete));
     }
 

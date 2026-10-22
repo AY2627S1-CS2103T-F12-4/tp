@@ -1,6 +1,7 @@
 package seedu.address.ui;
 
 import static java.util.Objects.requireNonNull;
+import static seedu.address.commons.util.CollectionUtil.requireAllNonNull;
 
 import java.util.Optional;
 import java.util.logging.Logger;
@@ -50,6 +51,7 @@ public class PersonListPanel extends UiPart<Region> {
     public PersonListPanel(ObservableList<Person> personList, ObservableList<Session> sessions,
             ReadOnlyObjectProperty<Group> activeGroup) {
         super(FXML);
+        requireAllNonNull(personList, sessions, activeGroup);
         this.sessions = sessions;
         groupScope.textProperty().bind(Bindings.createStringBinding(() -> activeGroup.get() == null
                 ? "All groups" : "Tutorial group " + activeGroup.get(), activeGroup));

@@ -1,5 +1,7 @@
 package seedu.address.ui;
 
+import static seedu.address.commons.util.CollectionUtil.requireAllNonNull;
+
 import java.util.function.Consumer;
 
 import javafx.beans.property.ReadOnlyBooleanProperty;
@@ -37,6 +39,7 @@ public class GroupListPanel extends UiPart<Region> {
     public GroupListPanel(ObservableList<Group> groups, ReadOnlyObjectProperty<Group> activeGroup,
             ReadOnlyBooleanProperty showingAllStudents, Consumer<String> commandExecutor) {
         super(FXML);
+        requireAllNonNull(groups, activeGroup, showingAllStudents, commandExecutor);
         this.activeGroup = activeGroup;
         this.showingAllStudents = showingAllStudents;
         this.commandExecutor = commandExecutor;

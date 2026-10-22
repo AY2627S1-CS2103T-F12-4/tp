@@ -1,5 +1,8 @@
 package seedu.address.logic.parser;
 
+import static java.util.Objects.requireNonNull;
+import static seedu.address.commons.util.AppUtil.checkArgument;
+import static seedu.address.commons.util.CollectionUtil.requireAllNonNull;
 import static seedu.address.logic.parser.CliSyntax.KEYWORD_ALL;
 
 import java.util.Collection;
@@ -16,6 +19,8 @@ public final class FieldCompletion {
 
     /** Returns replacements for the token at the caret, preserving all other input. */
     public static List<Suggestion> suggest(String text, int caret, Collection<String> groups) {
+        requireAllNonNull(text, groups);
+        checkArgument(caret >= 0 && caret <= text.length(), "The caret must be within the text");
         int commandStart = text.length() - text.stripLeading().length();
         int commandEnd = text.indexOf(' ', commandStart);
         if (commandEnd < 0) {
@@ -99,13 +104,25 @@ public final class FieldCompletion {
                 masked.setCharAt(i, ' ');
             }
         }
+        // Suggestions are positions in the original text, so masking must not move any character
+        assert masked.length() == text.length() : "Masking a path should keep the text's length";
         return masked.toString();
     }
 
     /** A replacement range in the original input, with an exclusive end position. */
     public record Suggestion(int start, int end, String value) {
+        /**
+         * Creates a suggestion replacing the text from {@code start} up to, but not including, {@code end}.
+         */
+        public Suggestion {
+            requireNonNull(value);
+            checkArgument(start >= 0 && start <= end, "A suggestion must replace a valid range of the text");
+        }
+
         /** Applies this suggestion without changing surrounding text. */
         public String apply(String text) {
+            requireNonNull(text);
+            checkArgument(end <= text.length(), "A suggestion must replace a range within the text");
             return text.substring(0, start) + value + text.substring(end);
         }
 

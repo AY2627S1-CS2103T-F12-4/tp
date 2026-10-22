@@ -78,6 +78,8 @@ public class LogicManager implements Logic {
     }
 
     private void rollBackCommand(Command command, AddressBook stateBeforeCommand) {
+        logger.warning("Saving failed, so the changes made by " + command.getUndoDescription()
+                + " are being rolled back");
         if (command instanceof UndoCommand) {
             model.redoAddressBook();
         } else if (command.getHistoryAction() != HistoryAction.NONE) {

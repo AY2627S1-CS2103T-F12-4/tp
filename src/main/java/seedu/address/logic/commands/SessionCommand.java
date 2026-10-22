@@ -5,6 +5,9 @@ import static seedu.address.logic.parser.CliSyntax.PREFIX_DATE;
 import static seedu.address.logic.parser.CliSyntax.PREFIX_GROUP;
 import static seedu.address.logic.parser.CliSyntax.PREFIX_WEEK;
 
+import java.util.logging.Logger;
+
+import seedu.address.commons.core.LogsCenter;
 import seedu.address.commons.util.ToStringBuilder;
 import seedu.address.logic.commands.exceptions.CommandException;
 import seedu.address.model.Model;
@@ -28,6 +31,8 @@ public class SessionCommand extends Command {
             "Tutorial group %1$s does not exist. Create it first with: init grp/%1$s";
     public static final String MESSAGE_DUPLICATE_SESSION =
             "%1$s already has a session for week %2$s (%3$s).";
+
+    private static final Logger logger = LogsCenter.getLogger(SessionCommand.class);
 
     private final Session session;
 
@@ -54,6 +59,8 @@ public class SessionCommand extends Command {
         }
 
         model.addSession(session);
+        assert model.findSession(group, session.getWeek()).isPresent() : "The new session should be findable";
+        logger.fine("Created session for " + group + " week " + session.getWeek() + " on " + session.getDate());
         return new CommandResult(String.format(MESSAGE_SUCCESS, group, session.getWeek(), session.getDate()));
     }
 

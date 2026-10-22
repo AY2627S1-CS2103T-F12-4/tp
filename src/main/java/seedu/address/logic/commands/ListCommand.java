@@ -4,6 +4,7 @@ import static java.util.Objects.requireNonNull;
 import static seedu.address.model.Model.PREDICATE_SHOW_ALL_PERSONS;
 
 import java.util.Objects;
+import java.util.Optional;
 
 import seedu.address.logic.commands.exceptions.CommandException;
 import seedu.address.model.Model;
@@ -53,6 +54,7 @@ public class ListCommand extends Command {
             throw new CommandException(String.format(MESSAGE_GROUP_NOT_FOUND, group));
         }
         model.showGroup(group);
+        assert model.getActiveGroup().equals(Optional.of(group)) : "The listed group should become active";
         int count = model.getFilteredPersonList().size();
         return new CommandResult(count == 0 ? String.format(MESSAGE_GROUP_EMPTY, group)
                 : String.format(MESSAGE_GROUP_SUCCESS, count, group));

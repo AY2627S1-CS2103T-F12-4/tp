@@ -6,7 +6,9 @@ import static seedu.address.logic.parser.CliSyntax.PREFIX_COMMENT;
 import static seedu.address.logic.parser.CliSyntax.PREFIX_COMMENT_REPLACE;
 
 import java.util.List;
+import java.util.logging.Logger;
 
+import seedu.address.commons.core.LogsCenter;
 import seedu.address.commons.core.index.Index;
 import seedu.address.commons.util.ToStringBuilder;
 import seedu.address.logic.Messages;
@@ -33,6 +35,8 @@ public class CommentCommand extends Command {
     public static final String MESSAGE_REPLACE_SUCCESS = "Replaced comment for %1$s: %2$s";
     public static final String MESSAGE_CLEAR_SUCCESS = "Cleared the comment for %1$s.";
     public static final String MESSAGE_ALREADY_EMPTY = "%1$s has no comment to clear.";
+
+    private static final Logger logger = LogsCenter.getLogger(CommentCommand.class);
 
     private final Index index;
     private final Comment comment;
@@ -72,6 +76,8 @@ public class CommentCommand extends Command {
 
         // The displayed list is left as it is, so that the indexes the TA sees do not change.
         model.setPerson(personToComment, personToComment.withComment(updatedComment));
+        logger.fine((isClearing() ? "Cleared the comment of " : "Updated the comment of ")
+                + personToComment.getMatric());
 
         return new CommandResult(successMessage(name, updatedComment));
     }

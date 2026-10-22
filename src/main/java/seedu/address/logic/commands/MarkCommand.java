@@ -8,7 +8,9 @@ import static seedu.address.logic.parser.CliSyntax.PREFIX_WEEK;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.logging.Logger;
 
+import seedu.address.commons.core.LogsCenter;
 import seedu.address.commons.core.index.Index;
 import seedu.address.commons.util.ToStringBuilder;
 import seedu.address.logic.Messages;
@@ -43,6 +45,8 @@ public class MarkCommand extends Command {
     public static final String MESSAGE_NO_SESSION =
             "%1$s has no session for week %2$s. Create it first with: session grp/%1$s w/%2$s d/YYYY-MM-DD";
 
+    private static final Logger logger = LogsCenter.getLogger(MarkCommand.class);
+
     private final Index index;
     private final Week week;
     private final Status status;
@@ -73,12 +77,17 @@ public class MarkCommand extends Command {
         // Each student's week is looked up in their own group, so a list spanning several groups still works
         Session session = model.findSession(group, week)
                 .orElseThrow(() -> new CommandException(String.format(MESSAGE_NO_SESSION, group, week)));
+        assert session.isFor(group, week) : "The session found should be for the student's group and week";
 
         Optional<Attendance> previousAttendance = personToMark.getAttendance(session);
         Person markedPerson = personToMark.withAttendance(new Attendance(session, status));
+        assert markedPerson.getAttendance(session).map(Attendance::getStatus).equals(Optional.of(status))
+                : "The marked student should have the new status recorded for the session";
 
         // The displayed list is left as it is, so that the indexes the TA sees do not change
         model.setPerson(personToMark, markedPerson);
+        logger.fine("Marked " + markedPerson.getMatric() + " as " + status + " for " + group + " week " + week
+                + previousAttendance.map(previous -> " (was " + previous.getStatus() + ")").orElse(""));
 
         return new CommandResult(generateSuccessMessage(markedPerson, previousAttendance));
     }

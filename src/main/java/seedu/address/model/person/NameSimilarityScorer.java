@@ -57,7 +57,9 @@ public final class NameSimilarityScorer {
             }
             total += best;
         }
-        return total / queryWords.size();
+        double score = total / queryWords.size();
+        assert score >= 0.0 && score <= 1.0 : "A name similarity score should be between 0.0 and 1.0";
+        return score;
     }
 
     /**
@@ -76,6 +78,7 @@ public final class NameSimilarityScorer {
      */
     static double jaroWinkler(String first, String second) {
         double jaro = jaro(first, second);
+        assert jaro >= 0.0 && jaro <= 1.0 : "A Jaro similarity should be between 0.0 and 1.0";
         if (jaro == 0.0) {
             return 0.0;
         }

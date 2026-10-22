@@ -190,6 +190,8 @@ public class LogicManagerTest {
 
     @Test
     public void execute_invalidList_preservesFilteredListAndData() {
+        model.addGroup(AMY.getGroup());
+        model.addGroup(BOB.getGroup());
         model.addPerson(AMY);
         model.addPerson(BOB);
         showPersonAtIndex(model, INDEX_FIRST_PERSON);

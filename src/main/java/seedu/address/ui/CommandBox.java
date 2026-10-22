@@ -1,5 +1,7 @@
 package seedu.address.ui;
 
+import static seedu.address.commons.util.CollectionUtil.requireAllNonNull;
+
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
@@ -42,6 +44,7 @@ public class CommandBox extends UiPart<Region> {
      */
     public CommandBox(CommandExecutor commandExecutor, ObservableList<Group> groups) {
         super(FXML);
+        requireAllNonNull(commandExecutor, groups);
         this.commandExecutor = commandExecutor;
         this.groups = groups;
         suggestions.setId("fieldCompletionList");
@@ -128,6 +131,8 @@ public class CommandBox extends UiPart<Region> {
         }
 
         void ensureVisible(int index) {
+            assert index >= 0 && index < getSkinnable().getItems().size()
+                    : "Only a listed suggestion can be scrolled into view";
             getVirtualFlow().scrollTo(index);
         }
     }

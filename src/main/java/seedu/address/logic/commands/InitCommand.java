@@ -3,6 +3,9 @@ package seedu.address.logic.commands;
 import static java.util.Objects.requireNonNull;
 import static seedu.address.logic.parser.CliSyntax.PREFIX_GROUP;
 
+import java.util.logging.Logger;
+
+import seedu.address.commons.core.LogsCenter;
 import seedu.address.commons.util.ToStringBuilder;
 import seedu.address.logic.commands.exceptions.CommandException;
 import seedu.address.model.Model;
@@ -21,6 +24,8 @@ public class InitCommand extends Command {
 
     public static final String MESSAGE_SUCCESS = "New tutorial group added: %1$s";
     public static final String MESSAGE_DUPLICATE_GROUP = "This tutorial group already exists: %1$s";
+
+    private static final Logger logger = LogsCenter.getLogger(InitCommand.class);
 
     private final Group group;
 
@@ -41,6 +46,9 @@ public class InitCommand extends Command {
 
         model.addGroup(group);
         model.showGroup(group);
+        assert model.hasGroup(group) : "The new tutorial group should be registered";
+        assert model.getFilteredPersonList().isEmpty() : "A new tutorial group should have no students to show";
+        logger.fine("Created tutorial group " + group);
         return new CommandResult(String.format(MESSAGE_SUCCESS, group));
     }
 

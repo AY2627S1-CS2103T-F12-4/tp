@@ -1,6 +1,7 @@
 package seedu.address.logic.parser;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.ArrayList;
@@ -133,6 +134,19 @@ public class FieldCompletionTest {
                 FieldCompletion.suggest(prefix, prefix.indexOf("gr") + 2, groups).getFirst().apply(prefix));
         assertTrue(FieldCompletion.suggest(text, text.indexOf("grp/") + 1, groups).isEmpty());
         assertTrue(FieldCompletion.suggest(text, 3, groups).isEmpty());
+    }
+
+    @Test
+    public void suggest_caretOutsideText_throwsIllegalArgumentException() {
+        assertThrows(IllegalArgumentException.class, () -> FieldCompletion.suggest("list", -1, groups));
+        assertThrows(IllegalArgumentException.class, () -> FieldCompletion.suggest("list", 5, groups));
+    }
+
+    @Test
+    public void suggestion_invalidRange_throwsIllegalArgumentException() {
+        assertThrows(IllegalArgumentException.class, () -> new Suggestion(-1, 2, "list"));
+        assertThrows(IllegalArgumentException.class, () -> new Suggestion(3, 2, "list"));
+        assertThrows(IllegalArgumentException.class, () -> new Suggestion(0, 5, "list").apply("li"));
     }
 
     private List<String> values(String text) {

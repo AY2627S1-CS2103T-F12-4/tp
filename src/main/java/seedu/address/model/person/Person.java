@@ -140,6 +140,8 @@ public class Person {
         Set<Attendance> updatedAttendances = new HashSet<>(attendances);
         updatedAttendances.removeIf(existing -> existing.isForSession(attendance.getSession()));
         updatedAttendances.add(attendance);
+        assert updatedAttendances.stream().filter(existing -> existing.isForSession(attendance.getSession()))
+                .count() == 1 : "A student should have exactly one record for the marked session";
         return new Person(name, email, matric, group, tags, updatedAttendances, comment);
     }
 

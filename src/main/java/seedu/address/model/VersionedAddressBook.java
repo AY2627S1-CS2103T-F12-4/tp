@@ -1,5 +1,7 @@
 package seedu.address.model;
 
+import static java.util.Objects.requireNonNull;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -24,6 +26,7 @@ public class VersionedAddressBook extends AddressBook {
 
     /** Saves the current state and the command that produced it. */
     public void commit(String commandDescription) {
+        requireNonNull(commandDescription);
         while (addressBookStateList.size() > currentStatePointer + 1) {
             addressBookStateList.removeLast();
             commandDescriptionList.removeLast();
@@ -31,6 +34,7 @@ public class VersionedAddressBook extends AddressBook {
         addressBookStateList.add(new AddressBook(this));
         commandDescriptionList.add(commandDescription);
         currentStatePointer++;
+        assertValidHistory();
     }
 
     /** Returns whether an earlier committed state can be restored. */
@@ -48,6 +52,7 @@ public class VersionedAddressBook extends AddressBook {
         String undoneCommand = commandDescriptionList.get(currentStatePointer);
         currentStatePointer--;
         resetData(addressBookStateList.get(currentStatePointer));
+        assertValidHistory();
         return undoneCommand;
     }
 
@@ -63,6 +68,7 @@ public class VersionedAddressBook extends AddressBook {
         }
         currentStatePointer++;
         resetData(addressBookStateList.get(currentStatePointer));
+        assertValidHistory();
     }
 
     /**
@@ -74,5 +80,16 @@ public class VersionedAddressBook extends AddressBook {
         addressBookStateList.add(new AddressBook(this));
         commandDescriptionList.add(null);
         currentStatePointer = 0;
+        assertValidHistory();
+    }
+
+    /**
+     * Asserts that every saved state has a matching command name and that the current state is one of them.
+     */
+    private void assertValidHistory() {
+        assert addressBookStateList.size() == commandDescriptionList.size()
+                : "Every saved state should have a matching command name";
+        assert currentStatePointer >= 0 && currentStatePointer < addressBookStateList.size()
+                : "The current state should be one of the saved states";
     }
 }

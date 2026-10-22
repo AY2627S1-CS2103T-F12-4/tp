@@ -198,6 +198,8 @@ public class ModelManager implements Model {
         setActiveGroup(group);
         filteredPersons.setPredicate(person -> person.getGroup().equals(group));
         displayedPersons.setComparator(MATRIC_ORDER);
+        assert displayedPersons.stream().allMatch(person -> person.getGroup().equals(group))
+                : "Only students of the shown group should be displayed";
     }
 
     @Override
