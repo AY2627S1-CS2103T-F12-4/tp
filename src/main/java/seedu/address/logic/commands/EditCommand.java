@@ -117,7 +117,8 @@ public class EditCommand extends Command {
                 ? personToEdit.getAttendances()
                 : Set.of();
 
-        return new Person(updatedName, updatedEmail, updatedMatric, updatedGroup, updatedTags, updatedAttendances);
+        return new Person(updatedName, updatedEmail, updatedMatric, updatedGroup, updatedTags,
+                updatedAttendances, personToEdit.getComment());
     }
 
     @Override
