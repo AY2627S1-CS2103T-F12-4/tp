@@ -4,15 +4,25 @@ skinparam ActivityFontSize 15
 skinparam ArrowFontSize 12
 start
 :User executes command;
+:Parse and execute the command;
 
 'Since the beta syntax does not support placing the condition outside the
 'diamond we place it as the true branch instead.
 
-if () then ([command commits AddressBook])
-    :Purge redundant states;
-    :Save AddressBook to
-    addressBookStateList;
-else ([else])
+if () then ([command changes data])
+    if () then ([saving the data file fails])
+        :Roll back the change;
+        :Show the error;
+        stop
+    else ([saved])
+    endif
+    if () then ([command commits AddressBook])
+        :Purge redundant states;
+        :Save AddressBook to
+        addressBookStateList;
+    else ([else, e.g. undo])
+    endif
+else ([read-only, e.g. list or find])
 endif
 stop
 @enduml

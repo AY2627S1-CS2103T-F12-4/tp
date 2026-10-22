@@ -10,6 +10,8 @@ class Person {
     name : Name
     matric : Matric
     email : Email
+    comment : Comment
+    tags : Set<Tag>
 }
 class Group {
     value : String
