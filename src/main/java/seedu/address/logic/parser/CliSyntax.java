@@ -16,4 +16,7 @@ public class CliSyntax {
     public static final Prefix PREFIX_STATUS = new Prefix("s/");
     public static final Prefix PREFIX_FILE = new Prefix("f/");
 
+    /* Keyword given in place of an index, to apply a command to every displayed student */
+    public static final String KEYWORD_ALL = "all";
+
 }

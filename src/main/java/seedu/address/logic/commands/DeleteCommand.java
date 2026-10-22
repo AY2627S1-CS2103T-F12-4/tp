@@ -1,6 +1,7 @@
 package seedu.address.logic.commands;
 
 import static java.util.Objects.requireNonNull;
+import static seedu.address.logic.parser.CliSyntax.KEYWORD_ALL;
 
 import java.util.List;
 
@@ -23,7 +24,9 @@ public class DeleteCommand extends Command {
             + ": Deletes the student identified by the index number used in the displayed student list, "
             + "including all their attendance records.\n"
             + "Parameters: INDEX (must be a positive integer)\n"
-            + "Example: " + COMMAND_WORD + " 3";
+            + "Example: " + COMMAND_WORD + " 3\n"
+            + "To delete every displayed student, use " + KEYWORD_ALL + " in place of INDEX: "
+            + COMMAND_WORD + " " + KEYWORD_ALL;
 
     public static final String MESSAGE_DELETE_PERSON_SUCCESS =
             "Deleted %1$s (%2$s) from tutorial group %3$s, including all attendance records.";
