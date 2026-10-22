@@ -7,6 +7,8 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.TextInputControl;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyCodeCombination;
 import javafx.scene.input.KeyCombination;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.StackPane;
@@ -37,6 +39,7 @@ public class MainWindow extends UiPart<Stage> {
     private GroupListPanel groupListPanel;
     private ResultDisplay resultDisplay;
     private HelpWindow helpWindow;
+    private CommandBox commandBox;
 
     @FXML
     private StackPane commandBoxPlaceholder;
@@ -132,8 +135,27 @@ public class MainWindow extends UiPart<Stage> {
         StatusBarFooter statusBarFooter = new StatusBarFooter(dataFilePath);
         statusbarPlaceholder.getChildren().add(statusBarFooter.getRoot());
 
-        CommandBox commandBox = new CommandBox(this::executeCommand, logic.getGroupList());
+        commandBox = new CommandBox(this::executeCommand, logic.getGroupList());
         commandBoxPlaceholder.getChildren().add(commandBox.getRoot());
+        setUndoAccelerator();
+    }
+
+    /**
+     * Uses the platform undo shortcut for Roster data unless the command box has text to undo.
+     */
+    private void setUndoAccelerator() {
+        KeyCombination undoShortcut = new KeyCodeCombination(KeyCode.Z, KeyCombination.SHORTCUT_DOWN);
+        getRoot().addEventFilter(KeyEvent.KEY_PRESSED, event -> {
+            if (!undoShortcut.match(event) || commandBox.hasUndoableTextEdit()) {
+                return;
+            }
+            try {
+                executeCommand("undo");
+            } catch (CommandException | ParseException e) {
+                // executeCommand has already shown the failure in the result display.
+            }
+            event.consume();
+        });
     }
 
     /**

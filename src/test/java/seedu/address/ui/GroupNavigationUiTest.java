@@ -58,6 +58,7 @@ public class GroupNavigationUiTest {
         book.addGroup(new Group("T11"));
         ModelManager model = new ModelManager(book, new UserPrefs());
         JsonAddressBookStorage jsonStorage = new JsonAddressBookStorage(temporaryFolder.resolve("roster.json"));
+        jsonStorage.saveAddressBook(book);
         AtomicBoolean failSave = new AtomicBoolean();
         StorageManager storage = new StorageManager(jsonStorage,
                 new JsonUserPrefsStorage(temporaryFolder.resolve("preferences.json"))) {
@@ -135,7 +136,7 @@ public class GroupNavigationUiTest {
 
                 failSave.set(true);
                 click(groups, 0, MouseButton.PRIMARY);
-                assertTrue(feedback(stage).contains("Could not save data"));
+                assertEquals("Listed all 2 students.", feedback(stage));
                 assertEquals("All students", groups.getSelectionModel().getSelectedItem());
                 assertEquals(book, model.getAddressBook());
                 return null;

@@ -183,6 +183,57 @@ public class ModelManagerTest {
     }
 
     @Test
+    public void undoAddressBook_multipleCommittedStates_restoresThemInOrder() {
+        modelManager.addGroup(ALICE.getGroup());
+        modelManager.commitAddressBook("init");
+        modelManager.addPerson(ALICE);
+        modelManager.commitAddressBook("add");
+
+        assertEquals("add", modelManager.undoAddressBook());
+        assertFalse(modelManager.hasPerson(ALICE));
+        assertTrue(modelManager.hasGroup(ALICE.getGroup()));
+        assertEquals("init", modelManager.undoAddressBook());
+        assertFalse(modelManager.hasGroup(ALICE.getGroup()));
+        assertFalse(modelManager.canUndoAddressBook());
+    }
+
+    @Test
+    public void redoAddressBook_afterUndo_restoresLaterState() {
+        modelManager.addGroup(ALICE.getGroup());
+        modelManager.commitAddressBook("init");
+        modelManager.undoAddressBook();
+
+        modelManager.redoAddressBook();
+        assertTrue(modelManager.hasGroup(ALICE.getGroup()));
+        assertTrue(modelManager.canUndoAddressBook());
+    }
+
+    @Test
+    public void commitAddressBook_afterUndo_discardsLaterState() {
+        modelManager.addGroup(ALICE.getGroup());
+        modelManager.commitAddressBook("init");
+        modelManager.addPerson(ALICE);
+        modelManager.commitAddressBook("add");
+        modelManager.undoAddressBook();
+        modelManager.addPerson(BENSON);
+        modelManager.commitAddressBook("add");
+
+        assertEquals("add", modelManager.undoAddressBook());
+        assertFalse(modelManager.hasPerson(ALICE));
+        assertFalse(modelManager.hasPerson(BENSON));
+    }
+
+    @Test
+    public void resetAddressBookHistory_currentStateCannotBeUndone() {
+        modelManager.addGroup(ALICE.getGroup());
+        modelManager.commitAddressBook("init");
+        modelManager.resetAddressBookHistory();
+
+        assertFalse(modelManager.canUndoAddressBook());
+        assertTrue(modelManager.hasGroup(ALICE.getGroup()));
+    }
+
+    @Test
     public void equals_differentDisplayOrder_returnsFalse() {
         AddressBook addressBook = new AddressBookBuilder().withPerson(ALICE).withPerson(BENSON).build();
         modelManager = new ModelManager(addressBook, new UserPrefs());

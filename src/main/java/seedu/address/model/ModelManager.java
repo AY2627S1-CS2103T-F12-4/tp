@@ -31,7 +31,7 @@ public class ModelManager implements Model {
 
     private static final Comparator<Person> MATRIC_ORDER = Comparator.comparing(person -> person.getMatric().value);
 
-    private final AddressBook addressBook;
+    private final VersionedAddressBook addressBook;
     private final UserPrefs userPrefs;
     private final FilteredList<Person> filteredPersons;
     private final SortedList<Person> displayedPersons;
@@ -46,7 +46,7 @@ public class ModelManager implements Model {
 
         logger.fine("Initializing with roster: " + addressBook + " and user prefs " + userPrefs);
 
-        this.addressBook = new AddressBook(addressBook);
+        this.addressBook = new VersionedAddressBook(addressBook);
         this.userPrefs = new UserPrefs(userPrefs);
         filteredPersons = new FilteredList<>(this.addressBook.getPersonList());
         displayedPersons = new SortedList<>(filteredPersons, MATRIC_ORDER);
@@ -80,6 +80,35 @@ public class ModelManager implements Model {
     public void setAddressBook(ReadOnlyAddressBook addressBook) {
         this.addressBook.resetData(addressBook);
         updateFilteredPersonList(PREDICATE_SHOW_ALL_PERSONS);
+    }
+
+    @Override
+    public void commitAddressBook(String commandDescription) {
+        requireNonNull(commandDescription);
+        addressBook.commit(commandDescription);
+    }
+
+    @Override
+    public boolean canUndoAddressBook() {
+        return addressBook.canUndo();
+    }
+
+    @Override
+    public String undoAddressBook() {
+        String undoneCommand = addressBook.undo();
+        updateFilteredPersonList(PREDICATE_SHOW_ALL_PERSONS);
+        return undoneCommand;
+    }
+
+    @Override
+    public void redoAddressBook() {
+        addressBook.redo();
+        updateFilteredPersonList(PREDICATE_SHOW_ALL_PERSONS);
+    }
+
+    @Override
+    public void resetAddressBookHistory() {
+        addressBook.resetHistory();
     }
 
     @Override

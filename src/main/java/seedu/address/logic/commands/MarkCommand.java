@@ -83,6 +83,11 @@ public class MarkCommand extends Command {
         return new CommandResult(generateSuccessMessage(markedPerson, previousAttendance));
     }
 
+    @Override
+    public HistoryAction getHistoryAction() {
+        return HistoryAction.COMMIT;
+    }
+
     /**
      * Generates the message for a successful mark, naming the student so that the TA can confirm the right row
      * was changed, and the previous status if an earlier mark was overwritten.

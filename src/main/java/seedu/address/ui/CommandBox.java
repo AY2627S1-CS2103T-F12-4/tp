@@ -168,6 +168,11 @@ public class CommandBox extends UiPart<Region> {
         styleClass.add(ERROR_STYLE_CLASS);
     }
 
+    /** Returns whether the focused command box has a text edit that should receive the undo shortcut. */
+    boolean hasUndoableTextEdit() {
+        return commandTextField.isFocused() && commandTextField.isUndoable();
+    }
+
     /**
      * Represents a function that can execute commands.
      */

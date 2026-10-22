@@ -33,8 +33,10 @@ import javafx.collections.ObservableList;
 import seedu.address.logic.commands.AddCommand;
 import seedu.address.logic.commands.CommandResult;
 import seedu.address.logic.commands.ListCommand;
+import seedu.address.logic.commands.UndoCommand;
 import seedu.address.logic.commands.exceptions.CommandException;
 import seedu.address.logic.parser.exceptions.ParseException;
+import seedu.address.model.AddressBook;
 import seedu.address.model.Model;
 import seedu.address.model.ModelManager;
 import seedu.address.model.ReadOnlyAddressBook;
@@ -115,6 +117,78 @@ public class LogicManagerTest {
     }
 
     @Test
+    public void execute_undo_restoresMultipleUndoableCommandsAndSavesState() throws Exception {
+        logic.execute("init grp/T09");
+        logic.execute("add n/Alex Tan e/alex@example.com m/A0123456X grp/T09");
+        logic.execute("edit 1 n/Alex Lim");
+
+        assertEquals("Undid the most recent edit command.", logic.execute("undo").getFeedbackToUser());
+        assertEquals("Alex Tan", model.getAddressBook().getPersonList().getFirst().getName().fullName);
+        assertEquals("Undid the most recent add command.", logic.execute("undo").getFeedbackToUser());
+        assertTrue(model.getAddressBook().getPersonList().isEmpty());
+        assertEquals("Undid the most recent init command.", logic.execute("undo").getFeedbackToUser());
+        assertTrue(model.getGroupList().isEmpty());
+
+        JsonAddressBookStorage savedStorage = new JsonAddressBookStorage(temporaryFolder.resolve("addressBook.json"));
+        assertEquals(new AddressBook(), savedStorage.readAddressBook().orElseThrow());
+    }
+
+    @Test
+    public void execute_undoAfterReadOnlyAndFailedCommands_restoresLastChange() throws Exception {
+        logic.execute("init grp/T09");
+        logic.execute("list");
+        assertCommandException("init grp/T09", "This tutorial group already exists: T09");
+
+        assertEquals("Undid the most recent init command.", logic.execute("undo").getFeedbackToUser());
+        assertTrue(model.getGroupList().isEmpty());
+    }
+
+    @Test
+    public void execute_readOnlyCommands_doNotCopyRosterForHistory() throws Exception {
+        CountingModelManager countingModel = new CountingModelManager();
+        JsonAddressBookStorage addressBookStorage =
+                new JsonAddressBookStorage(temporaryFolder.resolve("readOnlyAddressBook.json"));
+        Logic countingLogic = new LogicManager(countingModel, new StorageManager(addressBookStorage,
+                new JsonUserPrefsStorage(temporaryFolder.resolve("readOnlyUserPrefs.json"))));
+
+        countingLogic.execute("list");
+        countingLogic.execute("find n/Alex");
+        countingLogic.execute("help");
+        countingLogic.execute("exit");
+
+        assertEquals(0, countingModel.addressBookReadCount);
+    }
+
+    @Test
+    public void execute_delete_canBeUndoneWithoutClearingEarlierHistory() throws Exception {
+        logic.execute("init grp/T09");
+        logic.execute("add n/Alex Tan e/alex@example.com m/A0123456X grp/T09");
+        logic.execute("delete 1");
+
+        assertEquals("Undid the most recent delete command.", logic.execute("undo").getFeedbackToUser());
+        assertEquals("Alex Tan", model.getAddressBook().getPersonList().getFirst().getName().fullName);
+        assertEquals("Undid the most recent add command.", logic.execute("undo").getFeedbackToUser());
+        assertTrue(model.getAddressBook().getPersonList().isEmpty());
+        assertTrue(model.hasGroup(new Group("T09")));
+    }
+
+    @Test
+    public void execute_clear_canBeUndoneWithoutClearingEarlierHistory() throws Exception {
+        logic.execute("init grp/T09");
+        logic.execute("clear");
+
+        assertEquals("Undid the most recent clear command.", logic.execute("undo").getFeedbackToUser());
+        assertTrue(model.hasGroup(new Group("T09")));
+        assertEquals("Undid the most recent init command.", logic.execute("undo").getFeedbackToUser());
+        assertTrue(model.getGroupList().isEmpty());
+    }
+
+    @Test
+    public void execute_undoWithNoHistory_throwsCommandException() {
+        assertCommandException("undo", UndoCommand.MESSAGE_NOTHING_TO_UNDO);
+    }
+
+    @Test
     public void execute_invalidList_preservesFilteredListAndData() {
         model.addPerson(AMY);
         model.addPerson(BOB);
@@ -141,6 +215,28 @@ public class LogicManagerTest {
     @Test
     public void getFilteredPersonList_modifyList_throwsUnsupportedOperationException() {
         assertThrows(UnsupportedOperationException.class, () -> logic.getFilteredPersonList().remove(0));
+    }
+
+    @Test
+    public void execute_undoSaveFails_restoresStateAndAllowsRetry() throws Exception {
+        logic.execute("init grp/T09");
+        AddressBook beforeUndo = new AddressBook(model.getAddressBook());
+        JsonAddressBookStorage failingStorage = new JsonAddressBookStorage(temporaryFolder.resolve("failed.json")) {
+            @Override
+            public void saveAddressBook(ReadOnlyAddressBook addressBook) throws IOException {
+                throw DUMMY_IO_EXCEPTION;
+            }
+        };
+        Logic failingLogic = new LogicManager(model, new StorageManager(failingStorage,
+                new JsonUserPrefsStorage(temporaryFolder.resolve("failedPrefs.json"))));
+
+        assertThrows(CommandException.class, () -> failingLogic.execute("undo"));
+        assertEquals(beforeUndo, model.getAddressBook());
+        assertTrue(model.canUndoAddressBook());
+        assertEquals("Undid the most recent init command.", logic.execute("undo").getFeedbackToUser());
+        assertTrue(model.getGroupList().isEmpty());
+        JsonAddressBookStorage savedStorage = new JsonAddressBookStorage(temporaryFolder.resolve("addressBook.json"));
+        assertEquals(new AddressBook(), savedStorage.readAddressBook().orElseThrow());
     }
 
     /**
@@ -227,7 +323,16 @@ public class LogicManagerTest {
         model.addGroup(expectedPerson.getGroup());
         ModelManager expectedModel = new ModelManager();
         expectedModel.addGroup(expectedPerson.getGroup());
-        expectedModel.addPerson(expectedPerson);
         assertCommandFailure(addCommand, CommandException.class, expectedMessage, expectedModel);
+    }
+
+    private static class CountingModelManager extends ModelManager {
+        private int addressBookReadCount;
+
+        @Override
+        public ReadOnlyAddressBook getAddressBook() {
+            addressBookReadCount++;
+            return super.getAddressBook();
+        }
     }
 }

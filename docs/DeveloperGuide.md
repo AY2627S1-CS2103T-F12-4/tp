@@ -183,7 +183,8 @@ the model is updated. A valid search replaces the predicate and clears the activ
   Exceptions handle invalid user input; assertions detect inconsistent internal model behavior.
 
 `FindCommand.requiresSave()` returns false. `LogicManager` therefore returns the search result
-without rewriting the roster file. Other commands retain their existing save behaviour.
+without rewriting the roster file or copying the roster for undo history. Other read-only commands use the same
+approach, while data-changing commands retain their existing save behaviour.
 Assertions are enabled for Gradle tests and `./gradlew run`. When running a packaged JAR for testing,
 use `java -ea -jar roster.jar`; enable VM option `-ea` in an IDE run configuration as well.
 
@@ -217,8 +218,8 @@ creation, writing or publication are reported to the caller; cleanup runs when a
 * Assert that summary counts are non-negative and contain at least one row per exported student.
   Command diagnostics distinguish unknown groups, existing destinations and unexpected file failures.
 
-`Command.requiresSave()` defaults to true. Export overrides it to false because it does not change
-roster records. `LogicManager` therefore returns the result without saving the roster file.
+`Command.requiresSave()` defaults to true. Export and other read-only commands override it to false because they do
+not change roster records. `LogicManager` therefore returns their results without saving or making an undo snapshot.
 
 `CsvFileAccess` confines CSV output to the JAR's home folder (the working folder for development
 runs). It resolves relative paths from this root and rejects outside paths and symbolic-link components
@@ -231,9 +232,86 @@ group and requested week, and creates a replacement immutable `Person` containin
 `ModelManager` replaces the record in the roster; the observable display updates from that change.
 `LogicManager` then saves the complete roster through `StorageManager` and `JsonAddressBookStorage`.
 
-Undo/redo and data archiving are not implemented in this version. Commands do not create a history of
-roster snapshots. New implementation sections should describe the corresponding design and tests
-when those features are added.
+### Undo feature
+
+The undo mechanism is facilitated by `VersionedAddressBook`. It extends `AddressBook` with a history of complete
+Roster snapshots, stored internally as an `addressBookStateList` and `currentStatePointer`.
+
+* `VersionedAddressBook#commit(String)` saves the current address book state and command name in its history.
+* `VersionedAddressBook#undo()` restores the previous address book state from its history.
+* `VersionedAddressBook#redo()` reapplies a state only when an unsuccessful save requires an undo to be rolled back.
+
+These operations are exposed by `Model`. Roster does not provide a user-facing redo command.
+
+When a successful data-changing command such as `add`, `delete`, or `clear` is saved, `LogicManager` calls
+`Model#commitAddressBook()`. Read-only and failed commands do not change the history. The default history action
+is derived from `Command#requiresSave()`, while special commands such as `undo` override it. This makes new
+data-changing commands undoable unless they explicitly opt out.
+
+For example, the user executes `add n/David …​`, causing the modified address book state to be saved into the
+`addressBookStateList`.
+
+![UndoRedoState2](images/UndoRedoState2.png)
+
+<div markdown="span" class="alert alert-info">:information_source: **Note:** If a command fails its execution, it will not call `Model#commitAddressBook()`, so the address book state will not be saved into the `addressBookStateList`.
+
+</div>
+
+The user then decides that adding the person was a mistake and executes `undo`. `UndoCommand` calls
+`Model#undoAddressBook()`, which shifts the `currentStatePointer` one position left and restores that snapshot.
+
+![UndoRedoState3](images/UndoRedoState3.png)
+
+<div markdown="span" class="alert alert-info">:information_source: **Note:** If the `currentStatePointer` is at index 0, pointing to the initial AddressBook state, then there are no previous AddressBook states to restore. The `undo` command uses `Model#canUndoAddressBook()` to check if this is the case. If so, it will return an error to the user rather
+than attempting to perform the undo.
+
+</div>
+
+The following sequence diagram shows how an undo operation goes through the `Logic` component:
+
+![UndoSequenceDiagram](images/UndoSequenceDiagram-Logic.png)
+
+<div markdown="span" class="alert alert-info">:information_source: **Note:** The lifeline for `UndoCommand` should end at the destroy marker (X), but due to a limitation of PlantUML, it continues to the end of the diagram.
+
+</div>
+
+Similarly, how an undo operation goes through the `Model` component is shown below:
+
+![UndoSequenceDiagram](images/UndoSequenceDiagram-Model.png)
+
+`Model#redoAddressBook()` is used internally only if saving an undo operation fails. It restores the later in-memory
+state so that the model remains consistent with the data file.
+
+<div markdown="span" class="alert alert-info">:information_source: **Note:** The internal redo operation is not exposed
+to users.
+
+</div>
+
+The user then executes `list`. Read-only and failed commands do not change `addressBookStateList`.
+
+![UndoRedoState4](images/UndoRedoState4.png)
+
+The user executes `clear`, which commits the empty roster as another snapshot. A subsequent `undo` restores the
+complete roster, including groups, sessions, students, and attendance records.
+
+![UndoRedoState5](images/UndoRedoState5.png)
+
+The following activity diagram summarizes what happens when a user executes a new command:
+
+<img src="images/CommitActivityDiagram.png" width="250" />
+
+#### Design considerations:
+
+**Aspect: How undo executes:**
+
+* **Alternative 1 (current choice):** Saves the entire address book.
+  * Pros: Easy to implement.
+  * Cons: May have performance issues in terms of memory usage.
+
+* **Alternative 2:** Each command knows how to undo itself.
+  * Pros: Uses less memory for small changes.
+  * Cons: We must ensure that the implementation of each individual command is correct.
+
 
 --------------------------------------------------------------------------------------------------------------------
 

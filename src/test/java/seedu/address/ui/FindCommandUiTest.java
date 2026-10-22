@@ -59,6 +59,7 @@ public class FindCommandUiTest {
         ModelManager model = new ModelManager(book, new UserPrefs());
         JsonAddressBookStorage addressBookStorage =
                 new JsonAddressBookStorage(temporaryFolder.resolve("roster.json"));
+        addressBookStorage.saveAddressBook(book);
         StorageManager storage = new StorageManager(addressBookStorage,
                 new JsonUserPrefsStorage(temporaryFolder.resolve("preferences.json")));
         Stage stage = onFxThread(() -> {
