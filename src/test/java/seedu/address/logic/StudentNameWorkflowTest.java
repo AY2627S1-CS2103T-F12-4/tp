@@ -10,6 +10,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 import seedu.address.logic.commands.AddCommand;
+import seedu.address.logic.commands.EditCommand;
 import seedu.address.logic.commands.FindCommand;
 import seedu.address.logic.parser.exceptions.ParseException;
 import seedu.address.model.ModelManager;
@@ -59,6 +60,8 @@ public class StudentNameWorkflowTest {
                             + " e/ravi@example.com m/A0000001X grp/T09")).getMessage());
             assertEquals(FindCommand.MESSAGE_UNKNOWN_PARAMETER,
                     assertThrows(ParseException.class, () -> logic.execute("find n/Ravi " + input)).getMessage());
+            assertEquals(EditCommand.MESSAGE_UNKNOWN_PARAMETER,
+                    assertThrows(ParseException.class, () -> logic.execute("edit 1 n/Ravi " + input)).getMessage());
             assertEquals(0, model.getAddressBook().getPersonList().size());
         }
     }

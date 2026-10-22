@@ -64,8 +64,22 @@ public class EditCommandParserTest {
         // invalid arguments being parsed as preamble
         assertParseFailure(parser, "1 some random string", MESSAGE_INVALID_FORMAT);
 
-        // invalid prefix being parsed as preamble
-        assertParseFailure(parser, "1 i/ string", MESSAGE_INVALID_FORMAT);
+    }
+
+    @Test
+    public void parse_unsupportedParameter_failure() {
+        assertParseFailure(parser, "1 p/91234567", EditCommand.MESSAGE_UNKNOWN_PARAMETER);
+        assertParseFailure(parser, "1 a/Kent Ridge", EditCommand.MESSAGE_UNKNOWN_PARAMETER);
+        assertParseFailure(parser, "1 x/value", EditCommand.MESSAGE_UNKNOWN_PARAMETER);
+    }
+
+    @Test
+    public void parse_relationshipConnectorInName_success() {
+        Index targetIndex = INDEX_FIRST_PERSON;
+        EditPersonDescriptor descriptor = new EditPersonDescriptorBuilder().withName("Ravi s/o Kumar").build();
+
+        assertParseSuccess(parser, targetIndex.getOneBased() + " n/Ravi s/o Kumar",
+                new EditCommand(targetIndex, descriptor));
     }
 
     @Test
