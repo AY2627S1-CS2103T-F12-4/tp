@@ -1,0 +1,35 @@
+@startuml
+!pragma layout smetana
+skinparam Shadowing false
+skinparam ClassAttributeIconSize 0
+hide methods
+hide circle
+title Roster's student, tutorial and attendance records
+class AddressBook
+class Person {
+    name : Name
+    matric : Matric
+    email : Email
+}
+class Group {
+    value : String
+}
+class Session {
+    week : Week
+    date : SessionDate
+}
+class Attendance {
+    status : Status
+}
+AddressBook "1" --> "0..*" Person : stores
+AddressBook "1" --> "0..*" Group : registers
+AddressBook "1" --> "0..*" Session : stores
+Person "0..*" --> "1" Group : belongs to
+Session "0..*" --> "1" Group : belongs to
+Person "1" *--> "0..*" Attendance : owns
+Attendance "0..*" --> "1" Session : records attendance for
+note bottom of Attendance
+  PRESENT or ABSENT.
+  No record means unmarked.
+end note
+@enduml

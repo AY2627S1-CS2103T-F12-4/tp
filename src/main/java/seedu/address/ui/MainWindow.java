@@ -132,7 +132,7 @@ public class MainWindow extends UiPart<Stage> {
         StatusBarFooter statusBarFooter = new StatusBarFooter(dataFilePath);
         statusbarPlaceholder.getChildren().add(statusBarFooter.getRoot());
 
-        CommandBox commandBox = new CommandBox(this::executeCommand);
+        CommandBox commandBox = new CommandBox(this::executeCommand, logic.getGroupList());
         commandBoxPlaceholder.getChildren().add(commandBox.getRoot());
     }
 
@@ -199,6 +199,9 @@ public class MainWindow extends UiPart<Stage> {
             CommandResult commandResult = logic.execute(commandText);
             logger.info("Result: " + commandResult.getFeedbackToUser());
             resultDisplay.setFeedbackToUser(commandResult.getFeedbackToUser());
+            // A highlight is only kept until the next command, so it never marks an unrelated student
+            commandResult.getPersonToShow()
+                    .ifPresentOrElse(personListPanel::scrollTo, personListPanel::clearSelection);
 
             if (commandResult.isShowHelp()) {
                 handleHelp();
@@ -212,6 +215,7 @@ public class MainWindow extends UiPart<Stage> {
         } catch (CommandException | ParseException e) {
             logger.info("An error occurred while executing command: " + commandText);
             resultDisplay.setFeedbackToUser(e.getMessage());
+            personListPanel.clearSelection();
             throw e;
         }
     }

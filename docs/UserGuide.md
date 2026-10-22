@@ -28,7 +28,7 @@ Roster is a **desktop application for NUS teaching assistants to manage students
 1. Try this typical attendance workflow:
 
    * `init grp/T09` : Creates tutorial group `T09`.
-   * `add n/Alex Tan p/12345678 e/alex.tan@example.com a/Kent Ridge m/A0123456X grp/T09` : Adds Alex Tan to `T09`.
+   * `add n/Alex Tan e/alex.tan@example.com m/A0123456X grp/T09` : Adds Alex Tan to `T09`.
    * `session grp/T09 w/5 d/2026-09-15` : Creates the week 5 session for `T09`.
    * `list grp/T09` : Shows the students in `T09` and makes it the active group.
    * `mark 1 w/5 s/present` : Marks the first displayed student present for week 5.
@@ -82,7 +82,7 @@ The MVP does not support returning a recorded status to unmarked. You can, howev
 * Prefixed parameters can be given in any order.<br>
   For example, both `session grp/T09 w/5 d/2026-09-15` and `session d/2026-09-15 grp/T09 w/5` are valid.
 
-* A prefix marks the start of a parameter. Because `/` marks the end of a prefix, parameter values cannot contain `/`.
+* A prefix marks the start of a parameter. Values containing `/` are accepted where explicitly supported, such as relationship abbreviations in names and CSV file paths.
 
 * Unless a command states otherwise, each parameter may appear only once.
 
@@ -98,16 +98,30 @@ The MVP does not support returning a recorded status to unmarked. You can, howev
 Parameter | Accepted value
 ----------|---------------
 `grp/GROUP` | One or two letters followed by two digits, e.g. `T09` or `TG01`. Surrounding spaces are removed and letters are converted to uppercase.
-`n/NAME` | 1–70 characters. Letters, spaces, hyphens and apostrophes only; must begin and end with a letter. Surrounding spaces are removed, repeated spaces become one space, and letter case is preserved.
-`p/PHONE` | At least three digits, with no spaces or other characters.
+`n/NAME` | 1–70 characters. Letters and their accents, spaces, hyphens, apostrophes, full stops and the relationship abbreviations `s/o`, `d/o`, `a/l`, `a/p` (in any letter case). Must begin with a letter and end with a letter, accent or full stop. Examples: `J. Tan`, `Ravi s/o Kumar`. Surrounding spaces are removed, repeated spaces become one space, and letter case is preserved.
 `m/MATRIC` | `A`, followed by seven digits and one letter, e.g. `A0287654J`. Surrounding spaces are removed and letters are converted to uppercase.
 `e/EMAIL` | A valid email address such as `alex.tan@example.com`. Surrounding spaces are removed and the address is converted to lowercase.
-`a/ADDRESS` | Any non-blank text.
 `t/TAG` | One or more letters or digits, with no spaces or other characters. Repeat `t/` to give a student multiple tags.
 `w/WEEK` | A whole number from `1` to `13`, without a leading zero.
 `d/DATE` | A real calendar date in `YYYY-MM-DD` format.
 `s/STATUS` | `present` or `absent`, case-insensitive.
 `INDEX` | A positive integer identifying a student in the currently displayed list.
+
+### Completing command fields
+
+As you type, the command box suggests command names (e.g. `ad` completes to `add`),
+field prefixes supported by the current command,
+registered group codes after `grp/`, and `present` or `absent` after `s/`.
+For example, `list gr` suggests `grp/`, `list grp/T` suggests matching groups,
+and `mark 1 w/3 s/p` suggests `present`.
+
+* Press Up/Down to select a suggestion and Tab to insert it, or click a suggestion.
+* Press Escape to dismiss suggestions. Enter always executes the current command.
+* Completion replaces the field fragment at the cursor and preserves other fields.
+* Group suggestions reflect the currently registered groups, including empty groups.
+* `init grp/` accepts a new group code without suggesting existing groups.
+* You can continue typing any value normally; existing validation rules still apply.
+* Suggestions use prefix matching, without fuzzy matching or spelling correction.
 
 ### Viewing help: `help`
 
@@ -151,16 +165,19 @@ On success, Roster displays a confirmation such as `Created session: T09 week 5 
 
 Adds a student to an existing tutorial group. The student is unmarked for every existing session in that group.
 
-Format: `add n/NAME p/PHONE e/EMAIL a/ADDRESS m/MATRIC grp/GROUP [t/TAG]...`
+Format: `add n/NAME e/EMAIL m/MATRIC grp/GROUP [t/TAG]...`
 
 Examples:
 
-* `add n/Alex Tan p/12345678 e/alex.tan@example.com a/Kent Ridge m/A0123456X grp/T09`
+* `add n/Alex Tan e/alex.tan@example.com m/A0123456X grp/T09`
+* `add n/Bernice Yu e/bernice@example.com m/A0287402K grp/T09 t/exchange`
 * The tutorial group must already exist.
 * Matriculation numbers and email addresses must be unique across all tutorial groups.
 * Names do not need to be unique because different students may share a name.
+* If the new student is not in the list on screen, for example because another group or a search is shown, Roster switches to the new student's tutorial group so that you can see them.
+* Roster scrolls the list to the new student and highlights their card until your next command. The list is sorted by matriculation number, so the new student may appear anywhere in it.
 
-On success, Roster displays a confirmation such as `Added Alex Tan (A0123456X) to tutorial group T09.`
+On success, Roster displays a confirmation such as `Added Alex Tan (A0123456X) to tutorial group T09.` When Roster switches to the student's group, the confirmation ends with `Now showing T09.`
 
 
 ### Listing students: `list`
@@ -193,7 +210,7 @@ A green `✓` means present, a red `✗` means absent, and a grey `—` means un
 A student added after a session also shows `—` until their attendance is recorded. Weeks with no session have no cell. The list scrolls when needed.
 
 The group scope is shown above the list. `find` searches across groups and clears the active group.
-Adding or deleting a student refreshes the current results without clearing the filter.
+Deleting a student refreshes the current results without clearing the filter. Adding a student keeps the current results if the new student belongs in them, and otherwise shows the new student's tutorial group.
 Student indices are the row numbers currently on screen, so check the displayed list before using `delete`, `edit`,
 or `mark`. A successful edit shows all students again in matriculation-number order. Editing a matriculation number
 can therefore change row numbers. Moving a student to another group clears their old attendance records; their
@@ -217,29 +234,49 @@ The tutorial-group panel starts with **All students**, followed by registered gr
 * Student indices are refreshed for the newly displayed roster. Check the displayed list before running
   `mark`, `edit` or `delete` with an index.
 
-### Finding students by name: `find`
+### Finding students with filters: `find`
 
-Finds students across all tutorial groups whose names contain the search phrase. A search clears the active group.
+Finds students by name, complete matriculation number, tutorial group, or a combination of these fields.
+Every supplied filter must match (AND). A search clears the active group and its selection in the group panel.
 
-Format: `find n/KEYWORD`
+Format: `find [n/KEYWORD] [m/MATRIC] [grp/GROUP]`
 
-* The `n/` prefix is required and must appear exactly once. The keyword may contain several words, such as `john tan`.
-* Surrounding whitespace is ignored, and repeated whitespace is treated as one space in both the query and name.
-* Copied commands can use Unicode spaces, including non-breaking spaces, around `find` and `n/`. Line breaks within a search phrase are also treated as spaces.
-* The query must contain 1–100 characters after whitespace normalization: letters, spaces, hyphens, apostrophes or full stops, with at least one letter.
-* The search is case-insensitive and considers only names. Accents and punctuation remain significant.
-* The entire phrase must appear contiguously and in the same order. For example, `john tan` matches `John Tan` and `John Tanner`, but does not match `John Lim`, `Mei Tan` or `Tan John`.
-* Results are sorted by matriculation number in ascending order, including both complete and partial name matches. For example, `find n/john` lists `Johnny Lim` with matriculation number `A0000001X` before `John Tan` with `A0000002X`.
-* A successful search clears the active tutorial group and its selection in the group panel. Each result shows the student's matriculation number, tutorial group and attendance for that group's sessions.
-* Each search considers all students, including when the previous search returned no matches.
-* Successful searches show `Found COUNT student(s) matching "KEYWORD".` A search with no matches produces an empty list and shows `No students found matching "KEYWORD". Try another name.`
-* Missing or blank queries, repeated `n/` prefixes, unsupported characters, text before `n/`, and other parameters produce an error without changing the displayed list or active tutorial group.
-* `mark INDEX`, `delete INDEX` and `edit INDEX` use the displayed result indexes. Search does not change the saved roster order. Use `list` to show everyone again in ascending matriculation-number order.
+* Supply at least one filter. Each prefix may appear only once, and parameters may be in any order.
+* `n/KEYWORD` retains the existing case-insensitive name search. The entire phrase must appear contiguously
+  and in the same order: `john tan` matches `John Tan` and `John Tanner`, but not `John Lim` or `Tan John`.
+  Accents and punctuation remain significant.
+* A name query must contain 1–100 characters after whitespace normalization:
+  letters and their accents, spaces, hyphens, apostrophes, full stops,
+  or complete `s/o`, `d/o`, `a/l`, `a/p` abbreviations, with at least one letter.
+* Surrounding whitespace is ignored, and repeated whitespace is treated as one space. Copied commands
+  may use Unicode spaces; line breaks within search arguments are also treated as spaces.
+* `m/MATRIC` matches the complete matriculation number. Letter case is ignored; partial numbers are rejected.
+* `grp/GROUP` matches one registered tutorial group. Group codes ignore letter case. A nonexistent group
+  is an error; a registered but empty group returns no matches.
+* Each search considers the complete roster, including after a group view, a previous search, or empty results.
+  To restrict a search to a group, supply `grp/GROUP` explicitly.
+* Results are sorted by matriculation number in ascending order and show each student's group and attendance.
+* A successful search clears the active group even when `grp/GROUP` is supplied, because search results
+  may contain only a subset of that group's students.
+* Name-only searches retain feedback such as `Found 2 student(s) matching "John".` Other searches report
+  the result count and normalized filters, for example `Found 1 student(s) matching filters: n/"John" grp/T09.`
+  No-match searches show an empty list and feedback suggesting another name or filter.
+* Blank or malformed values, repeated prefixes, unsupported parameters, text before the first prefix,
+  and `find` without filters are rejected without changing the displayed list or active group.
+* `mark INDEX`, `delete INDEX` and `edit INDEX` use the displayed result indexes. Deleting a student refreshes
+  the current results. After an addition, the view follows the behavior described under
+  [Adding a student](#adding-a-student-add). A successful edit shows all students again.
+* `list` clears the search and shows everyone. `list grp/GROUP` replaces the search with that group's view.
+  Searching does not change student records, attendance or saved roster order.
 
 Examples:
 * `find n/John` returns `John Doe` and `Johnny Lim`, sorted by matriculation number.
 * `find n/john tan` returns `John Tan` and `John Tanner`, sorted by matriculation number.
 * `find n/joh` returns names containing `joh`, including `John Tan` and `Johnny Lim`.
+* `find m/a0123456x` finds the student with matriculation number `A0123456X`.
+* `find grp/T09` finds every student in registered group T09.
+* `find n/John grp/T09` finds students in T09 whose names contain `John`.
+* `find grp/T09 m/A0123456X n/John` requires all three conditions to match.
 
 ### Deleting a student: `delete`
 
@@ -286,6 +323,45 @@ On success, Roster names the student, status, tutorial group, and teaching week 
 Run `list grp/GROUP` before taking attendance so only that tutorial group's students are displayed.
 </div>
 
+### Exporting attendance records: `export`
+
+Exports student details and attendance to a new UTF-8 CSV file for use outside Roster.
+
+Format: `export f/FILE_PATH [grp/GROUP]`
+
+Examples:
+
+* `export f/attendance.csv` exports all students, even when a group or search is currently displayed.
+* `export f/T09-attendance.csv grp/T09` exports only registered group T09.
+* `export grp/t10 f/"reports/T10 attendance.csv"` accepts parameters in either order and paths with spaces.
+
+Rules:
+
+* Supply exactly one non-empty `f/FILE_PATH`. The filename must end in `.csv` (case-insensitive).
+* Relative paths are resolved against the folder containing Roster's JAR. Absolute paths are accepted only
+  inside that folder or its subfolders. The destination's parent folder must already exist. Paths through
+  symbolic links and paths outside this folder are rejected.
+* Wrap paths containing spaces in double quotes, especially when a directory name could resemble a command
+  parameter. Internal spaces are preserved. For example, `export f/"My reports/T09 attendance.csv"`.
+* Supply at most one `grp/GROUP`. Group codes ignore letter case. Unknown groups are rejected.
+* Existing files are never replaced. Choose a new filename to export an updated copy.
+* The header is always `matric,name,email,group,week,date,attendance`.
+* Each student has one row per existing session of their own group. Rows are ordered by matriculation
+  number and then teaching week. Dates use `YYYY-MM-DD`.
+* Attendance is `present`, `absent`, or `unmarked`. A missing record for an existing session is `unmarked`,
+  including when the student was added after that session.
+* A student whose group has no sessions appears once, with empty week, date and attendance fields.
+  These empty fields do not mean the student was absent.
+* An empty roster or registered but empty group produces only the header. Feedback reports zero students
+  and zero data rows.
+* CSV values containing commas, double quotes or line breaks are quoted, with double quotes escaped.
+* Invalid arguments and write failures produce clear errors. The destination is published only after
+  the complete CSV has been written, and temporary output is cleaned up if writing fails.
+* Exporting leaves roster records, the displayed list and the active group unchanged.
+
+On success, Roster reports the absolute destination and the number of students and CSV data rows exported.
+The row count excludes the header and includes the placeholder row for a student with no sessions.
+
 ### Exiting Roster: `exit`
 
 Exits the application.
@@ -304,11 +380,11 @@ Clearing happens immediately, with no confirmation and no undo. Back up `data/ad
 
 ### Saving data
 
-Roster automatically saves its data after each successful command. You do not need to save manually.
+Roster automatically saves changes to its data. You do not need to save manually.
 
 ### Editing the data file
 
-Roster data is saved as `[JAR file location]/data/addressbook.json`. Advanced users may edit this JSON file directly.
+Roster data is saved as `data/addressbook.json` inside the folder from which Roster is launched. To keep it beside the JAR, open a terminal in the JAR folder and run `java -jar roster.jar`. Close Roster and back up the file before editing it directly.
 
 <div markdown="span" class="alert alert-warning">:exclamation: **Caution:**
 If your changes make the data file invalid, Roster starts with an empty roster the next time it runs. The invalid file remains on disk until a successful command causes Roster to save again. Back up the file before editing it.<br>
@@ -320,7 +396,7 @@ Manual edits can also produce unexpected behavior if values do not follow Roster
 ## FAQ
 
 **Q**: How do I transfer my data to another computer?<br>
-**A**: Install Roster on the other computer and replace its `data/addressbook.json` file with the file from your previous Roster home folder.
+**A**: Install Roster on the other computer, launch it once, close it, and replace its `data/addressbook.json` file with your saved copy. Use the data folder described in [Saving data](#saving-data).
 
 **Q**: How do I correct a student's details?<br>
 **A**: Use `edit INDEX` followed by the fields to change, for example `edit 1 e/alex.tan@example.com`.
@@ -347,11 +423,12 @@ Action | Format, example
 **Help** | `help`
 **Create tutorial group** | `init grp/GROUP`<br>e.g. `init grp/T09`
 **Create session** | `session grp/GROUP w/WEEK d/DATE`<br>e.g. `session grp/T09 w/5 d/2026-09-15`
-**Add student** | `add n/NAME p/PHONE e/EMAIL a/ADDRESS m/MATRIC grp/GROUP [t/TAG]...`<br>e.g. `add n/Alex Tan p/12345678 e/alex.tan@example.com a/Kent Ridge m/A0123456X grp/T09`
-**Edit student** | `edit INDEX [n/NAME] [p/PHONE] [e/EMAIL] [a/ADDRESS] [m/MATRIC] [grp/GROUP] [t/TAG]...`<br>e.g. `edit 1 e/alex.tan@example.com`
+**Add student** | `add n/NAME e/EMAIL m/MATRIC grp/GROUP [t/TAG]...`<br>e.g. `add n/Alex Tan e/alex.tan@example.com m/A0123456X grp/T09`
+**Edit student** | `edit INDEX [n/NAME] [e/EMAIL] [m/MATRIC] [grp/GROUP] [t/TAG]...`<br>e.g. `edit 1 e/alex.tan@example.com`
 **List students** | `list [grp/GROUP]`<br>e.g. `list grp/T09`
-**Find students** | `find n/KEYWORD`<br>e.g. `find n/John Tan`
+**Find students** | `find [n/KEYWORD] [m/MATRIC] [grp/GROUP]` (at least one)<br>e.g. `find n/John Tan grp/T09`
 **Delete student** | `delete INDEX`<br>e.g. `delete 3`
 **Mark attendance** | `mark INDEX w/WEEK s/STATUS`<br>e.g. `mark 3 w/5 s/present`
+**Export attendance** | `export f/FILE_PATH [grp/GROUP]`<br>e.g. `export f/attendance.csv grp/T09`
 **Exit** | `exit`
 **Clear all data** | `clear`

@@ -1,9 +1,14 @@
 package seedu.address.logic.parser;
 
+import static seedu.address.logic.parser.CliSyntax.PREFIX_NAME;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+
+import seedu.address.model.person.Name;
 
 /**
  * Tokenizes arguments string of the form: {@code preamble <prefix>value <prefix>value ...}<br>
@@ -14,6 +19,7 @@ import java.util.stream.Collectors;
  *    in the above example.<br>
  */
 public class ArgumentTokenizer {
+    private static final Pattern NAME_CONNECTOR_PATTERN = Pattern.compile(Name.RELATIONSHIP_CONNECTOR_REGEX);
 
     /**
      * Tokenizes an arguments string and returns an {@code ArgumentMultimap} object that maps prefixes to their
@@ -88,6 +94,7 @@ public class ArgumentTokenizer {
 
         // Sort by start position
         prefixPositions.sort((prefix1, prefix2) -> prefix1.getStartPosition() - prefix2.getStartPosition());
+        prefixPositions = omitNameConnectors(argsString, prefixPositions);
 
         // Insert a PrefixPosition to represent the preamble
         PrefixPosition preambleMarker = new PrefixPosition(new Prefix(""), 0);
@@ -107,6 +114,20 @@ public class ArgumentTokenizer {
         }
 
         return argMultimap;
+    }
+
+    /** Keeps relationship abbreviations inside name values without changing other fields' prefix handling. */
+    private static List<PrefixPosition> omitNameConnectors(String argsString, List<PrefixPosition> positions) {
+        List<PrefixPosition> result = new ArrayList<>();
+        for (PrefixPosition position : positions) {
+            boolean isNameValue = !result.isEmpty() && result.getLast().getPrefix().equals(PREFIX_NAME);
+            if (isNameValue && NAME_CONNECTOR_PATTERN.matcher(argsString)
+                    .region(position.getStartPosition(), argsString.length()).lookingAt()) {
+                continue;
+            }
+            result.add(position);
+        }
+        return result;
     }
 
     /**

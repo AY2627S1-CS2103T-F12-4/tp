@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static seedu.address.testutil.TypicalPersons.ALICE;
 
 import org.junit.jupiter.api.Test;
 
@@ -33,6 +34,10 @@ public class CommandResultTest {
 
         // different exit value -> returns false
         assertFalse(commandResult.equals(new CommandResult("feedback", false, true)));
+
+        // different student to show -> returns false
+        assertFalse(commandResult.equals(new CommandResult("feedback", ALICE)));
+        assertTrue(new CommandResult("feedback", ALICE).equals(new CommandResult("feedback", ALICE)));
     }
 
     @Test
@@ -50,6 +55,9 @@ public class CommandResultTest {
 
         // different exit value -> returns different hashcode
         assertNotEquals(commandResult.hashCode(), new CommandResult("feedback", false, true).hashCode());
+
+        // different student to show -> returns different hashcode
+        assertNotEquals(commandResult.hashCode(), new CommandResult("feedback", ALICE).hashCode());
     }
 
     @Test
@@ -57,7 +65,7 @@ public class CommandResultTest {
         CommandResult commandResult = new CommandResult("feedback");
         String expected = CommandResult.class.getCanonicalName() + "{feedbackToUser="
                 + commandResult.getFeedbackToUser() + ", showHelp=" + commandResult.isShowHelp()
-                + ", exit=" + commandResult.isExit() + "}";
+                + ", exit=" + commandResult.isExit() + ", personToShow=null}";
         assertEquals(expected, commandResult.toString());
     }
 }
