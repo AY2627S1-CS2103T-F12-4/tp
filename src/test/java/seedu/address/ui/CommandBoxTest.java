@@ -14,6 +14,7 @@ import org.junit.jupiter.api.Test;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.geometry.Bounds;
 import javafx.scene.Scene;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
@@ -64,10 +65,35 @@ public class CommandBoxTest {
                 press(input, KeyCode.TAB);
                 assertEquals("add", input.getText());
                 assertTrue(executed.isEmpty());
+                input.setText("export f/\"reports/grp/T09 attendance.csv\" gr");
+                input.end();
+                press(input, KeyCode.TAB);
+                assertEquals("export f/\"reports/grp/T09 attendance.csv\" grp/", input.getText());
+                input.setText("comment 1 c-");
+                input.end();
+                press(input, KeyCode.TAB);
+                assertEquals("comment 1 c-/", input.getText());
+                input.setText("mark al w/1 s/present");
+                input.positionCaret("mark al".length());
+                press(input, KeyCode.TAB);
+                assertEquals("mark all w/1 s/present", input.getText());
+                assertTrue(executed.isEmpty());
                 input.setText("list grp/T");
                 input.end();
                 Popup popup = popup(stage);
                 ListView<?> options = (ListView<?>) popup.getContent().getFirst();
+                input.setText("add n/Faris Abdul ");
+                input.end();
+                assertEquals(4, options.getItems().size());
+                for (KeyCode key : List.of(KeyCode.DOWN, KeyCode.DOWN, KeyCode.DOWN, KeyCode.DOWN,
+                        KeyCode.UP, KeyCode.UP, KeyCode.UP, KeyCode.UP)) {
+                    press(input, key);
+                    for (int i = 0; i < options.getItems().size(); i++) {
+                        assertVisible(options, i);
+                    }
+                }
+                input.setText("list grp/T");
+                input.end();
                 assertEquals(2, options.getItems().size());
                 press(input, KeyCode.DOWN);
                 press(input, KeyCode.TAB);
@@ -115,6 +141,23 @@ public class CommandBoxTest {
                 assertEquals(List.of("list grp/T"), executed);
                 assertEquals("", input.getText());
                 assertTrue(Window.getWindows().stream().noneMatch(window -> window instanceof Popup));
+
+                groups.addAll(new Group("T12"), new Group("T13"), new Group("T14"), new Group("T15"),
+                        new Group("T16"), new Group("T17"));
+                input.setText("list grp/T");
+                input.end();
+                for (int i = 0; i < options.getItems().size(); i++) {
+                    press(input, KeyCode.DOWN);
+                    assertVisible(options, options.getSelectionModel().getSelectedIndex());
+                }
+                press(input, KeyCode.UP);
+                assertEquals(options.getItems().size() - 1, options.getSelectionModel().getSelectedIndex());
+                assertVisible(options, options.getItems().size() - 1);
+                input.setText("add n/Faris Abdul ");
+                input.end();
+                for (int i = 0; i < options.getItems().size(); i++) {
+                    assertVisible(options, i);
+                }
                 return null;
             });
         } finally {
@@ -123,6 +166,16 @@ public class CommandBoxTest {
                 return null;
             });
         }
+    }
+
+    private static void assertVisible(ListView<?> options, int index) {
+        options.applyCss();
+        options.layout();
+        ListCell<?> cell = options.lookupAll(".list-cell").stream().map(node -> (ListCell<?>) node)
+                .filter(row -> !row.isEmpty() && row.getIndex() == index).findFirst().orElseThrow();
+        Bounds bounds = options.sceneToLocal(cell.localToScene(cell.getBoundsInLocal()));
+        assertTrue(bounds.getMinY() >= 0 && bounds.getMaxY() <= options.getHeight(),
+                "Suggestion " + index + " is outside the visible list: " + bounds);
     }
 
     private static Popup popup(Stage owner) {
