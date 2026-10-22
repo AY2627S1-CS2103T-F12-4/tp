@@ -11,6 +11,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import seedu.address.commons.exceptions.IllegalValueException;
 import seedu.address.model.attendance.Attendance;
+import seedu.address.model.person.Comment;
 import seedu.address.model.person.Email;
 import seedu.address.model.person.Group;
 import seedu.address.model.person.Matric;
@@ -29,6 +30,7 @@ class JsonAdaptedPerson {
     private final String email;
     private final String matric;
     private final String group;
+    private final String comment;
     private final List<JsonAdaptedTag> tags = new ArrayList<>();
     private final List<JsonAdaptedAttendance> attendances = new ArrayList<>();
 
@@ -38,12 +40,14 @@ class JsonAdaptedPerson {
     @JsonCreator
     public JsonAdaptedPerson(@JsonProperty("name") String name, @JsonProperty("email") String email,
             @JsonProperty("matric") String matric, @JsonProperty("group") String group,
+            @JsonProperty("comment") String comment,
             @JsonProperty("tags") List<JsonAdaptedTag> tags,
             @JsonProperty("attendances") List<JsonAdaptedAttendance> attendances) {
         this.name = name;
         this.email = email;
         this.matric = matric;
         this.group = group;
+        this.comment = comment;
         if (tags != null) {
             this.tags.addAll(tags);
         }
@@ -60,6 +64,7 @@ class JsonAdaptedPerson {
         email = source.getEmail().value;
         matric = source.getMatric().value;
         group = source.getGroup().value;
+        comment = source.getComment().value;
         tags.addAll(source.getTags().stream()
                 .map(JsonAdaptedTag::new)
                 .collect(Collectors.toList()));
@@ -111,6 +116,16 @@ class JsonAdaptedPerson {
         }
         final Group modelGroup = new Group(group);
 
+        // An absent comment is written as null or omitted entirely, and reads back as the empty comment.
+        final Comment modelComment;
+        if (comment == null || Comment.normalize(comment).isEmpty()) {
+            modelComment = Comment.EMPTY;
+        } else if (!Comment.isValidComment(comment)) {
+            throw new IllegalValueException(Comment.MESSAGE_CONSTRAINTS);
+        } else {
+            modelComment = new Comment(comment);
+        }
+
         final Set<Tag> modelTags = new HashSet<>(personTags);
 
         final Set<Attendance> modelAttendances = new HashSet<>();
@@ -122,7 +137,7 @@ class JsonAdaptedPerson {
         }
 
         return new Person(modelName, modelEmail, modelMatric, modelGroup, modelTags,
-                modelAttendances);
+                modelAttendances, modelComment);
     }
 
 }

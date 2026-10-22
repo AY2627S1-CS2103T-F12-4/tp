@@ -5,6 +5,7 @@ import java.util.Set;
 
 import seedu.address.model.attendance.Attendance;
 import seedu.address.model.attendance.Status;
+import seedu.address.model.person.Comment;
 import seedu.address.model.person.Email;
 import seedu.address.model.person.Group;
 import seedu.address.model.person.Matric;
@@ -28,6 +29,7 @@ public class PersonBuilder {
     private Email email;
     private Matric matric;
     private Group group;
+    private Comment comment;
     private Set<Tag> tags;
     private Set<Attendance> attendances;
 
@@ -39,6 +41,7 @@ public class PersonBuilder {
         email = new Email(DEFAULT_EMAIL);
         matric = new Matric(DEFAULT_MATRIC);
         group = new Group(DEFAULT_GROUP);
+        comment = Comment.EMPTY;
         tags = new HashSet<>();
         attendances = new HashSet<>();
     }
@@ -51,6 +54,7 @@ public class PersonBuilder {
         email = personToCopy.getEmail();
         matric = personToCopy.getMatric();
         group = personToCopy.getGroup();
+        comment = personToCopy.getComment();
         tags = new HashSet<>(personToCopy.getTags());
         attendances = new HashSet<>(personToCopy.getAttendances());
     }
@@ -105,8 +109,17 @@ public class PersonBuilder {
         return this;
     }
 
+    /**
+     * Sets the {@code Comment} of the {@code Person} that we are building.
+     * An empty string gives the person no comment.
+     */
+    public PersonBuilder withComment(String comment) {
+        this.comment = comment.isEmpty() ? Comment.EMPTY : new Comment(comment);
+        return this;
+    }
+
     public Person build() {
-        return new Person(name, email, matric, group, tags, attendances);
+        return new Person(name, email, matric, group, tags, attendances, comment);
     }
 
 }

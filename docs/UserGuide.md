@@ -101,6 +101,8 @@ Parameter | Accepted value
 `n/NAME` | 1–70 characters. Letters and their accents, spaces, hyphens, apostrophes, full stops and the relationship abbreviations `s/o`, `d/o`, `a/l`, `a/p` (in any letter case). Must begin with a letter and end with a letter, accent or full stop. Examples: `J. Tan`, `Ravi s/o Kumar`. Surrounding spaces are removed, repeated spaces become one space, and letter case is preserved.
 `m/MATRIC` | `A`, followed by seven digits and one letter, e.g. `A0287654J`. Surrounding spaces are removed and letters are converted to uppercase.
 `e/EMAIL` | A valid email address such as `alex.tan@example.com`. Surrounding spaces are removed and the address is converted to lowercase.
+`c/COMMENT` | Text to add to a student's existing comment. 1–200 characters once surrounding spaces are removed and repeated spaces become one space.
+`c-/COMMENT` | Text to replace a student's comment with. Same rules as `c/`, except that `c-/` on its own clears the comment.
 `t/TAG` | One or more letters or digits, with no spaces or other characters. Repeat `t/` to give a student multiple tags.
 `w/WEEK` | A whole number from `1` to `13`, without a leading zero.
 `d/DATE` | A real calendar date in `YYYY-MM-DD` format.
@@ -325,6 +327,40 @@ Examples:
 * `list grp/T09` followed by `delete 1` deletes the first displayed student in `T09`.
 * `find n/Betsy` followed by `delete 1` deletes the first student in the search results.
 
+### Commenting on a student: `comment`
+
+Records a short note about a displayed student, such as what they contributed or what to follow up on.
+
+Formats:
+
+* `comment INDEX c/COMMENT` — add to the student's existing comment.
+* `comment INDEX c-/COMMENT` — replace the student's comment.
+* `comment INDEX c-/` — clear the student's comment.
+
+Examples:
+
+* `comment 3 c/attentive` sets the comment to `attentive` when the student has none.
+* `comment 3 c/asks good questions` then makes it `attentive; asks good questions`.
+* `comment 3 c-/needs help with recursion` discards whatever was there and keeps only the new text `needs help with recursion`.
+* `comment 3 c-/` removes the comment entirely.
+
+* `INDEX` refers to the currently displayed student list.
+* `c/` only ever adds. Repeated notes are joined with `; ` in the order they were added, so a comment reads as a short history.
+* `c-/` is the only form that discards an existing note, so a comment is never lost without you having typed it.
+* A comment is limited to 200 characters. Adding to a comment fails if the combined text would be longer, and the existing comment is left unchanged.
+* Clearing a student who has no comment reports that there was nothing to clear.
+* Giving both `c/` and `c-/` in one command is rejected, as is giving neither.
+* The displayed list and its indexes stay unchanged after a successful comment.
+
+On success, Roster names the student and shows the resulting comment, so you can check it before moving on.
+
+<div markdown="span" class="alert alert-primary">:bulb: **Tip:**
+Because `c/` appends, you can add to a note during the tutorial without retyping what you wrote last week.
+</div>
+
+<div markdown="span" class="alert alert-warning">:exclamation: **Caution:**
+A comment cannot contain a space followed by `c/` or `c-/`, because Roster reads those as the start of another parameter. A note such as `ask about c/c++` is rejected rather than saved incorrectly.
+
 ### Deleting all displayed students: `delete all`
 
 Deletes every student in the displayed list, and all of their attendance records. Tutorial groups and their sessions are kept, even if they become empty.
@@ -526,6 +562,7 @@ Action | Format, example
 **Delete student** | `delete INDEX`<br>e.g. `delete 3`
 **Delete all displayed students** | `delete all`
 **Mark attendance** | `mark INDEX w/WEEK s/STATUS`<br>e.g. `mark 3 w/5 s/present`
+**Comment on student** | `comment INDEX c/COMMENT` to add, `comment INDEX c-/COMMENT` to replace, `comment INDEX c-/` to clear<br>e.g. `comment 3 c/attentive`
 **Mark all displayed students** | `mark all w/WEEK s/STATUS`<br>e.g. `mark all w/5 s/present`
 **Export attendance** | `export f/FILE_PATH [grp/GROUP]`<br>e.g. `export f/attendance.csv grp/T09`
 **Undo previous change** | `undo` or `Ctrl+Z` (`Command+Z` on macOS)
