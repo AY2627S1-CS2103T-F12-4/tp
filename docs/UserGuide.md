@@ -363,7 +363,7 @@ Examples:
 * `delete 3` followed by `undo` restores the deleted student and their attendance records.
 * `clear` followed by `undo` restores the entire roster.
 
-* Each `undo` reverses one successful data-changing command, including `delete` and `clear`.
+* Each `undo` reverses one successful data-changing command.
 * Multiple `undo` commands reverse earlier changes one at a time.
 * `list`, `find`, `export`, `help`, `exit`, invalid commands, and failed commands do not affect the undo history.
 * If there are no changes to undo, Roster displays an error without changing any data.
