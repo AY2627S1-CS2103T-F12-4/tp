@@ -179,6 +179,32 @@ Examples:
 
 On success, Roster displays a confirmation such as `Added Alex Tan (A0123456X) to tutorial group T09.` When Roster switches to the student's group, the confirmation ends with `Now showing T09.`
 
+### Editing a student: `edit`
+
+Edits the student identified by their index in the currently displayed student list. Only the provided fields are changed; all other details remain unchanged.
+
+Format: `edit INDEX [n/NAME] [e/EMAIL] [m/MATRIC] [grp/GROUP] [t/TAG]...`
+
+Examples:
+
+* `edit 1 n/Alex Tan`
+* `edit 2 m/A0123456X e/alex@example.com`
+* `edit 3 grp/T10`
+* `edit 1 t/class-rep t/needs-follow-up`
+* `edit 2 e/bernice@example.com n/Bernice Tan grp/T09`
+
+* `INDEX` must identify a student in the currently displayed student list.
+* At least one field must be provided. Parameters may be provided in any order.
+* The edited matriculation number and email address must remain unique across all students.
+* The specified tutorial group must already exist.
+* Each of `n/NAME`, `e/EMAIL`, `m/MATRIC`, and `grp/GROUP` may appear only once.
+* Repeating `t/TAG` assigns multiple tags. The provided tags replace all existing tags; use an empty `t/` to remove all tags.
+* Attendance cannot be changed using `edit`; use `mark` instead.
+* Moving a student to another tutorial group removes their attendance records from the previous group. Sessions in the new group start as unmarked.
+* Invalid values, unsupported parameters, and duplicate information are rejected without changing the student.
+
+On success, Roster displays `Edited student:` followed by the updated student details.
+
 
 ### Listing students: `list`
 
