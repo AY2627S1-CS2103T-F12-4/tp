@@ -26,12 +26,10 @@ public class Person {
 
     // Identity fields
     private final Name name;
-    private final Phone phone;
     private final Email email;
     private final Matric matric;
 
     // Data fields
-    private final Address address;
     private final Group group;
     private final Comment comment;
     private final Set<Tag> tags = new HashSet<>();
@@ -41,32 +39,29 @@ public class Person {
      * Creates a person with no attendance records.
      * Every field must be present and not null.
      */
-    public Person(Name name, Phone phone, Email email, Address address, Matric matric, Group group,
-            Set<Tag> tags) {
-        this(name, phone, email, address, matric, group, tags, Collections.emptySet());
+    public Person(Name name, Email email, Matric matric, Group group, Set<Tag> tags) {
+        this(name, email, matric, group, tags, Collections.emptySet());
     }
 
     /**
      * Every field must be present and not null.
      * {@code attendances} must satisfy {@link #areValidAttendances(Group, Collection)}.
      */
-    public Person(Name name, Phone phone, Email email, Address address, Matric matric, Group group,
+    public Person(Name name, Email email, Matric matric, Group group,
             Set<Tag> tags, Set<Attendance> attendances) {
-        this(name, phone, email, address, matric, group, tags, attendances, Comment.EMPTY);
+        this(name, email, matric, group, tags, attendances, Comment.EMPTY);
     }
 
     /**
      * Every field must be present and not null.
      * {@code attendances} must satisfy {@link #areValidAttendances(Group, Collection)}.
      */
-    public Person(Name name, Phone phone, Email email, Address address, Matric matric, Group group,
+    public Person(Name name, Email email, Matric matric, Group group,
             Set<Tag> tags, Set<Attendance> attendances, Comment comment) {
-        requireAllNonNull(name, phone, email, address, matric, group, tags, attendances, comment);
+        requireAllNonNull(name, email, matric, group, tags, attendances, comment);
         checkArgument(areValidAttendances(group, attendances), MESSAGE_INVALID_ATTENDANCES);
         this.name = name;
-        this.phone = phone;
         this.email = email;
-        this.address = address;
         this.matric = matric;
         this.comment = comment;
         this.group = group;
@@ -95,16 +90,8 @@ public class Person {
         return name;
     }
 
-    public Phone getPhone() {
-        return phone;
-    }
-
     public Email getEmail() {
         return email;
-    }
-
-    public Address getAddress() {
-        return address;
     }
 
     public Matric getMatric() {
@@ -153,7 +140,7 @@ public class Person {
         Set<Attendance> updatedAttendances = new HashSet<>(attendances);
         updatedAttendances.removeIf(existing -> existing.isForSession(attendance.getSession()));
         updatedAttendances.add(attendance);
-        return new Person(name, phone, email, address, matric, group, tags, updatedAttendances, comment);
+        return new Person(name, email, matric, group, tags, updatedAttendances, comment);
     }
 
     /**
@@ -161,7 +148,7 @@ public class Person {
      */
     public Person withComment(Comment updatedComment) {
         requireAllNonNull(updatedComment);
-        return new Person(name, phone, email, address, matric, group, tags, attendances, updatedComment);
+        return new Person(name, email, matric, group, tags, attendances, updatedComment);
     }
 
     /**
@@ -205,9 +192,7 @@ public class Person {
         }
 
         return name.equals(otherPerson.name)
-                && phone.equals(otherPerson.phone)
                 && email.equals(otherPerson.email)
-                && address.equals(otherPerson.address)
                 && matric.equals(otherPerson.matric)
                 && comment.equals(otherPerson.comment)
                 && group.equals(otherPerson.group)
@@ -218,16 +203,14 @@ public class Person {
     @Override
     public int hashCode() {
         // use this method for custom fields hashing instead of implementing your own
-        return Objects.hash(name, phone, email, address, matric, group, tags, attendances, comment);
+        return Objects.hash(name, email, matric, group, tags, attendances, comment);
     }
 
     @Override
     public String toString() {
         return new ToStringBuilder(this)
                 .add("name", name)
-                .add("phone", phone)
                 .add("email", email)
-                .add("address", address)
                 .add("matric", matric)
                 .add("group", group)
                 .add("comment", comment)

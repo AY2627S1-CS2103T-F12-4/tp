@@ -9,6 +9,8 @@ import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.logging.Logger;
 
+import javafx.beans.property.ReadOnlyBooleanProperty;
+import javafx.beans.property.ReadOnlyBooleanWrapper;
 import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.collections.ObservableList;
@@ -34,6 +36,7 @@ public class ModelManager implements Model {
     private final FilteredList<Person> filteredPersons;
     private final SortedList<Person> displayedPersons;
     private final ReadOnlyObjectWrapper<Group> activeGroup = new ReadOnlyObjectWrapper<>();
+    private final ReadOnlyBooleanWrapper showingAllStudents = new ReadOnlyBooleanWrapper(true);
 
     /**
      * Initializes a ModelManager with the given addressBook and userPrefs.
@@ -131,6 +134,7 @@ public class ModelManager implements Model {
         if (!hasGroup(group)) {
             throw new IllegalArgumentException("Active tutorial group must be registered");
         }
+        showingAllStudents.set(false);
         activeGroup.set(group);
     }
 
@@ -168,6 +172,11 @@ public class ModelManager implements Model {
     }
 
     @Override
+    public ReadOnlyBooleanProperty showingAllStudentsProperty() {
+        return showingAllStudents.getReadOnlyProperty();
+    }
+
+    @Override
     public ReadOnlyObjectProperty<Group> activeGroupProperty() {
         return activeGroup.getReadOnlyProperty();
     }
@@ -193,6 +202,7 @@ public class ModelManager implements Model {
         requireNonNull(predicate);
         filteredPersons.setPredicate(predicate);
         displayedPersons.setComparator(comparator);
+        showingAllStudents.set(predicate == PREDICATE_SHOW_ALL_PERSONS);
         activeGroup.set(null);
     }
 
@@ -210,6 +220,7 @@ public class ModelManager implements Model {
         return addressBook.equals(otherModelManager.addressBook)
                 && userPrefs.equals(otherModelManager.userPrefs)
                 && Objects.equals(activeGroup.get(), otherModelManager.activeGroup.get())
+                && showingAllStudents.get() == otherModelManager.showingAllStudents.get()
                 && displayedPersons.equals(otherModelManager.displayedPersons);
     }
 

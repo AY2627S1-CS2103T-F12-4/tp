@@ -34,3 +34,21 @@ This project has three types of tests:
    For example: `seedu.address.storage.StorageManagerTest`
 1. *Hybrid tests* combine unit and integration testing. These tests check both the individual units and how they work together.<br>
    For example: `seedu.address.logic.LogicManagerTest`
+
+--------------------------------------------------------------------------------------------------------------------
+
+## Style checks and coverage
+
+Run `./gradlew check coverage` (Windows: `gradlew check coverage`) before submitting a change.
+This runs the tests and Checkstyle, then writes an HTML coverage report to
+`build/reports/jacoco/coverage/html/index.html` and the XML report used by Codecov to
+`build/reports/jacoco/coverage/coverage.xml`. The GitHub workflow runs the checks on Linux, macOS and Windows.
+
+Inspect uncovered branches as well as lines, especially validation failures and file errors. Coverage
+shows which paths ran; tests still need assertions about results, preserved data and error messages.
+For storage tests, use temporary folders and keep test output separate from real roster files.
+
+Java assertions must be enabled when testing internal invariants. Gradle's test runner enables them;
+for an IDE or packaged application, add VM option `-ea`, for example `java -ea -jar roster.jar`.
+The [manual-testing appendix](DeveloperGuide.md#appendix-instructions-for-manual-testing) covers launch,
+deletion and data recovery, and should also be used when testing a release candidate.

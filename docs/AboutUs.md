@@ -32,7 +32,7 @@ We are a team based in the [School of Computing, National University of Singapor
 [[github](https://github.com/Qu-Jingran)]
 
 * Role: Developer
-* Responsibilities: UI
+* Responsibilities: Student search, CSV data features, and related testing and documentation.
 
 ### Tan Khian Yiong Thomas
 

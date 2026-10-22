@@ -16,6 +16,7 @@ import seedu.address.logic.Messages;
 import seedu.address.logic.commands.AddCommand;
 import seedu.address.logic.commands.ClearCommand;
 import seedu.address.logic.commands.CommentCommand;
+import seedu.address.logic.commands.DeleteAllCommand;
 import seedu.address.logic.commands.DeleteCommand;
 import seedu.address.logic.commands.EditCommand;
 import seedu.address.logic.commands.EditCommand.EditPersonDescriptor;
@@ -24,6 +25,7 @@ import seedu.address.logic.commands.FindCommand;
 import seedu.address.logic.commands.HelpCommand;
 import seedu.address.logic.commands.InitCommand;
 import seedu.address.logic.commands.ListCommand;
+import seedu.address.logic.commands.MarkAllCommand;
 import seedu.address.logic.commands.MarkCommand;
 import seedu.address.logic.commands.SessionCommand;
 import seedu.address.logic.parser.exceptions.ParseException;
@@ -51,12 +53,6 @@ public class AddressBookParserTest {
     }
 
     @Test
-    public void parseCommand_add_preservesAddressWhitespace() throws Exception {
-        Person person = new PersonBuilder().withAddress("Block  12, Kent Ridge").build();
-        assertEquals(new AddCommand(person), parser.parseCommand(PersonUtil.getAddCommand(person)));
-    }
-
-    @Test
     public void parseCommand_clear() throws Exception {
         assertTrue(parser.parseCommand(ClearCommand.COMMAND_WORD) instanceof ClearCommand);
         assertTrue(parser.parseCommand(ClearCommand.COMMAND_WORD + " 3") instanceof ClearCommand);
@@ -81,6 +77,10 @@ public class AddressBookParserTest {
         CommentCommand command = (CommentCommand) parser.parseCommand(
                 CommentCommand.COMMAND_WORD + " " + INDEX_FIRST_PERSON.getOneBased() + " c-/");
         assertEquals(new CommentCommand(INDEX_FIRST_PERSON, Comment.EMPTY, true), command);
+    
+    @Test
+    public void parseCommand_deleteAll() throws Exception {
+        assertEquals(new DeleteAllCommand(), parser.parseCommand("delete all"));
     }
 
     @Test
@@ -124,7 +124,7 @@ public class AddressBookParserTest {
     @Test
     public void parseCommand_findWithWhitespace_keepsQueryValidation() {
         assertThrows(ParseException.class, FindCommand.MESSAGE_UNKNOWN_PARAMETER, () ->
-                parser.parseCommand("find\u00a0n/John\u2003grp/T09"));
+                parser.parseCommand("find\u00a0n/John\u2003e/john@example.com"));
         assertThrows(ParseException.class, Messages.getErrorMessageForDuplicatePrefixes(PREFIX_NAME), () ->
                 parser.parseCommand("find n/John\n n/Tan"));
         assertThrows(ParseException.class, NameContainsQueryPredicate.MESSAGE_CONSTRAINTS, () ->
@@ -164,6 +164,11 @@ public class AddressBookParserTest {
         MarkCommand command = (MarkCommand) parser.parseCommand(MarkCommand.COMMAND_WORD + " "
                 + INDEX_FIRST_PERSON.getOneBased() + " w/5 s/absent");
         assertEquals(new MarkCommand(INDEX_FIRST_PERSON, new Week(5), Status.ABSENT), command);
+    }
+
+    @Test
+    public void parseCommand_markAll() throws Exception {
+        assertEquals(new MarkAllCommand(new Week(5), Status.PRESENT), parser.parseCommand("mark all w/5 s/present"));
     }
 
     @Test

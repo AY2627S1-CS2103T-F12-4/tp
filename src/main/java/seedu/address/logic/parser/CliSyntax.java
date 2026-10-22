@@ -7,9 +7,7 @@ public class CliSyntax {
 
     /* Prefix definitions */
     public static final Prefix PREFIX_NAME = new Prefix("n/");
-    public static final Prefix PREFIX_PHONE = new Prefix("p/");
     public static final Prefix PREFIX_EMAIL = new Prefix("e/");
-    public static final Prefix PREFIX_ADDRESS = new Prefix("a/");
     public static final Prefix PREFIX_MATRIC = new Prefix("m/");
     public static final Prefix PREFIX_GROUP = new Prefix("grp/");
     public static final Prefix PREFIX_COMMENT = new Prefix("c/");
@@ -18,5 +16,9 @@ public class CliSyntax {
     public static final Prefix PREFIX_WEEK = new Prefix("w/");
     public static final Prefix PREFIX_DATE = new Prefix("d/");
     public static final Prefix PREFIX_STATUS = new Prefix("s/");
+    public static final Prefix PREFIX_FILE = new Prefix("f/");
+
+    /* Keyword given in place of an index, to apply a command to every displayed student */
+    public static final String KEYWORD_ALL = "all";
 
 }

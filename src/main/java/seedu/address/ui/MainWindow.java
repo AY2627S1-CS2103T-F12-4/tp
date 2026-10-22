@@ -118,7 +118,8 @@ public class MainWindow extends UiPart<Stage> {
      * Fills up all the placeholders of this window.
      */
     void fillInnerParts() {
-        groupListPanel = new GroupListPanel(logic.getGroupList(), logic.activeGroupProperty());
+        groupListPanel = new GroupListPanel(logic.getGroupList(), logic.activeGroupProperty(),
+                logic.showingAllStudentsProperty(), this::navigateToGroup);
         groupListPanelPlaceholder.getChildren().add(groupListPanel.getRoot());
 
         personListPanel = new PersonListPanel(logic.getFilteredPersonList(), logic.getSessionList(),
@@ -131,7 +132,7 @@ public class MainWindow extends UiPart<Stage> {
         StatusBarFooter statusBarFooter = new StatusBarFooter(dataFilePath);
         statusbarPlaceholder.getChildren().add(statusBarFooter.getRoot());
 
-        CommandBox commandBox = new CommandBox(this::executeCommand);
+        CommandBox commandBox = new CommandBox(this::executeCommand, logic.getGroupList());
         commandBoxPlaceholder.getChildren().add(commandBox.getRoot());
     }
 
@@ -179,6 +180,15 @@ public class MainWindow extends UiPart<Stage> {
         return personListPanel;
     }
 
+    /** Runs navigation through the usual command path without touching unfinished command input. */
+    private void navigateToGroup(String commandText) {
+        try {
+            executeCommand(commandText);
+        } catch (CommandException | ParseException e) {
+            // executeCommand has already displayed and logged the error.
+        }
+    }
+
     /**
      * Executes the command and returns the result.
      *
@@ -189,6 +199,9 @@ public class MainWindow extends UiPart<Stage> {
             CommandResult commandResult = logic.execute(commandText);
             logger.info("Result: " + commandResult.getFeedbackToUser());
             resultDisplay.setFeedbackToUser(commandResult.getFeedbackToUser());
+            // A highlight is only kept until the next command, so it never marks an unrelated student
+            commandResult.getPersonToShow()
+                    .ifPresentOrElse(personListPanel::scrollTo, personListPanel::clearSelection);
 
             if (commandResult.isShowHelp()) {
                 handleHelp();
@@ -202,6 +215,7 @@ public class MainWindow extends UiPart<Stage> {
         } catch (CommandException | ParseException e) {
             logger.info("An error occurred while executing command: " + commandText);
             resultDisplay.setFeedbackToUser(e.getMessage());
+            personListPanel.clearSelection();
             throw e;
         }
     }

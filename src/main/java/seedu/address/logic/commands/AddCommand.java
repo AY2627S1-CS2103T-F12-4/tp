@@ -1,14 +1,15 @@
 package seedu.address.logic.commands;
 
 import static java.util.Objects.requireNonNull;
-import static seedu.address.logic.parser.CliSyntax.PREFIX_ADDRESS;
 import static seedu.address.logic.parser.CliSyntax.PREFIX_EMAIL;
 import static seedu.address.logic.parser.CliSyntax.PREFIX_GROUP;
 import static seedu.address.logic.parser.CliSyntax.PREFIX_MATRIC;
 import static seedu.address.logic.parser.CliSyntax.PREFIX_NAME;
-import static seedu.address.logic.parser.CliSyntax.PREFIX_PHONE;
 import static seedu.address.logic.parser.CliSyntax.PREFIX_TAG;
 
+import java.util.logging.Logger;
+
+import seedu.address.commons.core.LogsCenter;
 import seedu.address.commons.util.ToStringBuilder;
 import seedu.address.logic.commands.exceptions.CommandException;
 import seedu.address.model.Model;
@@ -24,30 +25,30 @@ public class AddCommand extends Command {
     public static final String MESSAGE_USAGE = COMMAND_WORD + ": Adds a student to Roster. "
             + "Parameters: "
             + PREFIX_NAME + "NAME "
-            + PREFIX_PHONE + "PHONE "
             + PREFIX_EMAIL + "EMAIL "
-            + PREFIX_ADDRESS + "ADDRESS "
             + PREFIX_MATRIC + "MATRIC "
             + PREFIX_GROUP + "GROUP "
             + "[" + PREFIX_TAG + "TAG]...\n"
             + "Example: " + COMMAND_WORD + " "
             + PREFIX_NAME + "John Doe "
-            + PREFIX_PHONE + "98765432 "
             + PREFIX_EMAIL + "johnd@example.com "
-            + PREFIX_ADDRESS + "311, Clementi Ave 2, #02-25 "
             + PREFIX_MATRIC + "A0123456X "
             + PREFIX_GROUP + "T09 "
             + PREFIX_TAG + "friends "
             + PREFIX_TAG + "owesMoney";
 
     public static final String MESSAGE_SUCCESS = "Added %1$s (%2$s) to tutorial group %3$s.";
+    public static final String MESSAGE_SUCCESS_SHOWING_GROUP =
+            "Added %1$s (%2$s) to tutorial group %3$s. Now showing %3$s.";
     public static final String MESSAGE_DUPLICATE_PERSON =
             "A student with matriculation number %1$s already exists.";
     public static final String MESSAGE_DUPLICATE_EMAIL = "A student with email %1$s already exists.";
     public static final String MESSAGE_UNKNOWN_GROUP =
             "Tutorial group %1$s does not exist. Create it first with the init command.";
     public static final String MESSAGE_UNKNOWN_PARAMETER =
-            "Unexpected input. Use only: n/, p/, e/, a/, m/, grp/ and t/.";
+            "Unexpected input. Use only: n/, e/, m/, grp/ and t/.";
+
+    private static final Logger logger = LogsCenter.getLogger(AddCommand.class);
 
     private final Person toAdd;
 
@@ -76,8 +77,20 @@ public class AddCommand extends Command {
         }
 
         model.addPerson(toAdd);
+        assert model.hasPerson(toAdd) : "The new student should be in Roster";
+        // A student outside the displayed list would be added out of sight, so their group is shown instead
+        if (!model.getFilteredPersonList().contains(toAdd)) {
+            model.showGroup(toAdd.getGroup());
+            assert model.getFilteredPersonList().contains(toAdd)
+                    : "The new student should be displayed once their group is shown";
+            logger.fine("Added " + toAdd.getMatric() + " outside the displayed list, so showing " + toAdd.getGroup());
+            return new CommandResult(String.format(MESSAGE_SUCCESS_SHOWING_GROUP,
+                    toAdd.getName(), toAdd.getMatric(), toAdd.getGroup()), toAdd);
+        }
+        logger.fine("Added " + toAdd.getMatric() + " to " + toAdd.getGroup());
+        // The list is sorted by matriculation number, so the new student can be anywhere in it
         return new CommandResult(String.format(MESSAGE_SUCCESS,
-                toAdd.getName(), toAdd.getMatric(), toAdd.getGroup()));
+                toAdd.getName(), toAdd.getMatric(), toAdd.getGroup()), toAdd);
     }
 
     @Override

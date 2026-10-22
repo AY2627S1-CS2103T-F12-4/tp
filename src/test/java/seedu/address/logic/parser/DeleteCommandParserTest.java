@@ -7,6 +7,7 @@ import static seedu.address.testutil.TypicalIndexes.INDEX_FIRST_PERSON;
 
 import org.junit.jupiter.api.Test;
 
+import seedu.address.logic.commands.DeleteAllCommand;
 import seedu.address.logic.commands.DeleteCommand;
 
 /**
@@ -28,6 +29,20 @@ public class DeleteCommandParserTest {
     @Test
     public void parse_invalidArgs_throwsParseException() {
         assertParseFailure(parser, "a", String.format(MESSAGE_INVALID_COMMAND_FORMAT, DeleteCommand.MESSAGE_USAGE));
+    }
+
+    @Test
+    public void parse_all_returnsDeleteAllCommand() {
+        assertParseSuccess(parser, "all", new DeleteAllCommand());
+        assertParseSuccess(parser, "  all  ", new DeleteAllCommand());
+    }
+
+    @Test
+    public void parse_allWithOtherText_throwsParseException() {
+        for (String args : new String[]{"all 3", "all all", "ALL", "3 all"}) {
+            assertParseFailure(parser, args,
+                    String.format(MESSAGE_INVALID_COMMAND_FORMAT, DeleteCommand.MESSAGE_USAGE));
+        }
     }
 
     @Test

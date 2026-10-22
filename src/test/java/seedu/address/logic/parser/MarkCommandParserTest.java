@@ -10,6 +10,7 @@ import static seedu.address.testutil.TypicalIndexes.INDEX_THIRD_PERSON;
 import org.junit.jupiter.api.Test;
 
 import seedu.address.logic.Messages;
+import seedu.address.logic.commands.MarkAllCommand;
 import seedu.address.logic.commands.MarkCommand;
 import seedu.address.model.attendance.Status;
 import seedu.address.model.session.Week;
@@ -20,6 +21,29 @@ public class MarkCommandParserTest {
             String.format(MESSAGE_INVALID_COMMAND_FORMAT, MarkCommand.MESSAGE_USAGE);
 
     private final MarkCommandParser parser = new MarkCommandParser();
+
+    @Test
+    public void parse_all_returnsMarkAllCommand() {
+        MarkAllCommand expectedCommand = new MarkAllCommand(new Week(5), Status.PRESENT);
+
+        assertParseSuccess(parser, "all w/5 s/present", expectedCommand);
+        assertParseSuccess(parser, "  all   s/PRESENT  w/5 ", expectedCommand);
+    }
+
+    @Test
+    public void parse_allWithInvalidArguments_failure() {
+        // missing parameter, or other text alongside all
+        assertParseFailure(parser, "all w/5", MESSAGE_INVALID_FORMAT);
+        assertParseFailure(parser, "all 3 w/5 s/present", MESSAGE_INVALID_FORMAT);
+        assertParseFailure(parser, "ALL w/5 s/present", MESSAGE_INVALID_FORMAT);
+
+        // invalid values
+        assertParseFailure(parser, "all w/14 s/present", Week.MESSAGE_CONSTRAINTS);
+        assertParseFailure(parser, "all w/5 s/late", Status.MESSAGE_CONSTRAINTS);
+
+        // repeated parameter
+        assertParseFailure(parser, "all w/5 w/6 s/present", Messages.getErrorMessageForDuplicatePrefixes(PREFIX_WEEK));
+    }
 
     @Test
     public void parse_allFieldsPresent_success() {

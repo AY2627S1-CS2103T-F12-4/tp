@@ -41,8 +41,8 @@ public class AddCommandIntegrationTest {
         expectedModel.addPerson(validPerson);
 
         assertCommandSuccess(new AddCommand(validPerson), model,
-                String.format(AddCommand.MESSAGE_SUCCESS, validPerson.getName(),
-                        validPerson.getMatric(), validPerson.getGroup()),
+                new CommandResult(String.format(AddCommand.MESSAGE_SUCCESS, validPerson.getName(),
+                        validPerson.getMatric(), validPerson.getGroup()), validPerson),
                 expectedModel);
     }
 

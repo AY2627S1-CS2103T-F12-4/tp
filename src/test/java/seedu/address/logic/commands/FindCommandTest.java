@@ -8,6 +8,7 @@ import static seedu.address.testutil.Assert.assertThrows;
 
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Optional;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -134,7 +135,7 @@ public class FindCommandTest {
     public void parse_invalidSearch_preservesPreviousResultsAndRoster() throws Exception {
         parser.parseCommand("find n/John").execute(model);
         for (String input : new String[]{"find John", "find n/", "find n/John n/Tan",
-            "find n/John grp/T09", "find n/John123", "find\u00a0n/John\u2003grp/T09",
+            "find n/John e/john@example.com", "find n/John123", "find\u00a0n/John\u2003x/T09",
             "find n/John\n n/Tan", "find\u2003n/John2"}) {
             assertThrows(ParseException.class, () -> parser.parseCommand(input));
             assertEquals(List.of(johnny, johnTan, johnson, johnLim, johnTanner), model.getFilteredPersonList());
@@ -178,13 +179,25 @@ public class FindCommandTest {
     }
 
     @Test
-    public void execute_addAfterSearch_preservesResultsAndMatricOrder() throws Exception {
+    public void execute_addMatchingSearch_keepsResultsInMatricOrder() throws Exception {
+        parser.parseCommand("find n/John").execute(model);
+        Person johnDoe = new PersonBuilder().withName("John Doe").withEmail("johndoe@example.com").build();
+        new AddCommand(johnDoe).execute(model);
+
+        assertEquals(List.of(johnny, johnTan, johnson, johnLim, johnTanner, johnDoe),
+                model.getFilteredPersonList());
+    }
+
+    @Test
+    public void execute_addNotMatchingSearch_showsNewStudentsGroup() throws Exception {
         parser.parseCommand("find n/John").execute(model);
         Person alice = new PersonBuilder().withName("Alice").withEmail("alice@example.com").build();
         new AddCommand(alice).execute(model);
 
-        assertEquals(List.of(johnny, johnTan, johnson, johnLim, johnTanner),
+        // Alice does not match the search, so her group is shown for her to be visible
+        assertEquals(List.of(johnny, johnTan, johnson, johnLim, johnTanner, meiTan, alice),
                 model.getFilteredPersonList());
+        assertEquals(Optional.of(alice.getGroup()), model.getActiveGroup());
     }
 
     @Test
@@ -236,7 +249,7 @@ public class FindCommandTest {
     public void toStringMethod() {
         NameContainsQueryPredicate predicate = new NameContainsQueryPredicate("keyword");
         FindCommand command = new FindCommand(predicate);
-        String expected = FindCommand.class.getCanonicalName() + "{predicate=" + predicate + "}";
+        String expected = FindCommand.class.getCanonicalName() + "{predicate=n/\"keyword\"}";
         assertEquals(expected, command.toString());
     }
 }
