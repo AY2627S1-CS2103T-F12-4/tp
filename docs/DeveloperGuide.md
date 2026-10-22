@@ -75,7 +75,11 @@ The **API** of this component is specified in [`Ui.java`](https://github.com/AY2
 
 ![Structure of the UI Component](images/UiClassDiagram.png)
 
-The UI consists of a `MainWindow` and its parts, such as `CommandBox`, `ResultDisplay`, `PersonListPanel`, and `StatusBarFooter`. All of these, including `MainWindow`, inherit from the abstract `UiPart` class, which captures common behavior among classes that represent visible GUI parts.
+The UI consists of a `MainWindow` and its parts, such as `CommandBox`, `ResultDisplay`, `GroupListPanel`, `PersonListPanel`, and `StatusBarFooter`. All of these, including `MainWindow`, inherit from the abstract `UiPart` class, which captures common behavior among classes that represent visible GUI parts.
+
+* `GroupListPanel` lists **All students** and the registered tutorial groups. Choosing an entry runs the matching `list` command, so clicking and typing behave the same way.
+* `PersonListPanel` shows one `PersonCard` per displayed student. Each card asks `AttendanceCell` for one cell per session of the student's group, coloured by attendance status.
+* `CommandBox` suggests command words, prefixes and values as the user types, using `FieldCompletion` from the `Logic` component.
 
 The `UI` component uses the JavaFX UI framework. The layouts of these UI parts are defined in matching `.fxml` files in `src/main/resources/view`. For example, [`MainWindow.fxml`](https://github.com/AY2627S1-CS2103T-F12-4/tp/blob/master/src/main/resources/view/MainWindow.fxml) specifies the layout of [`MainWindow`](https://github.com/AY2627S1-CS2103T-F12-4/tp/blob/master/src/main/java/seedu/address/ui/MainWindow.java).
 
@@ -133,7 +137,11 @@ The `Model` component,
 A student belongs to one group. A session is identified by its group and teaching week. Each student
 owns at most one attendance record per session of their group; no record means unmarked. Group and
 session identity are compared by value, so the diagram does not imply that each value has a single
-shared Java object. The diagram omits phone, address, tags and collection-wrapper classes for clarity.
+shared Java object. For clarity, the diagram shows a student's comment and tags as attributes and omits the
+collection-wrapper classes, such as `UniquePersonList`.
+
+`Person` is immutable. A command that changes a student, such as `mark` or `comment`, creates an updated copy
+(for example with `Person#withAttendance`) and replaces the original through `Model#setPerson`.
 
 ### Storage component
 
@@ -144,6 +152,9 @@ shared Java object. The diagram omits phone, address, tags and collection-wrappe
 The `Storage` component,
 * can save both address book data and user preference data in JSON format, and read them back into corresponding objects.
 * is implemented by `StorageManager`, which delegates the actual JSON file access to `JsonAddressBookStorage` and `JsonUserPrefsStorage` (one class per data file).
+* saves the registered group codes, the sessions (`JsonAdaptedSession`) and the students (`JsonAdaptedPerson`). Each student's attendance records (`JsonAdaptedAttendance`) name the session they belong to.
+* rejects a data file whose records are inconsistent, such as duplicate students or attendance for a session that does not exist. Roster then starts with an empty roster rather than with partly loaded data.
+* also holds `CsvAttendanceExporter` and `CsvFileAccess`, which the `export` command uses to write CSV reports inside Roster's home folder.
 * depends on some classes in the `Model` component (because the `Storage` component's job is to save/retrieve objects that belong to the `Model`)
 
 ### Common classes
@@ -153,6 +164,8 @@ Classes used by multiple components are in the `seedu.address.commons` package.
 --------------------------------------------------------------------------------------------------------------------
 
 ## **Implementation**
+
+This section describes some noteworthy details on how certain features are implemented.
 
 ### Filtered student search
 
@@ -187,8 +200,6 @@ without rewriting the roster file or copying the roster for undo history. Other 
 approach, while data-changing commands retain their existing save behaviour.
 Assertions are enabled for Gradle tests and `./gradlew run`. When running a packaged JAR for testing,
 use `java -ea -jar roster.jar`; enable VM option `-ea` in an IDE run configuration as well.
-
-This section describes some noteworthy details on how certain features are implemented.
 
 ### Attendance CSV export
 
@@ -225,12 +236,79 @@ not change roster records. `LogicManager` therefore returns their results withou
 runs). It resolves relative paths from this root and rejects outside paths and symbolic-link components
 before writing a CSV. Directory aliases used by macOS are resolved against the canonical home folder.
 
-### Updating attendance records
+### Marking attendance
 
-`MarkCommand` resolves an index against the displayed student list, finds the session for that student's
-group and requested week, and creates a replacement immutable `Person` containing the updated attendance.
-`ModelManager` replaces the record in the roster; the observable display updates from that change.
-`LogicManager` then saves the complete roster through `StorageManager` and `JsonAddressBookStorage`.
+`mark INDEX w/WEEK s/STATUS` records one displayed student as present or absent. `MarkCommandParser` checks the
+index, week and status, and creates a `MarkCommand`. When the command executes, it:
+
+1. finds the student at `INDEX` in the displayed list;
+1. asks the `Model` for the session of **that student's own group** in the requested week;
+1. creates an updated copy of the student with the new attendance record, since `Person` is immutable;
+1. replaces the student through `Model#setPerson`. The displayed list updates itself, and its order and indexes
+   stay the same, so the TA can carry on marking by index.
+
+`LogicManager` then saves the roster and commits it to the undo history. The sequence diagram below shows
+`mark 1 w/5 s/present`. For simplicity, it leaves out `MarkCommandParser`, which works as `DeleteCommandParser`
+does in the [Logic component](#logic-component).
+
+![Interactions for the mark 1 w/5 s/present command](images/MarkSequenceDiagram.png)
+
+A student has at most one record per session. `Person#withAttendance` replaces an earlier record for the same
+session, and `MarkCommand` includes the previous status in its message, so the TA can tell that a record was
+overwritten.
+
+**Marking every displayed student.** `mark all w/WEEK s/STATUS` is handled by `MarkAllCommand`. The displayed
+list may span several groups, so it finds the week's session in every displayed student's group **before**
+changing anything. If any group has no session for that week, the command fails and no student is marked.
+
+<img src="images/MarkAllActivityDiagram.png" width="360" alt="Activity diagram for mark all" />
+
+**Design considerations**
+
+* **Aspect: which session a student is marked for**
+  * **Alternative 1 (current choice):** use the session of each student's own group for the given week.
+    * Pros: works on any displayed list, including search results that mix groups.
+    * Cons: the same command can update sessions of several groups at once.
+  * **Alternative 2:** use the session of the active group only.
+    * Pros: simpler to explain.
+    * Cons: fails, or marks the wrong session, whenever the displayed list is not a single group.
+* **Aspect: what `mark all` does when some groups have no session**
+  * **Alternative 1 (current choice):** check every group first, and mark nobody unless every group has a session.
+    * Pros: a failed command changes nothing, as for every other command.
+    * Cons: the TA must create the missing session before marking anyone.
+  * **Alternative 2:** mark the students whose group has a session and skip the rest.
+    * Pros: no extra step for the TA.
+    * Cons: leaves attendance half recorded, which is easy to miss.
+
+### Deleting displayed students
+
+`delete INDEX` (`DeleteCommand`) and `delete all` (`DeleteAllCommand`) remove students through
+`Model#deletePerson`. Attendance records are stored inside each `Person`, so they are removed with the student.
+Tutorial groups and sessions are kept, even when a group becomes empty. `delete all` copies the displayed list
+before deleting, because the list shrinks as students are removed. Both commands are undoable.
+
+### Showing a newly added student
+
+After adding a student, `AddCommand` checks whether the student is in the displayed list. If not, for example
+because a different group is shown, it shows the student's group instead. It returns a `CommandResult` that names
+the student to show, and `MainWindow` asks `PersonListPanel` to scroll to and highlight the student's card.
+
+`PersonListPanel` cannot scroll accurately until the list has been laid out, because cards differ in height. It
+therefore checks after each layout pass whether the card is fully visible and scrolls again if not, up to a fixed
+number of attempts. The highlight is cleared by the next command, including one that fails.
+
+### Student comments
+
+`comment INDEX c/COMMENT` appends to a student's `Comment`, joining notes with `; `, while `c-/COMMENT` replaces it
+and an empty `c-/` clears it. Only `c-/` discards existing text, so a note is never lost by accident. A comment is
+limited to 200 characters, and an append that would exceed the limit is rejected without changing the comment.
+
+### Field completion
+
+`FieldCompletion` suggests command words, the prefixes the current command accepts, registered group codes after
+`grp/`, attendance statuses after `s/`, and `all` for `mark` and `delete`. It only reads the command text and the
+list of groups, and never executes or validates a command. `CommandBox` shows its suggestions in a pop-up list.
+Each suggestion records the range of text it replaces, so accepting one leaves the rest of the command unchanged.
 
 ### Undo feature
 
@@ -296,9 +374,10 @@ complete roster, including groups, sessions, students, and attendance records.
 
 ![UndoRedoState5](images/UndoRedoState5.png)
 
-The following activity diagram summarizes what happens when a user executes a new command:
+The following activity diagram summarizes what happens when a user executes a new command, including the
+rollback when the data file cannot be saved:
 
-<img src="images/CommitActivityDiagram.png" width="250" />
+<img src="images/CommitActivityDiagram.png" width="300" alt="Activity diagram for saving and committing a command" />
 
 #### Design considerations:
 
@@ -493,24 +572,30 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 
       Use case ends.
 
-**Use case: UC05 - Find students by name**
+**Use case: UC05 - Find students**
 
 **MSS**
 
-1.  TA requests to find students whose names contain a keyword.
-2.  Roster shows all matching students across all tutorial groups.
+1.  TA requests to find students, giving one or more of: part of a name, a matriculation number and a tutorial group.
+2.  Roster shows every student, across all tutorial groups, who matches all the given details.
 
     Use case ends.
 
 **Extensions**
 
-* 1a. The keyword is missing or invalid.
+* 1a. No detail is given, or a detail is invalid.
 
     * 1a1. Roster shows an error message.
 
       Use case ends.
 
-* 2a. No student matches the keyword.
+* 1b. The given tutorial group does not exist.
+
+    * 1b1. Roster shows an error message.
+
+      Use case ends.
+
+* 2a. No student matches the given details.
 
     * 2a1. Roster shows a message stating that no students were found.
 
@@ -600,6 +685,96 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 
   Use case ends.
 
+* 3a. Most students in the tutorial group attended.
+
+    * 3a1. TA <u>marks every displayed student present (UC09)</u>.
+    * 3a2. TA <u>marks each absent student's attendance (UC07)</u>.
+
+      Use case ends.
+
+**Use case: UC09 - Mark every displayed student's attendance**
+
+**MSS**
+
+1.  TA <u>lists students (UC04)</u> or <u>finds students (UC05)</u>.
+2.  TA requests to mark every displayed student as present or absent for a teaching week.
+3.  Roster records the attendance of every displayed student, each for their own tutorial group's session, and
+    confirms how many students were marked.
+
+    Use case ends.
+
+**Extensions**
+
+* 1a. The list is empty.
+
+  Use case ends.
+
+* 2a. The given teaching week or attendance status is invalid.
+
+    * 2a1. Roster shows an error message.
+
+      Use case resumes at step 2.
+
+* 2b. The tutorial group of a displayed student has no session for that teaching week.
+
+    * 2b1. Roster shows an error message naming the tutorial group, and marks no student.
+
+      Use case ends.
+
+* 3a. Some students already had an attendance record for that session.
+
+    * 3a1. Roster replaces those records and states how many were replaced in the confirmation.
+
+      Use case ends.
+
+**Use case: UC10 - Comment on a student**
+
+**MSS**
+
+1.  TA <u>lists students (UC04)</u>.
+2.  TA requests to add a note to the comment of a specific student in the list.
+3.  Roster adds the note to the end of the student's comment and shows the resulting comment.
+
+    Use case ends.
+
+**Extensions**
+
+* 2a. The given index is invalid.
+
+    * 2a1. Roster shows an error message.
+
+      Use case resumes at step 2.
+
+* 2b. TA requests to replace or clear the comment instead.
+
+    * 2b1. Roster replaces or clears the comment and shows the result.
+
+      Use case ends.
+
+* 2c. The comment would become longer than 200 characters.
+
+    * 2c1. Roster shows an error message and leaves the comment unchanged.
+
+      Use case resumes at step 2.
+
+**Use case: UC11 - Undo the last change**
+
+**MSS**
+
+1.  TA requests to undo the last change.
+2.  Roster restores its data to the state before the most recent data-changing command, and names the command
+    that was undone.
+
+    Use case ends.
+
+**Extensions**
+
+* 1a. No change has been made since Roster was started, or every change has already been undone.
+
+    * 1a1. Roster shows an error message.
+
+      Use case ends.
+
 ### Non-Functional Requirements
 
 1. Compatibility: Roster should run on Windows, macOS, and Linux with Java 25 and the required JavaFX runtime, without requiring users to modify or compile its source code.
@@ -623,7 +798,10 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 
 * **Attendance**: The record that a student was present or absent at one session.
 * **Attendance percentage**: The number of sessions a student was marked present for, divided by the number of sessions the student has been marked for. Unmarked sessions are excluded.
-* **Attendance strip**: The row on a student's entry that shows one cell per session of their tutorial group, in teaching-week order: `P` for present, `A` for absent and `—` for unmarked.
+* **Active group**: The tutorial group whose students are displayed after `list grp/GROUP` or a click in the group panel. `list` and `find` clear it.
+* **Attendance strip**: The row on a student's entry that shows one cell per session of their tutorial group, in teaching-week order, such as `W5: ✓`. A green `✓` means present, a red `✗` absent and a grey `—` unmarked.
+* **Comment**: A short note, of up to 200 characters, that a TA keeps about a student.
+* **Displayed list**: The students currently shown in the student list. Every `INDEX`, and `all` in `mark all` and `delete all`, refers to this list.
 * **Course coordinator**: The staff member in charge of a module, who collects attendance records from the TAs.
 * **Index**: The one-based position of a student in the currently displayed list. It is not a property of the student: the same student's index changes when the list is filtered.
 * **Mainstream OS**: Windows, Linux, Unix, or macOS
@@ -665,15 +843,63 @@ Start with `clear`, then prepare two students:
 
 ```text
 init grp/T09
-add n/John Tan p/91234567 e/john@example.com a/Block 1 m/A0000001X grp/T09
-add n/Alice Tan p/81234567 e/alice@example.com a/Block 2 m/A0000002X grp/T09
+add n/John Tan e/john@example.com m/A0000001X grp/T09
+add n/Alice Tan e/alice@example.com m/A0000002X grp/T09
 list
 ```
 
 1. Run `delete 1`. Expected: John is removed, Alice becomes index 1, and the success message names John.
 2. Try `delete 0`, `delete x`, `delete`, and `delete 2`. Expected: an error and no further deletion;
    Alice remains at index 1.
-3. Exit and relaunch. Expected: John remains deleted and Alice remains in the roster.
+3. Run `undo`. Expected: John is restored, with any attendance records he had. Run `delete 1` again.
+4. Exit and relaunch. Expected: John remains deleted and Alice remains in the roster.
+
+### Recording attendance
+
+Start with `clear`, then prepare two groups with one session each:
+
+```text
+init grp/T09
+init grp/T10
+add n/John Tan e/john@example.com m/A0000001X grp/T09
+add n/Alice Tan e/alice@example.com m/A0000002X grp/T09
+add n/Ben Lim e/ben@example.com m/A0000003X grp/T10
+session grp/T09 w/5 d/2026-09-15
+session grp/T10 w/5 d/2026-09-16
+list grp/T09
+```
+
+1. Run `mark 1 w/5 s/present`. Expected: John's card shows `W5: ✓`, and the message names John, T09 and week 5.
+2. Run `mark 1 w/5 s/absent`. Expected: the cell changes to `✗`, and the message says John was previously present.
+3. Try `mark 1 w/6 s/present`, `mark 1 w/5 s/late`, `mark 3 w/5 s/present` and `mark 1 w/14 s/present`.
+   Expected: an error each time, with no attendance changed.
+4. Run `list grp/T09`, then `mark all w/5 s/present`. Expected: both T09 students are marked present, and the message
+   says one was already marked.
+5. Run `list`, then `mark all w/5 s/absent`. Expected: all three students are marked absent, each for their own
+   group's week 5 session.
+6. Run `undo`. Expected: everyone's attendance returns to what it was after step 4.
+7. Run `session grp/T09 w/6 d/2026-09-22`, then `list` and `mark all w/6 s/present`.
+   Expected: an error naming T10, and no student is marked for week 6.
+
+### Deleting all displayed students
+
+Prepare the data from [Recording attendance](#recording-attendance).
+
+1. Run `list grp/T10`, then `delete all`. Expected: Ben is deleted, the T09 students are kept, and group T10 and its
+   session remain.
+2. Run `find n/Nobody`, then `delete all`. Expected: an error stating that there are no students to delete.
+3. Run `undo`. Expected: Ben is restored together with his attendance.
+
+### Commenting on a student
+
+Prepare the data from [Recording attendance](#recording-attendance), then run `list grp/T09`.
+
+1. Run `comment 1 c/attentive`, then `comment 1 c/asks good questions`.
+   Expected: John's comment reads `attentive; asks good questions`.
+2. Run `comment 1 c-/needs help`. Expected: the comment is replaced by `needs help`.
+3. Run `comment 1 c-/`. Expected: the comment is cleared and disappears from John's card.
+4. Try `comment 1`, `comment 1 c/a c-/b` and a `c/` note that would make the comment longer than 200 characters.
+   Expected: an error each time, with the comment unchanged.
 
 ### Saving and recovering data
 
@@ -698,8 +924,8 @@ Use a disposable copy of the JAR in an empty folder. Run `clear` to remove sampl
 ```text
 init grp/T09
 init grp/T10
-add n/John Tan p/91234567 e/john@example.com a/Block 1 m/A0000002X grp/T09
-add n/Johnny Lim p/81234567 e/johnny@example.com a/Block 2 m/A0000001X grp/T10
+add n/John Tan e/john@example.com m/A0000002X grp/T09
+add n/Johnny Lim e/johnny@example.com m/A0000001X grp/T10
 ```
 
 1. Run `find n/John grp/t09`, then `find m/a0000001x`, then `find n/Nobody`.
@@ -716,8 +942,8 @@ Use a disposable copy of the JAR in an empty folder. Run `clear` to remove sampl
 ```text
 init grp/T09
 init grp/T10
-add n/John Tan p/91234567 e/john@example.com a/Block 1 m/A0000002X grp/T09
-add n/Johnny Lim p/81234567 e/johnny@example.com a/Block 2 m/A0000001X grp/T10
+add n/John Tan e/john@example.com m/A0000002X grp/T09
+add n/Johnny Lim e/johnny@example.com m/A0000001X grp/T10
 ```
 
 1. Run `list grp/T09`, then `export f/all.csv` and `export f/t09.csv grp/T09`.
@@ -728,4 +954,4 @@ add n/Johnny Lim p/81234567 e/johnny@example.com a/Block 2 m/A0000001X grp/T10
 3. Try `export f/../outside.csv` and a symbolic-link path to an outside file.
    Expected: an error, with no outside file created. A missing export parent directory also produces
    an error without changing roster records or the displayed list.
-   
+
