@@ -116,6 +116,10 @@ class JsonSerializableAddressBook {
             }
             addressBook.addPerson(person);
         }
+        assert addressBook.getPersonList().stream().allMatch(person -> person.getAttendances().stream()
+                .allMatch(attendance -> attendance.getSession().getGroup().equals(person.getGroup())
+                        && addressBook.hasSession(attendance.getSession())))
+                : "Every loaded attendance record should be for a stored session of the student's own group";
         return addressBook;
     }
 

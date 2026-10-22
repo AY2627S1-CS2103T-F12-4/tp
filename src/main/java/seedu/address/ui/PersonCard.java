@@ -1,5 +1,7 @@
 package seedu.address.ui;
 
+import static seedu.address.commons.util.CollectionUtil.requireAllNonNull;
+
 import java.util.Comparator;
 import java.util.List;
 
@@ -52,6 +54,8 @@ public class PersonCard extends UiPart<Region> {
      */
     public PersonCard(Person person, int displayedIndex, List<Session> sessions) {
         super(FXML);
+        requireAllNonNull(person, sessions);
+        assert displayedIndex > 0 : "Displayed student indexes start from 1";
         this.person = person;
         id.setText(displayedIndex + ". ");
         name.setText(person.getName().fullName);

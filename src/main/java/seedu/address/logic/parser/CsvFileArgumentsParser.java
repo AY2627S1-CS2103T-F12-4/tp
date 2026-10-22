@@ -1,5 +1,6 @@
 package seedu.address.logic.parser;
 
+import static java.util.Objects.requireNonNull;
 import static seedu.address.logic.Messages.MESSAGE_INVALID_COMMAND_FORMAT;
 import static seedu.address.logic.parser.CliSyntax.PREFIX_FILE;
 import static seedu.address.logic.parser.CliSyntax.PREFIX_GROUP;
@@ -25,10 +26,11 @@ class CsvFileArgumentsParser {
     private final String usage;
 
     CsvFileArgumentsParser(String usage) {
-        this.usage = usage;
+        this.usage = requireNonNull(usage);
     }
 
     CsvFileArguments parse(String args) throws ParseException {
+        requireNonNull(args);
         ArgumentMultimap arguments = tokenize(args);
         arguments.verifyNoDuplicatePrefixesFor(PREFIX_FILE, PREFIX_GROUP);
         String value = arguments.getValue(PREFIX_FILE).orElse("");
