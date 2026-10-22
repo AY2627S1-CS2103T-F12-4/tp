@@ -131,6 +131,8 @@ public class CommandBox extends UiPart<Region> {
         }
 
         void ensureVisible(int index) {
+            assert index >= 0 && index < getSkinnable().getItems().size()
+                    : "Only a listed suggestion can be scrolled into view";
             getVirtualFlow().scrollTo(index);
         }
     }

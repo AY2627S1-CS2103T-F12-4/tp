@@ -104,6 +104,8 @@ public final class FieldCompletion {
                 masked.setCharAt(i, ' ');
             }
         }
+        // Suggestions are positions in the original text, so masking must not move any character
+        assert masked.length() == text.length() : "Masking a path should keep the text's length";
         return masked.toString();
     }
 
