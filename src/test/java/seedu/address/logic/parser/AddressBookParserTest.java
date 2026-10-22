@@ -78,7 +78,7 @@ public class AddressBookParserTest {
                 CommentCommand.COMMAND_WORD + " " + INDEX_FIRST_PERSON.getOneBased() + " c-/");
         assertEquals(new CommentCommand(INDEX_FIRST_PERSON, Comment.EMPTY, true), command);
     }
-    
+
     @Test
     public void parseCommand_deleteAll() throws Exception {
         assertEquals(new DeleteAllCommand(), parser.parseCommand("delete all"));
