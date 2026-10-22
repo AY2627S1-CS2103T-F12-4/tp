@@ -1,5 +1,6 @@
 package seedu.address.logic;
 
+import javafx.beans.property.ReadOnlyBooleanProperty;
 import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.collections.ObservableList;
 import seedu.address.commons.core.GuiSettings;
@@ -25,6 +26,9 @@ public interface Logic {
 
     /** Returns an unmodifiable view of the filtered list of persons */
     ObservableList<Person> getFilteredPersonList();
+
+    /** Returns whether the displayed view is the full roster, rather than a group or search. */
+    ReadOnlyBooleanProperty showingAllStudentsProperty();
 
     /** Returns the active group, or null for a view across all groups. */
     ReadOnlyObjectProperty<Group> activeGroupProperty();

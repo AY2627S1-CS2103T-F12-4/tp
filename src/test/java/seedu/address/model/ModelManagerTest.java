@@ -30,6 +30,22 @@ public class ModelManagerTest {
     private ModelManager modelManager = new ModelManager();
 
     @Test
+    public void showingAllStudentsProperty_distinguishesFullRosterFromMatchingSearchResults() {
+        assertTrue(modelManager.showingAllStudentsProperty().get());
+        modelManager.addGroup(ALICE.getGroup());
+        modelManager.addPerson(ALICE);
+        modelManager.showGroup(ALICE.getGroup());
+        assertFalse(modelManager.showingAllStudentsProperty().get());
+        modelManager.updateFilteredPersonList(PREDICATE_SHOW_ALL_PERSONS);
+        assertTrue(modelManager.showingAllStudentsProperty().get());
+        modelManager.updateFilteredPersonList(person -> true);
+        assertFalse(modelManager.showingAllStudentsProperty().get());
+        assertEquals(List.of(ALICE), modelManager.getFilteredPersonList());
+        modelManager.setAddressBook(new AddressBook());
+        assertTrue(modelManager.showingAllStudentsProperty().get());
+    }
+
+    @Test
     public void registeredGroup_survivesLastStudentDeletion() {
         modelManager.addGroup(ALICE.getGroup());
         modelManager.addPerson(ALICE);

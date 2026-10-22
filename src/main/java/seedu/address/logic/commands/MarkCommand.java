@@ -2,6 +2,7 @@ package seedu.address.logic.commands;
 
 import static java.util.Objects.requireNonNull;
 import static seedu.address.commons.util.CollectionUtil.requireAllNonNull;
+import static seedu.address.logic.parser.CliSyntax.KEYWORD_ALL;
 import static seedu.address.logic.parser.CliSyntax.PREFIX_STATUS;
 import static seedu.address.logic.parser.CliSyntax.PREFIX_WEEK;
 
@@ -33,7 +34,9 @@ public class MarkCommand extends Command {
             + PREFIX_STATUS + "STATUS\n"
             + "Example: " + COMMAND_WORD + " 3 "
             + PREFIX_WEEK + "5 "
-            + PREFIX_STATUS + "present";
+            + PREFIX_STATUS + "present\n"
+            + "To mark every displayed student, use " + KEYWORD_ALL + " in place of INDEX, e.g. "
+            + COMMAND_WORD + " " + KEYWORD_ALL + " " + PREFIX_WEEK + "5 " + PREFIX_STATUS + "present";
 
     public static final String MESSAGE_MARK_SUCCESS = "Marked %1$s as %2$s for %3$s week %4$s.";
     public static final String MESSAGE_REMARK_SUCCESS = "Marked %1$s as %2$s for %3$s week %4$s (was %5$s).";

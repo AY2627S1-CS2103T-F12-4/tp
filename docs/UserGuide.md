@@ -82,7 +82,7 @@ The MVP does not support returning a recorded status to unmarked. You can, howev
 * Prefixed parameters can be given in any order.<br>
   For example, both `session grp/T09 w/5 d/2026-09-15` and `session d/2026-09-15 grp/T09 w/5` are valid.
 
-* A prefix marks the start of a parameter. Because `/` marks the end of a prefix, parameter values cannot contain `/`.
+* A prefix marks the start of a parameter. Values containing `/` are accepted where explicitly supported, such as relationship abbreviations in names and CSV file paths.
 
 * Unless a command states otherwise, each parameter may appear only once.
 
@@ -179,6 +179,32 @@ Examples:
 
 On success, Roster displays a confirmation such as `Added Alex Tan (A0123456X) to tutorial group T09.` When Roster switches to the student's group, the confirmation ends with `Now showing T09.`
 
+### Editing a student: `edit`
+
+Edits the student identified by their index in the currently displayed student list. Only the provided fields are changed; all other details remain unchanged.
+
+Format: `edit INDEX [n/NAME] [e/EMAIL] [m/MATRIC] [grp/GROUP] [t/TAG]...`
+
+Examples:
+
+* `edit 1 n/Alex Tan`
+* `edit 2 m/A0123456X e/alex@example.com`
+* `edit 3 grp/T10`
+* `edit 1 t/class-rep t/needs-follow-up`
+* `edit 2 e/bernice@example.com n/Bernice Tan grp/T09`
+
+* `INDEX` must identify a student in the currently displayed student list.
+* At least one field must be provided. Parameters may be provided in any order.
+* The edited matriculation number and email address must remain unique across all students.
+* The specified tutorial group must already exist.
+* Each of `n/NAME`, `e/EMAIL`, `m/MATRIC`, and `grp/GROUP` may appear only once.
+* Repeating `t/TAG` assigns multiple tags. The provided tags replace all existing tags; use an empty `t/` to remove all tags.
+* Attendance cannot be changed using `edit`; use `mark` instead.
+* Moving a student to another tutorial group removes their attendance records from the previous group. Sessions in the new group start as unmarked.
+* Invalid values, unsupported parameters, and duplicate information are rejected without changing the student.
+
+On success, Roster displays `Edited student:` followed by the updated student details.
+
 
 ### Listing students: `list`
 
@@ -218,6 +244,21 @@ attendance strip then uses the new group's sessions.
 
 Only one `grp/` parameter is allowed. Missing group values, invalid codes, repeated parameters and unrelated arguments
 are rejected. A rejected list command leaves the data, active group and displayed rows unchanged.
+
+### Navigating tutorial groups
+
+The tutorial-group panel starts with **All students**, followed by registered groups in group-code order.
+
+* Click a group to show its students and attendance, equivalent to `list grp/GROUP`.
+* Click **All students** to show the full roster, equivalent to `list`.
+* Use Tab to focus the group panel, Up/Down to choose an entry, and Enter to open it.
+  Arrow keys alone do not change the displayed roster. Leaving the panel restores the active view's selection.
+* The panel follows typed commands: `list` selects **All students**, `list grp/GROUP` selects that group,
+  and a successful `find` clears the selection, even when every student happens to match.
+* Registered empty groups remain selectable and display the usual empty-group message.
+* Navigation preserves unfinished command text and does not change student or attendance records.
+* Student indices are refreshed for the newly displayed roster. Check the displayed list before running
+  `mark`, `edit` or `delete` with an index.
 
 ### Finding students with filters: `find`
 
@@ -284,6 +325,26 @@ Examples:
 * `list grp/T09` followed by `delete 1` deletes the first displayed student in `T09`.
 * `find n/Betsy` followed by `delete 1` deletes the first student in the search results.
 
+### Deleting all displayed students: `delete all`
+
+Deletes every student in the displayed list, and all of their attendance records. Tutorial groups and their sessions are kept, even if they become empty.
+
+Format: `delete all`
+
+Examples:
+
+* `list grp/T09` followed by `delete all` deletes every student in `T09`, for example at the end of a semester.
+* `find n/Tan` followed by `delete all` deletes every student in the search results.
+
+* Only the students on screen are deleted. Students in other groups, or outside the search results, are kept.
+* `delete all` while all students are displayed deletes every student. Use `clear` instead to also delete all tutorial groups and sessions.
+
+On success, Roster displays a confirmation such as `Deleted 20 student(s) in the displayed list, including all their attendance records.`
+
+<div markdown="span" class="alert alert-warning">:exclamation: **Caution:**
+Deletion happens immediately, with no confirmation and no undo. Check the displayed list before running `delete all`, and back up `data/addressbook.json` first if you may need to restore the data.
+</div>
+
 ### Marking attendance: `mark`
 
 Records a displayed student as present or absent for one of their tutorial group's sessions.
@@ -307,6 +368,28 @@ On success, Roster names the student, status, tutorial group, and teaching week 
 
 <div markdown="span" class="alert alert-primary">:bulb: **Tip:**
 Run `list grp/GROUP` before taking attendance so only that tutorial group's students are displayed.
+</div>
+
+### Marking all displayed students: `mark all`
+
+Records every student in the displayed list as present or absent for the same teaching week.
+
+Format: `mark all w/WEEK s/STATUS`
+
+Examples:
+
+* `list grp/T09` followed by `mark all w/5 s/present` marks every student in T09 present for week 5.
+* `mark all w/5 s/absent` while all students are displayed marks every student absent for week 5 of their own group.
+
+* Each student is marked for the session of their own tutorial group, as with `mark`.
+* Every displayed student's group must have a session for that week. If any group does not, no student is marked.
+* Students who were already marked for that week have their status replaced. The confirmation says how many.
+* The displayed list and its indexes stay unchanged.
+
+On success, Roster displays a confirmation such as `Marked 20 student(s) as PRESENT for week 5 in T09.`
+
+<div markdown="span" class="alert alert-primary">:bulb: **Tip:**
+To record a class where most students attended, run `mark all w/WEEK s/present` first, then `mark INDEX w/WEEK s/absent` for each absent student.
 </div>
 
 ### Exporting attendance records: `export`
@@ -441,7 +524,9 @@ Action | Format, example
 **List students** | `list [grp/GROUP]`<br>e.g. `list grp/T09`
 **Find students** | `find [n/KEYWORD] [m/MATRIC] [grp/GROUP]` (at least one)<br>e.g. `find n/John Tan grp/T09`
 **Delete student** | `delete INDEX`<br>e.g. `delete 3`
+**Delete all displayed students** | `delete all`
 **Mark attendance** | `mark INDEX w/WEEK s/STATUS`<br>e.g. `mark 3 w/5 s/present`
+**Mark all displayed students** | `mark all w/WEEK s/STATUS`<br>e.g. `mark all w/5 s/present`
 **Export attendance** | `export f/FILE_PATH [grp/GROUP]`<br>e.g. `export f/attendance.csv grp/T09`
 **Undo previous change** | `undo` or `Ctrl+Z` (`Command+Z` on macOS)
 **Exit** | `exit`

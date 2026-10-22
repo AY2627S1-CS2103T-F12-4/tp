@@ -48,9 +48,11 @@ public class EditCommand extends Command {
             + "Example: " + COMMAND_WORD + " 1 "
             + PREFIX_EMAIL + "johndoe@example.com";
 
-    public static final String MESSAGE_EDIT_PERSON_SUCCESS = "Edited person: %1$s";
+    public static final String MESSAGE_EDIT_PERSON_SUCCESS = "Edited student: %1$s";
     public static final String MESSAGE_NOT_EDITED = "At least one field to edit must be provided.";
     public static final String MESSAGE_DUPLICATE_PERSON = "This student already exists in Roster.";
+    public static final String MESSAGE_UNKNOWN_PARAMETER =
+            "Unexpected input. Use only: n/, e/, m/, grp/ and t/.";
 
     private final Index index;
     private final EditPersonDescriptor editPersonDescriptor;
