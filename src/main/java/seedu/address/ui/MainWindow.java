@@ -220,7 +220,7 @@ public class MainWindow extends UiPart<Stage> {
         try {
             CommandResult commandResult = logic.execute(commandText);
             logger.info("Result: " + commandResult.getFeedbackToUser());
-            resultDisplay.setFeedbackToUser(commandResult.getFeedbackToUser());
+            resultDisplay.setSuccessFeedback(commandResult.getFeedbackToUser());
             // A highlight is only kept until the next command, so it never marks an unrelated student
             commandResult.getPersonToShow()
                     .ifPresentOrElse(personListPanel::scrollTo, personListPanel::clearSelection);
@@ -236,7 +236,7 @@ public class MainWindow extends UiPart<Stage> {
             return commandResult;
         } catch (CommandException | ParseException e) {
             logger.info("An error occurred while executing command: " + commandText);
-            resultDisplay.setFeedbackToUser(e.getMessage());
+            resultDisplay.setErrorFeedback(e.getMessage());
             personListPanel.clearSelection();
             throw e;
         }
