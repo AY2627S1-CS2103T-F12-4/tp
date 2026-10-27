@@ -1,0 +1,99 @@
+@startuml
+!include style.puml
+skinparam ArrowFontStyle plain
+title Appending to a student's comment
+
+box Logic LOGIC_COLOR_T1
+participant ":LogicManager" as LogicManager LOGIC_COLOR
+participant "c:CommentCommand" as CommentCommand LOGIC_COLOR
+participant "r:CommandResult" as CommandResult LOGIC_COLOR
+end box
+
+box Model MODEL_COLOR_T1
+participant "m:Model" as Model MODEL_COLOR
+participant "p:Person" as Person MODEL_COLOR
+participant "existing:Comment" as Existing MODEL_COLOR
+participant "updated:Person" as Updated MODEL_COLOR
+end box
+
+note over LogicManager, CommentCommand
+  Parsing is omitted. CommentCommandParser has already built c,
+  holding the index, the new Comment, and isReplacing, which is
+  false for c/ and true for c-/.
+end note
+
+[-> LogicManager : execute("comment 3 c/asks good questions")
+activate LogicManager
+
+LogicManager -> CommentCommand : execute(m)
+activate CommentCommand
+
+CommentCommand -> Model : getFilteredPersonList()
+activate Model
+Model --> CommentCommand : lastShownList
+deactivate Model
+
+note right of CommentCommand
+  Rejected with a CommandException before anything changes:
+  an index past the end of the displayed list, and c-/ on its
+  own when the student has no comment to clear.
+end note
+
+CommentCommand -> Person : getComment()
+activate Person
+Person --> CommentCommand : existing
+deactivate Person
+
+CommentCommand -> Existing : lengthAfterAppending(comment)
+activate Existing
+Existing --> CommentCommand : combinedLength
+deactivate Existing
+
+alt combinedLength > Comment.MAX_LENGTH
+    CommentCommand --> LogicManager : throws CommandException
+    note over CommentCommand, Existing
+      The student keeps their current comment.
+    end note
+else within the limit
+    CommentCommand -> Existing : append(comment)
+    activate Existing
+    Existing --> CommentCommand : updatedComment
+    deactivate Existing
+
+    CommentCommand -> Person : withComment(updatedComment)
+    activate Person
+    create Updated
+    Person -> Updated
+    activate Updated
+    Updated --> Person
+    deactivate Updated
+    Person --> CommentCommand : updated
+    deactivate Person
+
+    note right of Person
+      Person and Comment are both immutable, so append and
+      withComment return new objects rather than changing p.
+    end note
+
+    CommentCommand -> Model : setPerson(p, updated)
+    activate Model
+    note right of Model
+      The displayed list is not re-filtered, so the indexes
+      the TA sees stay stable.
+    end note
+    Model --> CommentCommand
+    deactivate Model
+
+    create CommandResult
+    CommentCommand -> CommandResult
+    activate CommandResult
+    CommandResult --> CommentCommand
+    deactivate CommandResult
+
+    CommentCommand --> LogicManager : r
+end
+deactivate CommentCommand
+
+[<-- LogicManager
+deactivate LogicManager
+@enduml
