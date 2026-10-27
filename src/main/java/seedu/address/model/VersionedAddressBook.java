@@ -21,7 +21,54 @@ public class VersionedAddressBook extends AddressBook {
     /** Creates a versioned address book from {@code initialState}. */
     public VersionedAddressBook(ReadOnlyAddressBook initialState) {
         super(initialState);
-        resetHistory();
+        if (initialState instanceof VersionedAddressBook versioned) {
+            restoreHistory(versioned.getHistoryStates(), versioned.getHistoryCommands(), versioned.getHistoryPointer());
+            resetData(initialState);
+        } else {
+            resetHistory();
+        }
+    }
+
+    /** Returns independent copies of all committed snapshots. */
+    public List<AddressBook> getHistoryStates() {
+        return addressBookStateList.stream().map(AddressBook::new).toList();
+    }
+
+    /** Returns the command names corresponding to the snapshots. */
+    public List<String> getHistoryCommands() {
+        return new ArrayList<>(commandDescriptionList);
+    }
+
+    /** Returns the index of the currently selected snapshot. */
+    public int getHistoryPointer() {
+        return currentStatePointer;
+    }
+
+    /** Restores validated history without replacing the observable roster lists. */
+    public void restoreHistory(List<AddressBook> states, List<String> commands, int pointer) {
+        requireNonNull(states);
+        requireNonNull(commands);
+        if (states.isEmpty() || states.size() != commands.size() || pointer < 0 || pointer >= states.size()
+                || states.stream().anyMatch(java.util.Objects::isNull) || commands.getFirst() != null
+                || commands.subList(1, commands.size()).stream().anyMatch(name -> name == null || name.isBlank())) {
+            throw new IllegalArgumentException("Invalid undo/redo history");
+        }
+        List<AddressBook> copies = states.stream().map(AddressBook::new).toList();
+        addressBookStateList.clear();
+        addressBookStateList.addAll(copies);
+        commandDescriptionList.clear();
+        commandDescriptionList.addAll(commands);
+        currentStatePointer = pointer;
+        resetData(addressBookStateList.get(pointer));
+        assertValidHistory();
+    }
+
+    /** Returns the name of the command that redo would reapply. */
+    public String getRedoDescription() {
+        if (!canRedo()) {
+            throw new IllegalStateException("No later Roster state exists");
+        }
+        return commandDescriptionList.get(currentStatePointer + 1);
     }
 
     /** Saves the current state and the command that produced it. */
@@ -61,7 +108,7 @@ public class VersionedAddressBook extends AddressBook {
         return currentStatePointer < addressBookStateList.size() - 1;
     }
 
-    /** Reapplies the next state. Used to roll back an undo if saving fails. */
+    /** Reapplies the next committed state. */
     public void redo() {
         if (!canRedo()) {
             throw new IllegalStateException("No later Roster state exists");

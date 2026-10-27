@@ -14,6 +14,7 @@ import seedu.address.commons.core.LogsCenter;
 import seedu.address.commons.exceptions.IllegalValueException;
 import seedu.address.model.AddressBook;
 import seedu.address.model.ReadOnlyAddressBook;
+import seedu.address.model.VersionedAddressBook;
 import seedu.address.model.attendance.Attendance;
 import seedu.address.model.person.Group;
 import seedu.address.model.person.Person;
@@ -36,6 +37,10 @@ class JsonSerializableAddressBook {
 
     private static final Logger logger = LogsCenter.getLogger(JsonSerializableAddressBook.class);
 
+    private List<JsonSerializableAddressBook> historyStates;
+    private List<String> historyCommands;
+    private Integer historyPointer;
+
     private final List<JsonAdaptedPerson> persons = new ArrayList<>();
     private final List<String> groups = new ArrayList<>();
     private final List<JsonAdaptedSession> sessions = new ArrayList<>();
@@ -43,10 +48,22 @@ class JsonSerializableAddressBook {
     /**
      * Constructs a {@code JsonSerializableAddressBook} with the given persons.
      */
+    public JsonSerializableAddressBook(List<JsonAdaptedPerson> persons, List<String> groups,
+            List<JsonAdaptedSession> sessions) {
+        this(persons, groups, sessions, null, null, null);
+    }
+
+    /** Creates a saved roster with optional undo/redo history from JSON. */
     @JsonCreator
     public JsonSerializableAddressBook(@JsonProperty("persons") List<JsonAdaptedPerson> persons,
             @JsonProperty("groups") List<String> groups,
-            @JsonProperty("sessions") List<JsonAdaptedSession> sessions) {
+            @JsonProperty("sessions") List<JsonAdaptedSession> sessions,
+            @JsonProperty("historyStates") List<JsonSerializableAddressBook> historyStates,
+            @JsonProperty("historyCommands") List<String> historyCommands,
+            @JsonProperty("historyPointer") Integer historyPointer) {
+        this.historyStates = historyStates;
+        this.historyCommands = historyCommands;
+        this.historyPointer = historyPointer;
         if (persons != null) {
             this.persons.addAll(persons);
         }
@@ -64,6 +81,11 @@ class JsonSerializableAddressBook {
      * @param source future changes to this will not affect the created {@code JsonSerializableAddressBook}.
      */
     public JsonSerializableAddressBook(ReadOnlyAddressBook source) {
+        if (source instanceof VersionedAddressBook versioned) {
+            historyStates = versioned.getHistoryStates().stream().map(JsonSerializableAddressBook::new).toList();
+            historyCommands = versioned.getHistoryCommands();
+            historyPointer = versioned.getHistoryPointer();
+        }
         persons.addAll(source.getPersonList().stream().map(JsonAdaptedPerson::new).collect(Collectors.toList()));
         groups.addAll(source.getGroupList().stream().map(Group::toString).collect(Collectors.toList()));
         sessions.addAll(source.getSessionList().stream().map(JsonAdaptedSession::new).collect(Collectors.toList()));
@@ -121,6 +143,36 @@ class JsonSerializableAddressBook {
                         && addressBook.hasSession(attendance.getSession())))
                 : "Every loaded attendance record should be for a stored session of the student's own group";
         return addressBook;
+    }
+
+    /** Loads history when it is valid and matches the saved roster; otherwise keeps the roster alone. */
+    public VersionedAddressBook toVersionedModelType() throws IllegalValueException {
+        AddressBook current = toModelType();
+        VersionedAddressBook result = new VersionedAddressBook(current);
+        if (historyStates == null && historyCommands == null && historyPointer == null) {
+            return result;
+        }
+        try {
+            if (historyStates == null || historyCommands == null || historyPointer == null) {
+                throw new IllegalArgumentException("Incomplete undo/redo history");
+            }
+            List<AddressBook> states = new ArrayList<>();
+            for (JsonSerializableAddressBook state : historyStates) {
+                if (state == null) {
+                    throw new IllegalArgumentException("Missing history snapshot");
+                }
+                states.add(state.toModelType());
+            }
+            VersionedAddressBook restored = new VersionedAddressBook(current);
+            restored.restoreHistory(states, historyCommands, historyPointer);
+            if (!current.equals(restored)) {
+                throw new IllegalArgumentException("History does not match the saved roster");
+            }
+            return restored;
+        } catch (IllegalArgumentException | IllegalValueException e) {
+            logger.warning("Discarding invalid undo/redo history: " + e.getMessage());
+            return result;
+        }
     }
 
     /**

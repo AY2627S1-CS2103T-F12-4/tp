@@ -247,7 +247,7 @@ index, week and status, and creates a `MarkCommand`. When the command executes, 
 1. replaces the student through `Model#setPerson`. The displayed list updates itself, and its order and indexes
    stay the same, so the TA can carry on marking by index.
 
-`LogicManager` then saves the roster and commits it to the undo history. The sequence diagram below shows
+`LogicManager` then commits the roster to the history and saves the roster and history together. The sequence diagram below shows
 `mark 1 w/5 s/present`. For simplicity, it leaves out `MarkCommandParser`, which works as `DeleteCommandParser`
 does in the [Logic component](#logic-component).
 
@@ -310,19 +310,32 @@ limited to 200 characters, and an append that would exceed the limit is rejected
 list of groups, and never executes or validates a command. `CommandBox` shows its suggestions in a pop-up list.
 Each suggestion records the range of text it replaces, so accepting one leaves the rest of the command unchanged.
 
-### Undo feature
+### Undo and redo feature
 
 The undo mechanism is facilitated by `VersionedAddressBook`. It extends `AddressBook` with a history of complete
 Roster snapshots, stored internally as an `addressBookStateList` and `currentStatePointer`.
 
 * `VersionedAddressBook#commit(String)` saves the current address book state and command name in its history.
 * `VersionedAddressBook#undo()` restores the previous address book state from its history.
-* `VersionedAddressBook#redo()` reapplies a state only when an unsuccessful save requires an undo to be rolled back.
+* `VersionedAddressBook#redo()` reapplies the next committed state.
 
-These operations are exposed by `Model`. Roster does not provide a user-facing redo command.
+These operations are exposed by `Model`. `RedoCommand` checks `Model#canRedoAddressBook()` and reapplies
+one state without creating another commit. `RedoCommandParser` rejects arguments, just as `UndoCommandParser` does.
 
-When a successful data-changing command such as `add`, `delete`, or `clear` is saved, `LogicManager` calls
-`Model#commitAddressBook()`. Read-only and failed commands do not change the history. The default history action
+`JsonSerializableAddressBook` stores the snapshot list, command names and current pointer alongside the current
+roster in the same JSON file. Each snapshot uses the existing roster conversion and validation. `ModelManager`
+copies this history at startup. Old files without history start at a new history boundary. Invalid histories, or
+histories whose selected snapshot differs from the current roster, are discarded while retaining the current roster.
+
+`LogicManager` captures the full pre-command roster and history, executes the command, commits data-changing
+commands, and then saves the roster and history together. An unsuccessful save restores the complete pre-command
+snapshot, including any redo states removed by a tentative commit. Read-only commands bypass this process.
+`JsonAddressBookStorage` writes a temporary file in the same directory and replaces the destination atomically
+when supported, falling back to replacement when atomic moves are unavailable. This avoids separately saving
+roster data and history. History retains previous student data even after deletion or clear.
+
+After a data-changing command such as `add`, `delete`, or `clear` executes, `LogicManager` calls
+`Model#commitAddressBook()` before saving the roster and history together. Read-only and failed commands do not change the history. The default history action
 is derived from `Command#requiresSave()`, while special commands such as `undo` override it. This makes new
 data-changing commands undoable unless they explicitly opt out.
 
@@ -357,13 +370,9 @@ Similarly, how an undo operation goes through the `Model` component is shown bel
 
 ![UndoSequenceDiagram](images/UndoSequenceDiagram-Model.png)
 
-`Model#redoAddressBook()` is used internally only if saving an undo operation fails. It restores the later in-memory
-state so that the model remains consistent with the data file.
-
-<div markdown="span" class="alert alert-info">:information_source: **Note:** The internal redo operation is not exposed
-to users.
-
-</div>
+The user can execute `redo`, which calls `Model#redoAddressBook()` to move the history pointer one position
+right and restore that snapshot. Undo and redo both save the restored data and pointer. An unsuccessful save
+restores the full pre-command history, so the command can be retried.
 
 The user then executes `list`. Read-only and failed commands do not change `addressBookStateList`.
 

@@ -117,7 +117,7 @@ registered group codes after `grp/`, and `present` or `absent` after `s/`.
 For example, `list gr` suggests `grp/`, `list grp/T` suggests matching groups,
 and `mark 1 w/3 s/p` suggests `present`.
 
-Completion also covers `comment`, `export` and `undo`, the `m/` and `grp/` filters for `find`,
+Completion also covers `comment`, `export`, `undo` and `redo`, the `m/` and `grp/` filters for `find`,
 and `all` in place of an index for `mark` and `delete`. For example, `export f` suggests `f/`,
 `find m` suggests `m/`, and `mark al` suggests `all`.
 For `comment`, choose either `c/` to append or `c-/` to replace or clear; once one is supplied,
@@ -494,7 +494,10 @@ Examples:
 * Multiple `undo` commands reverse earlier changes one at a time.
 * `list`, `find`, `export`, `help`, `exit`, invalid commands, and failed commands do not affect the undo history.
 * If there are no changes to undo, Roster displays an error without changing any data.
-* Undo history is available only during the current application session.
+* Undo and redo history are saved with the roster and remain available after closing and reopening Roster.
+* Files created by older versions load normally, with no earlier history.
+* If the roster data is edited outside Roster and no longer matches its saved history, the history is discarded.
+* Saved history includes earlier versions of deleted students and cleared data. Keep the data file private.
 * After an undo, a new undoable command discards the states that were undone.
 * Press `Ctrl+Z` to undo without typing the command. On macOS, use `Command+Z`.
 * When the command box has an undoable text edit, the keyboard shortcut edits the command text instead of
@@ -502,6 +505,21 @@ Examples:
 
 On success, Roster identifies the command that was undone. Restored data is saved automatically and the displayed
 list returns to the full roster in matriculation-number order.
+
+### Reapplying an undone change: `redo`
+
+Reapplies the most recently undone data-changing command.
+
+Format: `redo`
+
+Example: `edit 1 n/Alex Tan`, `undo`, then `redo` reapplies the name change.
+
+* Each `redo` reapplies one change; multiple redo commands reapply changes in their original order.
+* A new successful data-changing command after undo discards the remaining redo history.
+* Read-only commands, invalid commands and failed commands preserve redo history.
+* If there is nothing to redo, Roster displays an error without changing data.
+* Restored data and the history position are saved automatically, including across restarts.
+* As with undo, the displayed list returns to the full roster in matriculation-number order.
 
 ### Exiting Roster: `exit`
 
@@ -515,8 +533,7 @@ Deletes every student, tutorial group, session and attendance record.
 
 Format: `clear`
 
-Clearing happens immediately without confirmation. Use `undo` to restore the cleared roster during the current
-application session.
+Clearing happens immediately without confirmation. Use `undo` to restore the cleared roster, including after restarting Roster.
 
 ### Saving data
 
@@ -573,6 +590,7 @@ Action | Format, example
 **Mark all displayed students** | `mark all w/WEEK s/STATUS`<br>e.g. `mark all w/5 s/present`
 **Comment on student** | `comment INDEX c/COMMENT` to add, `comment INDEX c-/COMMENT` to replace, `comment INDEX c-/` to clear<br>e.g. `comment 3 c/attentive`
 **Export attendance** | `export f/FILE_PATH [grp/GROUP]`<br>e.g. `export f/attendance.csv grp/T09`
+**Redo undone change** | `redo`
 **Undo previous change** | `undo` or `Ctrl+Z` (`Command+Z` on macOS)
 **Exit** | `exit`
 **Clear all data** | `clear`
