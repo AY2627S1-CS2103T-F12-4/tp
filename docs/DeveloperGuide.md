@@ -310,6 +310,33 @@ limited to 200 characters, and an append that would exceed the limit is rejected
 list of groups, and never executes or validates a command. `CommandBox` shows its suggestions in a pop-up list.
 Each suggestion records the range of text it replaces, so accepting one leaves the rest of the command unchanged.
 
+### Commenting on a student
+
+The `comment` command attaches free-text remarks to a student, so that a tutor can record observations
+about them over a semester. `CommentCommandParser` recognises two prefixes: `c/` adds to whatever comment
+the student already has, while `c-/` replaces it, and `c-/` on its own clears it. Supplying both prefixes,
+or `c/` with no text, is rejected during parsing rather than at execution.
+
+`CommentCommand` resolves the index against the displayed student list and asks `Comment` for the length
+of the combined text before making any change. An append that would exceed `Comment.MAX_LENGTH` is
+rejected, leaving the student's existing comment untouched. The new comment is applied by building a
+replacement immutable `Person` through `Person#withComment` and handing it to `Model#setPerson`.
+
+The sequence below follows `comment 3 c/asks good questions` after parsing.
+
+![Appending to a student's comment](images/CommentSequenceDiagram.png)
+
+**Design choices**
+
+* Check the combined length before appending rather than truncating, so a rejected comment never loses
+  text the tutor has already recorded.
+* Make `c-/` an explicit prefix rather than treating an empty `c/` as a clear, so that destroying an
+  existing comment is always deliberate.
+* Leave the displayed list unfiltered after the update, so the indexes the tutor is reading off the
+  screen stay valid and several students can be commented on in succession.
+* Store the comment as a single normalised string rather than a list of remarks. Comments are read by a
+  person rather than queried, so the simpler field avoids storage and UI changes that nothing yet needs.
+
 ### Undo and redo feature
 
 The undo mechanism is facilitated by `VersionedAddressBook`. It extends `AddressBook` with a history of complete
