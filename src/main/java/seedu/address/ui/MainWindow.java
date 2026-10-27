@@ -1,10 +1,13 @@
 package seedu.address.ui;
 
+import java.awt.Point;
 import java.nio.file.Path;
+import java.util.List;
 import java.util.logging.Logger;
 
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.geometry.Rectangle2D;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.TextInputControl;
 import javafx.scene.input.KeyCode;
@@ -12,6 +15,7 @@ import javafx.scene.input.KeyCodeCombination;
 import javafx.scene.input.KeyCombination;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.StackPane;
+import javafx.stage.Screen;
 import javafx.stage.Stage;
 import seedu.address.commons.core.GuiSettings;
 import seedu.address.commons.core.LogsCenter;
@@ -164,9 +168,21 @@ public class MainWindow extends UiPart<Stage> {
     private void setWindowDefaultSize(GuiSettings guiSettings) {
         primaryStage.setHeight(guiSettings.getWindowHeight());
         primaryStage.setWidth(guiSettings.getWindowWidth());
-        if (guiSettings.getWindowCoordinates() != null) {
-            primaryStage.setX(guiSettings.getWindowCoordinates().getX());
-            primaryStage.setY(guiSettings.getWindowCoordinates().getY());
+        Point coordinates = guiSettings.getWindowCoordinates();
+        if (coordinates == null) {
+            return;
+        }
+        Rectangle2D savedBounds = new Rectangle2D(coordinates.getX(), coordinates.getY(),
+                guiSettings.getWindowWidth(), guiSettings.getWindowHeight());
+        List<Rectangle2D> screens = Screen.getScreens().stream().map(Screen::getVisualBounds).toList();
+        if (WindowPlacement.isReachable(savedBounds, screens)) {
+            primaryStage.setX(coordinates.getX());
+            primaryStage.setY(coordinates.getY());
+        } else {
+            // The window was last on a screen that is no longer connected, so it would open out of reach
+            logger.info("Saved window position " + coordinates.getX() + ", " + coordinates.getY()
+                    + " is not on any connected screen, so the window is centred instead");
+            primaryStage.centerOnScreen();
         }
     }
 
