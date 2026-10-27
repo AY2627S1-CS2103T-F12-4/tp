@@ -163,6 +163,16 @@ public class ModelStub implements Model {
     }
 
     @Override
+    public void setSession(Session target, Session editedSession) {
+        throw new AssertionError("This method should not be called.");
+    }
+
+    @Override
+    public void deleteSession(Session session) {
+        throw new AssertionError("This method should not be called.");
+    }
+
+    @Override
     public Optional<Session> findSession(Group group, Week week) {
         throw new AssertionError("This method should not be called.");
     }

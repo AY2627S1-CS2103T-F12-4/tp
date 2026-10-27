@@ -10,6 +10,7 @@ import org.junit.jupiter.api.Test;
 
 import seedu.address.model.person.Group;
 import seedu.address.model.session.exceptions.DuplicateSessionException;
+import seedu.address.model.session.exceptions.SessionNotFoundException;
 
 public class UniqueSessionListTest {
 
@@ -40,5 +41,33 @@ public class UniqueSessionListTest {
         sessions.add(WEEK_FIVE);
 
         assertTrue(sessions.find(T09, new Week(5)).isPresent());
+    }
+
+    @Test
+    public void setSession_changesDateAndKeepsWeekOrder() {
+        sessions.add(WEEK_FIVE);
+        sessions.add(WEEK_SIX);
+        Session edited = new Session(T09, new Week(5), new SessionDate("2026-10-01"));
+        sessions.setSession(WEEK_FIVE, edited);
+        assertEquals(List.of(edited, WEEK_SIX), sessions.asUnmodifiableObservableList());
+    }
+
+    @Test
+    public void setSession_changedIdentityOrMissingTarget_preservesList() {
+        sessions.add(WEEK_FIVE);
+        assertThrows(IllegalArgumentException.class, () -> sessions.setSession(WEEK_FIVE, WEEK_SIX));
+        Session otherGroup = new Session(new Group("T10"), new Week(5), WEEK_FIVE.getDate());
+        assertThrows(IllegalArgumentException.class, () -> sessions.setSession(WEEK_FIVE, otherGroup));
+        assertThrows(SessionNotFoundException.class, () -> sessions.setSession(WEEK_SIX, WEEK_SIX));
+        assertEquals(List.of(WEEK_FIVE), sessions.asUnmodifiableObservableList());
+    }
+
+    @Test
+    public void remove_missingTarget_preservesList() {
+        sessions.add(WEEK_FIVE);
+        assertThrows(SessionNotFoundException.class, () -> sessions.remove(WEEK_SIX));
+        assertEquals(List.of(WEEK_FIVE), sessions.asUnmodifiableObservableList());
+        sessions.remove(WEEK_FIVE);
+        assertTrue(sessions.asUnmodifiableObservableList().isEmpty());
     }
 }

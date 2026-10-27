@@ -1,6 +1,7 @@
 package seedu.address.model.session;
 
 import static java.util.Objects.requireNonNull;
+import static seedu.address.commons.util.AppUtil.checkArgument;
 import static seedu.address.commons.util.CollectionUtil.requireAllNonNull;
 
 import java.util.Comparator;
@@ -12,6 +13,7 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import seedu.address.model.person.Group;
 import seedu.address.model.session.exceptions.DuplicateSessionException;
+import seedu.address.model.session.exceptions.SessionNotFoundException;
 
 /**
  * A list of sessions that allows at most one session for each group and teaching week.
@@ -40,6 +42,25 @@ public class UniqueSessionList implements Iterable<Session> {
         }
         internalList.add(toAdd);
         internalList.sort(DISPLAY_ORDER);
+    }
+
+    /** Replaces a session's details without changing its group/week identity or display order. */
+    public void setSession(Session target, Session editedSession) {
+        requireAllNonNull(target, editedSession);
+        checkArgument(target.isSameSession(editedSession), "Editing cannot change a session's group or week");
+        int index = internalList.indexOf(target);
+        if (index < 0) {
+            throw new SessionNotFoundException();
+        }
+        internalList.set(index, editedSession);
+    }
+
+    /** Removes an existing session. */
+    public void remove(Session target) {
+        requireNonNull(target);
+        if (!internalList.remove(target)) {
+            throw new SessionNotFoundException();
+        }
     }
 
     /** Returns the session for {@code group} and {@code week}, if one exists. */
