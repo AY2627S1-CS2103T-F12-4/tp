@@ -17,20 +17,9 @@
 }
 
 .page-title {
-    -fx-font-size: 24px;
+    -fx-font-size: 20px;
     -fx-font-weight: bold;
     -fx-text-fill: #213230;
-}
-
-.page-subtitle {
-    -fx-font-size: 12px;
-    -fx-text-fill: #73817f;
-}
-
-.section-eyebrow {
-    -fx-font-size: 10px;
-    -fx-font-weight: bold;
-    -fx-text-fill: #687875;
 }
 
 .menu-bar {
