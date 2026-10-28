@@ -149,6 +149,14 @@ public class AddCommandUiTest {
             Node viewport = list.lookup(".clipped-container");
             Bounds visibleArea = viewport.localToScene(viewport.getBoundsInLocal());
             Bounds cardArea = selectedCell.localToScene(selectedCell.getBoundsInLocal());
+            if (cardArea.getMinY() < visibleArea.getMinY() - 0.5
+                    || cardArea.getMaxY() > visibleArea.getMaxY() + 0.5) {
+                String measurement = "UI scroll diagnostic: matric=" + matric + ", card=" + cardArea
+                        + ", viewport=" + visibleArea + ", cellHeight=" + selectedCell.getHeight()
+                        + ", prefHeight=" + selectedCell.prefHeight(selectedCell.getWidth()) + "\n";
+                new java.io.FileOutputStream(java.io.FileDescriptor.err).write(
+                        measurement.getBytes(java.nio.charset.StandardCharsets.UTF_8));
+            }
             assertTrue(cardArea.getMinY() >= visibleArea.getMinY() - 0.5
                     && cardArea.getMaxY() <= visibleArea.getMaxY() + 0.5,
                     "Card of " + matric + " spans y=" + cardArea.getMinY() + ".." + cardArea.getMaxY()

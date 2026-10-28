@@ -191,6 +191,16 @@ public class UiComponentsIntegrationTest {
                 Stage stage = fixture.stage();
                 input(stage).setText("unfinished command");
                 ListView<?> groups = (ListView<?>) stage.getScene().lookup("#groupListView");
+                groups.getSelectionModel().selectFirst();
+                groups.fireEvent(key(KeyCode.DOWN));
+                assertEquals("T01", groups.getSelectionModel().getSelectedItem());
+                groups.fireEvent(key(KeyCode.UP));
+                assertEquals("All students", groups.getSelectionModel().getSelectedItem());
+                groups.fireEvent(key(KeyCode.RIGHT));
+                assertEquals("T01", groups.getSelectionModel().getSelectedItem());
+                groups.fireEvent(key(KeyCode.LEFT));
+                assertEquals("All students", groups.getSelectionModel().getSelectedItem());
+                assertTrue(fixture.model().getActiveGroup().isEmpty(), "Arrows only select until Enter is pressed");
                 groups.getSelectionModel().selectLast();
                 groups.scrollTo(groups.getItems().size() - 1);
                 groups.fireEvent(new KeyEvent(KeyEvent.KEY_PRESSED, "", "", KeyCode.ENTER,
@@ -294,6 +304,10 @@ public class UiComponentsIntegrationTest {
     private static KeyEvent shortcutZ() {
         boolean mac = System.getProperty("os.name").toLowerCase(Locale.ROOT).startsWith("mac");
         return new KeyEvent(KeyEvent.KEY_PRESSED, "", "", KeyCode.Z, false, !mac, false, mac);
+    }
+
+    private static KeyEvent key(KeyCode code) {
+        return new KeyEvent(KeyEvent.KEY_PRESSED, "", "", code, false, false, false, false);
     }
 
     private static void saveScreenshotAfterRendering(Stage stage, String name) throws Exception {
