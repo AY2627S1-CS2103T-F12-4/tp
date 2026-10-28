@@ -75,7 +75,7 @@ The **API** of this component is specified in [`Ui.java`](https://github.com/AY2
 
 ![Structure of the UI Component](images/UiClassDiagram.png)
 
-The UI consists of a `MainWindow` and its parts, such as `CommandBox`, `ResultDisplay`, `GroupListPanel`, `PersonListPanel`, and `StatusBarFooter`. All of these, including `MainWindow`, inherit from the abstract `UiPart` class, which captures common behavior among classes that represent visible GUI parts.
+The UI consists of a `MainWindow` and its parts, such as `CommandBox`, `ResultDisplay`, `GroupListPanel`, `PersonListPanel`, `StudentDetailPanel`, and `StatusBarFooter`. All of these, including `MainWindow`, inherit from the abstract `UiPart` class, which captures common behavior among classes that represent visible GUI parts.
 
 * `GroupListPanel` lists **All students** and registered groups in a horizontal strip. Choosing an entry
   runs the matching `list` command. Up/Down are retained as aliases for horizontal selection, and Enter
@@ -83,7 +83,13 @@ The UI consists of a `MainWindow` and its parts, such as `CommandBox`, `ResultDi
 * `PersonListPanel` binds the displayed-student count and shows one `PersonCard` per displayed student.
   Card width follows the list cell's available width; the attendance flow measures height using its
   current width, so all teaching weeks wrap instead of causing horizontal overflow or oversized rows.
-  Comments remain visible below the row's details, and long tags have tooltips.
+* `StudentDetailPanel` displays the chosen student's email, tags, comment notes and attendance summary.
+  `PersonListPanel` reports a clicked row or Enter selection to `MainWindow` without changing the model.
+  After each successful command, `MainWindow` refreshes the panel by matriculation number; an edit's
+  `CommandResult` also identifies the updated student when their number changes. If the student is no
+  longer displayed, the panel closes. Escape closes it unless completion suggestions are open.
+  `AttendanceSummary` counts sessions of the student's own group and excludes unmarked sessions from
+  the attendance percentage.
 * `CommandBox` suggests command words, prefixes and values using `FieldCompletion`. Its border and
   `ResultDisplay`'s banner receive consistent success/error state from `MainWindow`, including commands
   invoked through navigation and undo shortcuts. Changing the input clears its previous highlight.
@@ -923,8 +929,12 @@ relative to that launch folder. Keep backups of any real data outside the test f
    count to follow the displayed list. Leave a draft command in the input while navigating; it must remain
    unchanged. Use Left/Right and Up/Down to choose groups, then Enter to open them.
 3. Give a student a long name, email, tag and comment, and create sessions for all 13 teaching weeks.
-   At 740 by 600 and larger window sizes, details and attendance must wrap within the student row.
-   All weeks remain reachable by vertical scrolling. Hover over a shortened tag to see the full text.
+   At 740 by 600 and larger window sizes, attendance must wrap within the student row.
+   Click the row or select it and press Enter to read email, tags, comments and individual sessions in
+   the detail panel. Scroll within the panel to reach all 13 weeks. Verify that the × button is visible
+   and closes the panel; Escape should also close it after any completion popup has been dismissed.
+   Run `comment`, `mark`, `editsession`, `undo` and `redo` while details are open and check that they
+   refresh. Filtering out or deleting the student must close the panel.
 4. Add a student at the beginning, middle and end of a long roster, and after an empty search. At 1000
    by 700, a normal student's complete highlighted row must be visible, including all 13 attendance cells.
 5. Make an undoable edit, run an invalid command, then invoke the undo shortcut from outside the command
@@ -1030,7 +1040,7 @@ Prepare the data from [Recording attendance](#recording-attendance), then run `l
 1. Run `comment 1 c/attentive`, then `comment 1 c/asks good questions`.
    Expected: John's comment reads `attentive; asks good questions`.
 2. Run `comment 1 c-/needs help`. Expected: the comment is replaced by `needs help`.
-3. Run `comment 1 c-/`. Expected: the comment is cleared and disappears from John's card.
+3. Run `comment 1 c-/`. Expected: the comment is cleared and John's detail panel shows **No comment yet**.
 4. Try `comment 1`, `comment 1 c/a c-/b` and a `c/` note that would make the comment longer than 200 characters.
    Expected: an error each time, with the comment unchanged.
 
