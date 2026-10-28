@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ProgressBar?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.layout.FlowPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox fx:id="detailPane" styleClass="detail-panel" xmlns="http://javafx.com/javafx/17"
+      xmlns:fx="http://javafx.com/fxml/1">
+
+  <HBox styleClass="detail-header" alignment="CENTER_LEFT">
+    <Label fx:id="avatar" styleClass="detail-avatar" />
+    <VBox spacing="5" maxWidth="Infinity" HBox.hgrow="ALWAYS">
+      <Label fx:id="studentName" styleClass="detail-name" wrapText="true" />
+      <HBox spacing="10" alignment="CENTER_LEFT">
+        <Label fx:id="studentMatric" styleClass="detail-matric" />
+        <Label fx:id="studentGroup" styleClass="detail-group-chip" />
+        <Label fx:id="rowNumber" styleClass="detail-row-number" />
+      </HBox>
+    </VBox>
+    <Button fx:id="closeButton" styleClass="detail-close" text="&#10005;"
+            accessibleText="Close the student panel"
+            accessibleHelp="Press Escape to close the student panel." />
+  </HBox>
+
+  <ScrollPane fx:id="detailScroll" fitToWidth="true" VBox.vgrow="ALWAYS" styleClass="detail-scroll">
+    <VBox>
+      <padding>
+        <Insets top="0" right="24" bottom="16" left="24" />
+      </padding>
+
+      <Label text="DETAILS" styleClass="detail-section" />
+
+      <HBox styleClass="detail-field-row" alignment="CENTER_LEFT">
+        <Label text="Email" styleClass="detail-field" />
+        <Label fx:id="detailEmail" styleClass="detail-value" wrapText="true"
+               maxWidth="Infinity" HBox.hgrow="ALWAYS" />
+      </HBox>
+      <HBox styleClass="detail-field-row" alignment="CENTER_LEFT">
+        <Label text="Matric" styleClass="detail-field" />
+        <Label fx:id="detailMatric" styleClass="detail-value, detail-value-mono"
+               maxWidth="Infinity" HBox.hgrow="ALWAYS" />
+      </HBox>
+      <HBox styleClass="detail-field-row" alignment="CENTER_LEFT">
+        <Label text="Group" styleClass="detail-field" />
+        <Label fx:id="detailGroup" styleClass="detail-value, detail-value-mono"
+               maxWidth="Infinity" HBox.hgrow="ALWAYS" />
+      </HBox>
+      <HBox styleClass="detail-field-row" alignment="CENTER_LEFT">
+        <Label text="Tags" styleClass="detail-field" />
+        <FlowPane fx:id="detailTags" hgap="6" vgap="4" alignment="CENTER_LEFT" rowValignment="CENTER"
+                  maxWidth="Infinity" HBox.hgrow="ALWAYS" />
+      </HBox>
+
+      <Label text="COMMENT" styleClass="detail-section" />
+      <VBox fx:id="commentBox" styleClass="detail-comment" />
+
+      <Label text="ATTENDANCE" styleClass="detail-section" />
+      <HBox spacing="8">
+        <VBox styleClass="detail-tile" spacing="2" maxWidth="Infinity" HBox.hgrow="ALWAYS">
+          <Label fx:id="presentCount" styleClass="detail-tile-count, detail-tile-present" />
+          <Label text="&#10003; Present" styleClass="detail-tile-label" />
+        </VBox>
+        <VBox styleClass="detail-tile" spacing="2" maxWidth="Infinity" HBox.hgrow="ALWAYS">
+          <Label fx:id="absentCount" styleClass="detail-tile-count, detail-tile-absent" />
+          <Label text="&#10007; Absent" styleClass="detail-tile-label" />
+        </VBox>
+        <VBox styleClass="detail-tile" spacing="2" maxWidth="Infinity" HBox.hgrow="ALWAYS">
+          <Label fx:id="unmarkedCount" styleClass="detail-tile-count, detail-tile-unmarked" />
+          <Label text="&#8212; Unmarked" styleClass="detail-tile-label" />
+        </VBox>
+      </HBox>
+
+      <HBox spacing="10" alignment="CENTER_LEFT">
+        <padding>
+          <Insets top="12" right="0" bottom="6" left="0" />
+        </padding>
+        <ProgressBar fx:id="attendanceBar" maxWidth="Infinity" HBox.hgrow="ALWAYS" />
+        <Label fx:id="attendanceRate" styleClass="detail-rate-text" />
+      </HBox>
+
+      <VBox fx:id="sessionRows" />
+      <Region minHeight="4" />
+    </VBox>
+  </ScrollPane>
+</VBox>

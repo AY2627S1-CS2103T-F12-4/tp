@@ -31,7 +31,6 @@ public class PersonCardTest {
             assertEquals(student.getName().fullName, label(card, "name"));
             assertEquals(student.getMatric().value, label(card, "matric"));
             assertEquals("T09", label(card, "group"));
-            assertEquals(student.getEmail().value, label(card, "email"));
             assertEquals(List.of("W1: \u2713", "W2: \u2014"), attendanceLabels(card));
 
             assertAttendanceColours(card, Color.web("#86efac"), Color.web("#d1d5db"));

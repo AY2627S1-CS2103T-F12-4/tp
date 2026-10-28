@@ -204,6 +204,11 @@ public class CommandBox extends UiPart<Region> {
         }
     }
 
+    /** Returns whether the completion popup is open, in which case Escape belongs to it. */
+    boolean isShowingCompletions() {
+        return completionPopup.isShowing();
+    }
+
     /** Returns whether the focused command box has a text edit that should receive the undo shortcut. */
     boolean hasUndoableTextEdit() {
         return commandTextField.isFocused() && commandTextField.isUndoable();

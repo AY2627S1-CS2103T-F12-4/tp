@@ -15,6 +15,7 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyCodeCombination;
 import javafx.scene.input.KeyCombination;
 import javafx.scene.input.KeyEvent;
+import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
@@ -24,6 +25,7 @@ import seedu.address.logic.Logic;
 import seedu.address.logic.commands.CommandResult;
 import seedu.address.logic.commands.exceptions.CommandException;
 import seedu.address.logic.parser.exceptions.ParseException;
+import seedu.address.model.person.Person;
 
 /**
  * The Main Window. Provides the basic application layout containing
@@ -32,6 +34,9 @@ import seedu.address.logic.parser.exceptions.ParseException;
 public class MainWindow extends UiPart<Stage> {
 
     private static final String FXML = "MainWindow.fxml";
+
+    /** Share of the window the student detail panel covers while it is open. */
+    private static final double DETAIL_PANEL_SHARE = 0.45;
 
     private final Logger logger = LogsCenter.getLogger(getClass());
 
@@ -45,6 +50,7 @@ public class MainWindow extends UiPart<Stage> {
     private ResultDisplay resultDisplay;
     private HelpWindow helpWindow;
     private CommandBox commandBox;
+    private StudentDetailPanel studentDetailPanel;
 
     @FXML
     private StackPane commandBoxPlaceholder;
@@ -63,6 +69,12 @@ public class MainWindow extends UiPart<Stage> {
 
     @FXML
     private StackPane statusbarPlaceholder;
+
+    @FXML
+    private StackPane studentDetailPlaceholder;
+
+    @FXML
+    private StackPane pageArea;
 
     /**
      * Creates a {@code MainWindow} with the given {@code Stage}, {@code Logic},
@@ -135,6 +147,11 @@ public class MainWindow extends UiPart<Stage> {
                 logic.activeGroupProperty());
         personListPanelPlaceholder.getChildren().add(personListPanel.getRoot());
 
+        studentDetailPanel = new StudentDetailPanel(this::hideStudentDetail);
+        studentDetailPlaceholder.getChildren().add(studentDetailPanel.getRoot());
+        personListPanel.setOnStudentChosen(this::showStudentDetail);
+        sizeStudentDetailPanel();
+
         resultDisplay = new ResultDisplay();
         resultDisplayPlaceholder.getChildren().add(resultDisplay.getRoot());
 
@@ -144,6 +161,77 @@ public class MainWindow extends UiPart<Stage> {
         commandBox = new CommandBox(this::executeCommand, logic.getGroupList());
         commandBoxPlaceholder.getChildren().add(commandBox.getRoot());
         setUndoAccelerator();
+        setDetailPanelEscape();
+    }
+
+    /**
+     * Keeps the detail panel to a share of the window rather than a fixed width, so the student
+     * list stays readable beside it even at the window's smallest size.
+     */
+    private void sizeStudentDetailPanel() {
+        Region panel = studentDetailPanel.getRoot();
+        panel.maxWidthProperty().bind(pageArea.widthProperty().multiply(DETAIL_PANEL_SHARE));
+        panel.prefWidthProperty().bind(panel.maxWidthProperty());
+        // The panel runs the page's full height, so it covers the command box while it is open
+        panel.setMaxHeight(Double.MAX_VALUE);
+    }
+
+    /** Opens the panel on a student without disturbing the displayed list or the active group. */
+    private void showStudentDetail(Person person, int displayedIndex) {
+        studentDetailPanel.show(person, displayedIndex, logic.getSessionList());
+    }
+
+    private void hideStudentDetail() {
+        studentDetailPanel.hide();
+    }
+
+    /**
+     * Keeps an open panel showing the current version of its student after a command.
+     * The student is found again by matriculation number, which identifies them, so an edit or a
+     * new comment is reflected; the panel closes if they are no longer displayed.
+     * {@code changed} is the student the command reported, which covers the one case the
+     * matriculation number cannot: an edit that changed the number being searched for.
+     */
+    private void refreshStudentDetail(Person changed) {
+        if (!studentDetailPanel.isShowing()) {
+            return;
+        }
+        String shown = studentDetailPanel.shownStudent()
+                .map(person -> person.getMatric().value).orElse(null);
+        List<Person> displayed = logic.getFilteredPersonList();
+        for (int i = 0; i < displayed.size(); i++) {
+            if (displayed.get(i).getMatric().value.equals(shown)) {
+                showStudentDetail(displayed.get(i), i + 1);
+                return;
+            }
+        }
+        // The open student's number no longer matches anyone, so an edit changed it. Only the
+        // command knows who it touched, and only a displayed student can be shown.
+        if (changed != null) {
+            int index = displayed.indexOf(changed);
+            if (index >= 0) {
+                showStudentDetail(changed, index + 1);
+                return;
+            }
+        }
+        hideStudentDetail();
+    }
+
+    /**
+     * Closes the detail panel on Escape.
+     * This is a filter because a focused list consumes Escape itself, so a handler would never see
+     * the key. The command box keeps Escape while its completion popup is open.
+     */
+    private void setDetailPanelEscape() {
+        getRoot().addEventFilter(KeyEvent.KEY_PRESSED, event -> {
+            if (event.getCode() != KeyCode.ESCAPE || commandBox.isShowingCompletions()) {
+                return;
+            }
+            if (studentDetailPanel.isShowing()) {
+                hideStudentDetail();
+                event.consume();
+            }
+        });
     }
 
     /**
@@ -258,6 +346,7 @@ public class MainWindow extends UiPart<Stage> {
             // A highlight is only kept until the next command, so it never marks an unrelated student
             commandResult.getPersonToShow()
                     .ifPresentOrElse(personListPanel::scrollTo, personListPanel::clearSelection);
+            refreshStudentDetail(commandResult.getPersonToShow().orElse(null));
 
             if (commandResult.isShowHelp()) {
                 handleHelp();

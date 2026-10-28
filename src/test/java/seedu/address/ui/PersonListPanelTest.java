@@ -9,6 +9,7 @@ import static seedu.address.testutil.FxTestUtil.waitForRenderingCycles;
 import static seedu.address.testutil.TypicalPersons.ALICE;
 import static seedu.address.testutil.TypicalSessions.T09_WEEK_1;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
@@ -22,6 +23,8 @@ import javafx.scene.Scene;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.FlowPane;
 import javafx.stage.Stage;
 import seedu.address.model.person.Group;
@@ -47,6 +50,38 @@ public class PersonListPanelTest {
             assertEquals("All groups", scope.getText());
             return null;
         });
+    }
+
+    @Test
+    public void activation_enterOpensHighlightedStudentAndEmptySelectionDoesNothing() throws Exception {
+        onFxThread(() -> {
+            Person bob = new PersonBuilder().withName("Bob Lim").withMatric("A0000009B").build();
+            PersonListPanel panel = new PersonListPanel(FXCollections.observableArrayList(ALICE, bob),
+                    FXCollections.observableArrayList(), new ReadOnlyObjectWrapper<Group>());
+            List<String> opened = new ArrayList<>();
+            panel.setOnStudentChosen((person, index) -> opened.add(index + ". " + person.getName().fullName));
+            ListView<?> list = (ListView<?>) panel.getRoot().lookup("#personListView");
+
+            list.getSelectionModel().select(1);
+            press(list, KeyCode.TAB);
+            assertTrue(opened.isEmpty());
+            press(list, KeyCode.ENTER);
+            assertEquals(List.of("2. Bob Lim"), opened);
+
+            // The row number follows the highlight, matching what a command would report
+            list.getSelectionModel().select(0);
+            press(list, KeyCode.ENTER);
+            assertEquals(List.of("2. Bob Lim", "1. " + ALICE.getName().fullName), opened);
+
+            list.getSelectionModel().clearSelection();
+            press(list, KeyCode.ENTER);
+            assertEquals(2, opened.size());
+            return null;
+        });
+    }
+
+    private static void press(ListView<?> list, KeyCode code) {
+        list.fireEvent(new KeyEvent(KeyEvent.KEY_PRESSED, "", "", code, false, false, false, false));
     }
 
     @Test
