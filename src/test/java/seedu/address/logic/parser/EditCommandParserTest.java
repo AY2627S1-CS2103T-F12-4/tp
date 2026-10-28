@@ -83,6 +83,16 @@ public class EditCommandParserTest {
     }
 
     @Test
+    public void parse_hyphenatedTags_success() {
+        // the example given in the User Guide
+        EditPersonDescriptor descriptor = new EditPersonDescriptorBuilder()
+                .withTags("class-rep", "needs-follow-up").build();
+
+        assertParseSuccess(parser, "1 t/class-rep t/needs-follow-up",
+                new EditCommand(INDEX_FIRST_PERSON, descriptor));
+    }
+
+    @Test
     public void parse_invalidValue_failure() {
         assertParseFailure(parser, "1" + INVALID_NAME_DESC, Name.MESSAGE_CONSTRAINTS); // invalid name
         assertParseFailure(parser, "1" + INVALID_EMAIL_DESC, Email.MESSAGE_CONSTRAINTS); // invalid email

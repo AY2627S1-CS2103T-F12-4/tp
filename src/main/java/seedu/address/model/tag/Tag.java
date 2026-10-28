@@ -9,8 +9,10 @@ import static seedu.address.commons.util.AppUtil.checkArgument;
  */
 public class Tag {
 
-    public static final String MESSAGE_CONSTRAINTS = "Tag names should be alphanumeric";
-    public static final String VALIDATION_REGEX = "\\p{Alnum}+";
+    public static final String MESSAGE_CONSTRAINTS = "Tags should contain only letters and digits, "
+            + "optionally joined by single hyphens, e.g. exchange or needs-follow-up.";
+    // A hyphen may join two words, but cannot start or end a tag or appear twice in a row
+    public static final String VALIDATION_REGEX = "\\p{Alnum}+(-\\p{Alnum}+)*";
 
     public final String tagName;
 
