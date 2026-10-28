@@ -72,11 +72,14 @@ public class UiComponentsIntegrationTest {
                 assertFalse(stage.getScene().lookup("#commandBox").getStyleClass().contains("error"));
                 enter(stage, "list");
                 assertFeedback(stage, false);
-                saveScreenshot(stage, "feedback-success.png");
-                enter(stage, "unknown");
-                saveScreenshot(stage, "feedback-error.png");
                 return null;
             });
+            saveScreenshotAfterRendering(fixture.stage(), "feedback-success.png");
+            onFxThread(() -> {
+                enter(fixture.stage(), "unknown");
+                return null;
+            });
+            saveScreenshotAfterRendering(fixture.stage(), "feedback-error.png");
         } finally {
             close(fixture);
         }
@@ -201,7 +204,7 @@ public class UiComponentsIntegrationTest {
     }
 
     private WindowFixture createWindow(boolean longText) throws Exception {
-        return onFxThread(() -> {
+        WindowFixture fixture = onFxThread(() -> {
             AddressBook book = new AddressBook();
             Group firstGroup = new Group("T09");
             Group secondGroup = new Group("T10");
@@ -235,6 +238,8 @@ public class UiComponentsIntegrationTest {
             stage.setHeight(700);
             return new WindowFixture(stage, model);
         });
+        waitForRenderingCycles(3);
+        return fixture;
     }
 
     private static void assertFeedback(Stage stage, boolean error) {
@@ -279,6 +284,33 @@ public class UiComponentsIntegrationTest {
     private static KeyEvent shortcutZ() {
         boolean mac = System.getProperty("os.name").toLowerCase(Locale.ROOT).startsWith("mac");
         return new KeyEvent(KeyEvent.KEY_PRESSED, "", "", KeyCode.Z, false, !mac, false, mac);
+    }
+
+    private static void saveScreenshotAfterRendering(Stage stage, String name) throws Exception {
+        waitForRenderingCycles(3);
+        onFxThread(() -> {
+            ListView<?> students = (ListView<?>) stage.getScene().lookup("#personListView");
+            List<? extends ListCell<?>> rows = students.lookupAll(".list-cell").stream()
+                    .map(node -> (ListCell<?>) node).filter(cell -> !cell.isEmpty() && cell.getGraphic() != null)
+                    .sorted((first, second) -> Integer.compare(first.getIndex(), second.getIndex())).toList();
+            for (ListCell<?> row : rows) {
+                Node card = row.getGraphic();
+                Label comment = (Label) card.lookup("#comment");
+                if (comment.isManaged()) {
+                    Bounds commentBounds = comment.localToScene(comment.getBoundsInLocal());
+                    assertWithin(card.localToScene(card.getBoundsInLocal()), commentBounds);
+                    assertTrue(comment.getHeight() >= comment.prefHeight(comment.getWidth()) - 1,
+                            "Comments must have room to wrap without being clipped");
+                    for (String field : List.of("name", "email", "attendance", "tags")) {
+                        Node details = card.lookup("#" + field);
+                        assertTrue(details.localToScene(details.getBoundsInLocal()).getMaxY()
+                                <= commentBounds.getMinY() + 1, "Comments must stay below the student's details");
+                    }
+                }
+            }
+            saveScreenshot(stage, name);
+            return null;
+        });
     }
 
     private static void saveScreenshot(Stage stage, String name) throws Exception {
