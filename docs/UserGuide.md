@@ -452,6 +452,7 @@ Examples:
 * `list grp/T09` followed by `delete all` deletes every student in `T09`, for example at the end of a semester.
 * `find n/Tan` followed by `delete all` deletes every student in the search results.
 
+* `all` ignores letter case, so `delete ALL` works too.
 * Only the students on screen are deleted. Students in other groups, or outside the search results, are kept.
 * `delete all` while all students are displayed deletes every student. Use `clear` instead to also delete all tutorial groups and sessions.
 
@@ -497,6 +498,7 @@ Examples:
 * `list grp/T09` followed by `mark all w/5 s/present` marks every student in T09 present for week 5.
 * `mark all w/5 s/absent` while all students are displayed marks every student absent for week 5 of their own group.
 
+* `all` ignores letter case, so `mark ALL w/5 s/present` works too.
 * Each student is marked for the session of their own tutorial group, as with `mark`.
 * Every displayed student's group must have a session for that week. If any group does not, no student is marked.
 * Students who were already marked for that week have their status replaced. The confirmation says how many.
