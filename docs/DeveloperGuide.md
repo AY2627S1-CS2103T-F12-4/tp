@@ -77,9 +77,16 @@ The **API** of this component is specified in [`Ui.java`](https://github.com/AY2
 
 The UI consists of a `MainWindow` and its parts, such as `CommandBox`, `ResultDisplay`, `GroupListPanel`, `PersonListPanel`, and `StatusBarFooter`. All of these, including `MainWindow`, inherit from the abstract `UiPart` class, which captures common behavior among classes that represent visible GUI parts.
 
-* `GroupListPanel` lists **All students** and the registered tutorial groups. Choosing an entry runs the matching `list` command, so clicking and typing behave the same way.
-* `PersonListPanel` shows one `PersonCard` per displayed student. Each card asks `AttendanceCell` for one cell per session of the student's group, coloured by attendance status.
-* `CommandBox` suggests command words, prefixes and values as the user types, using `FieldCompletion` from the `Logic` component.
+* `GroupListPanel` lists **All students** and registered groups in a horizontal strip. Choosing an entry
+  runs the matching `list` command. Up/Down are retained as aliases for horizontal selection, and Enter
+  opens the selected view without replacing unfinished command text.
+* `PersonListPanel` binds the displayed-student count and shows one `PersonCard` per displayed student.
+  Card width follows the list cell's available width; the attendance flow measures height using its
+  current width, so all teaching weeks wrap instead of causing horizontal overflow or oversized rows.
+  Comments remain visible below the row's details, and long tags have tooltips.
+* `CommandBox` suggests command words, prefixes and values using `FieldCompletion`. Its border and
+  `ResultDisplay`'s banner receive consistent success/error state from `MainWindow`, including commands
+  invoked through navigation and undo shortcuts. Changing the input clears its previous highlight.
 
 The `UI` component uses the JavaFX UI framework. The layouts of these UI parts are defined in matching `.fxml` files in `src/main/resources/view`. For example, [`MainWindow.fxml`](https://github.com/AY2627S1-CS2103T-F12-4/tp/blob/master/src/main/resources/view/MainWindow.fxml) specifies the layout of [`MainWindow`](https://github.com/AY2627S1-CS2103T-F12-4/tp/blob/master/src/main/java/seedu/address/ui/MainWindow.java).
 
@@ -867,6 +874,23 @@ relative to that launch folder. Keep backups of any real data outside the test f
    `{ "x" : 100000, "y" : 100000 }`, as if the window was last on a monitor that is now disconnected. Relaunch.
    Expected: the window opens centred on the screen, and the log says the saved position was not on any
    connected screen.
+
+### Checking the redesigned interface
+
+1. Launch with a disposable roster. Before entering a command, expect the banner to show **Ready**.
+   Run `list`, then an unknown command. Expect success and error titles/icons respectively, with a
+   matching input highlight. Start typing again: the input highlight resets while feedback stays visible.
+2. Add several groups and students, then use the horizontal group strip and search. Expect the student
+   count to follow the displayed list. Leave a draft command in the input while navigating; it must remain
+   unchanged. Use Left/Right and Up/Down to choose groups, then Enter to open them.
+3. Give a student a long name, email, tag and comment, and create sessions for all 13 teaching weeks.
+   At 740 by 600 and larger window sizes, details and attendance must wrap within the student row.
+   All weeks remain reachable by vertical scrolling. Hover over a shortened tag to see the full text.
+4. Add a student at the beginning, middle and end of a long roster, and after an empty search. At 1000
+   by 700, a normal student's complete highlighted row must be visible, including all 13 attendance cells.
+5. Make an undoable edit, run an invalid command, then invoke the undo shortcut from outside the command
+   input. Expect restored data and success styling. Invoke undo after history is exhausted: expect error
+   styling. These checks also apply when the compatible visual theme is integrated.
 
 ### Deleting a student
 

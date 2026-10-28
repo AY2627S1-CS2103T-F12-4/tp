@@ -109,6 +109,23 @@ Parameter | Accepted value
 `s/STATUS` | `present` or `absent`, case-insensitive.
 `INDEX` | A positive integer identifying a student in the currently displayed list.
 
+### Reading command feedback and student rows
+
+The banner below the command box identifies the result of your last action:
+
+* **Ready** appears before you run a command.
+* **Command completed**, with a tick, confirms a successful action.
+* **Command not run**, with an exclamation mark, explains why a command failed.
+
+The command box also changes its border to indicate success or failure. Starting to type resets that
+input highlight; the banner keeps the previous feedback until the next action.
+
+The badge beside the roster heading counts the students currently displayed, so it changes when you
+search or switch tutorial groups. Each row shows student details, tags, group and attendance, with a
+comment underneath when one is present. Long names, email addresses, comments and attendance strips
+wrap within the row. Hover over a shortened tag to read its full text. Scroll vertically to reach
+additional students or the rest of a tall row.
+
 ### Completing command fields
 
 As you type, the command box suggests command names (e.g. `ad` completes to `add`),
@@ -256,11 +273,12 @@ are rejected. A rejected list command leaves the data, active group and displaye
 
 ### Navigating tutorial groups
 
-The tutorial-group panel starts with **All students**, followed by registered groups in group-code order.
+The horizontal tutorial-group strip above the roster starts with **All students**, followed by
+registered groups in group-code order. Scroll along the strip if there are more groups than fit on screen.
 
 * Click a group to show its students and attendance, equivalent to `list grp/GROUP`.
 * Click **All students** to show the full roster, equivalent to `list`.
-* Use Tab to focus the group panel, Up/Down to choose an entry, and Enter to open it.
+* Use Tab to focus the group strip, Left/Right or Up/Down to choose an entry, and Enter to open it.
   Arrow keys alone do not change the displayed roster. Leaving the panel restores the active view's selection.
 * The panel follows typed commands: `list` selects **All students**, `list grp/GROUP` selects that group,
   and a successful `find` clears the selection, even when every student happens to match.
