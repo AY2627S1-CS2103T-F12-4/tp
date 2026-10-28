@@ -4,6 +4,7 @@ import static java.util.Objects.requireNonNull;
 import static seedu.address.commons.util.CollectionUtil.requireAllNonNull;
 
 import java.util.Optional;
+import java.util.function.BiConsumer;
 import java.util.logging.Logger;
 
 import javafx.beans.binding.Bindings;
@@ -18,8 +19,9 @@ import javafx.scene.control.IndexedCell;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
-import javafx.scene.control.Tooltip;
 import javafx.scene.control.skin.VirtualFlow;
+import javafx.scene.input.MouseButton;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Region;
@@ -42,6 +44,7 @@ public class PersonListPanel extends UiPart<Region> {
 
     private final ObservableList<Session> sessions;
     private Runnable pendingScroll;
+    private BiConsumer<Person, Integer> onStudentChosen;
 
     @FXML
     private ListView<Person> personListView;
@@ -65,6 +68,33 @@ public class PersonListPanel extends UiPart<Region> {
         personListView.setItems(personList);
         sessions.addListener((ListChangeListener<Session>) change -> personListView.refresh());
         personListView.setCellFactory(listView -> new PersonListViewCell());
+        personListView.setOnMouseClicked(this::openClickedStudent);
+    }
+
+    /**
+     * Sets what happens when a student's row is clicked, which is how their details are opened.
+     * The callback receives the student and their row number in the displayed list.
+     */
+    public void setOnStudentChosen(BiConsumer<Person, Integer> onStudentChosen) {
+        this.onStudentChosen = requireNonNull(onStudentChosen);
+    }
+
+    /**
+     * Reports the clicked row, leaving the displayed list and its row numbers alone. Only the
+     * highlight moves, which is the same highlight a command already uses to point at a student.
+     */
+    private void openClickedStudent(MouseEvent event) {
+        if (onStudentChosen == null || event.getButton() != MouseButton.PRIMARY) {
+            return;
+        }
+        Node target = (Node) event.getTarget();
+        while (target != null && !(target instanceof ListCell<?>)) {
+            target = target.getParent();
+        }
+        if (target instanceof ListCell<?> cell && !cell.isEmpty() && cell.getItem() instanceof Person person) {
+            personListView.getSelectionModel().select(cell.getIndex());
+            onStudentChosen.accept(person, cell.getIndex() + 1);
+        }
     }
 
     /**
@@ -194,13 +224,6 @@ public class PersonListPanel extends UiPart<Region> {
             attendance.prefWrapLengthProperty().bind(Bindings.createDoubleBinding(() ->
                     Math.max(1, card.getPrefWidth() - card.getInsets().getLeft() - card.getInsets().getRight()
                             - fixedColumnsWidth), card.prefWidthProperty(), card.insetsProperty()));
-            FlowPane tags = (FlowPane) card.lookup("#tags");
-            tags.getChildren().forEach(node -> {
-                Label label = (Label) node;
-                label.setMinWidth(0);
-                label.setMaxWidth(165);
-                label.setTooltip(new Tooltip(label.getText()));
-            });
         }
     }
 

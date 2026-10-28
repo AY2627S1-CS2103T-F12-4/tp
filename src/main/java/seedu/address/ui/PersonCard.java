@@ -2,7 +2,6 @@ package seedu.address.ui;
 
 import static seedu.address.commons.util.CollectionUtil.requireAllNonNull;
 
-import java.util.Comparator;
 import java.util.List;
 
 import javafx.fxml.FXML;
@@ -37,15 +36,9 @@ public class PersonCard extends UiPart<Region> {
     @FXML
     private Label id;
     @FXML
-    private Label email;
-    @FXML
     private Label matric;
     @FXML
     private Label group;
-    @FXML
-    private Label comment;
-    @FXML
-    private FlowPane tags;
     @FXML
     private FlowPane attendance;
 
@@ -59,13 +52,8 @@ public class PersonCard extends UiPart<Region> {
         this.person = person;
         id.setText(displayedIndex + ". ");
         name.setText(person.getName().fullName);
-        email.setText(person.getEmail().value);
         matric.setText(person.getMatric().value);
         group.setText(person.getGroup().value);
-        // An empty comment leaves no gap: an unmanaged node takes up no space in the layout.
-        comment.setText(person.getComment().value);
-        comment.setVisible(!person.getComment().isEmpty());
-        comment.setManaged(!person.getComment().isEmpty());
         for (AttendanceCell cell : AttendanceCell.forStudent(person, sessions)) {
             Label label = new Label("W" + cell.week() + ": " + cell.symbol());
             label.getStyleClass().addAll("attendance-cell", cell.styleClass());
@@ -74,8 +62,5 @@ public class PersonCard extends UiPart<Region> {
         if (attendance.getChildren().isEmpty()) {
             attendance.getChildren().add(new Label("No sessions yet"));
         }
-        person.getTags().stream()
-                .sorted(Comparator.comparing(tag -> tag.tagName))
-                .forEach(tag -> tags.getChildren().add(new Label(tag.tagName)));
     }
 }

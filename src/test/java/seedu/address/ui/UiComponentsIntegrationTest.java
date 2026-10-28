@@ -94,13 +94,9 @@ public class UiComponentsIntegrationTest {
                 assertEquals("3 students", label(stage, "studentCount").getText());
                 enter(stage, "find n/Alex");
                 assertEquals("1 student", label(stage, "studentCount").getText());
-                assertEquals("Needs worksheet", ((Label) firstCard(stage).lookup("#comment")).getText());
                 enter(stage, "comment 1 c-/Updated note");
-                assertEquals("Updated note", ((Label) firstCard(stage).lookup("#comment")).getText());
                 enter(stage, "comment 1 c-/");
-                assertFalse(firstCard(stage).lookup("#comment").isManaged());
                 enter(stage, "undo");
-                assertEquals("Updated note", ((Label) firstCard(stage).lookup("#comment")).getText());
                 enter(stage, "find n/Nobody");
                 assertEquals("0 students", label(stage, "studentCount").getText());
                 enter(stage, "list");
@@ -135,16 +131,10 @@ public class UiComponentsIntegrationTest {
                     for (Node cell : attendance.getChildren()) {
                         assertWithin(cardBounds, cell.localToScene(cell.getBoundsInLocal()));
                     }
-                    for (String field : List.of("name", "email", "comment")) {
+                    for (String field : List.of("name", "matric")) {
                         Label value = (Label) card.lookup("#" + field);
                         assertWithin(cardBounds, value.localToScene(value.getBoundsInLocal()));
                         assertEquals(value.getText(), ((Text) value.lookup(".text")).getText());
-                    }
-                    FlowPane tags = (FlowPane) card.lookup("#tags");
-                    for (Node node : tags.getChildren()) {
-                        Label tag = (Label) node;
-                        assertTrue(tag.getWidth() <= 165);
-                        assertEquals(tag.getText(), tag.getTooltip().getText());
                     }
                     ListView<?> students = (ListView<?>) stage.getScene().lookup("#personListView");
                     Bounds viewport = students.lookup(".clipped-container")
@@ -311,18 +301,10 @@ public class UiComponentsIntegrationTest {
             for (ListCell<?> row : rows) {
                 Node card = row.getGraphic();
                 assertWithin(row.localToScene(row.getLayoutBounds()), card.localToScene(card.getBoundsInLocal()));
-                Label comment = (Label) card.lookup("#comment");
-                if (comment.isManaged()) {
-                    Bounds commentBounds = comment.localToScene(comment.getBoundsInLocal());
-                    assertWithin(card.localToScene(card.getBoundsInLocal()), commentBounds);
-                    assertTrue(comment.getHeight() >= comment.prefHeight(comment.getWidth()) - 1,
-                            "Comments must have room to wrap without being clipped");
-                    for (String field : List.of("name", "email", "attendance", "tags")) {
-                        Node details = card.lookup("#" + field);
-                        assertTrue(details.localToScene(details.getBoundsInLocal()).getMaxY()
-                                <= commentBounds.getMinY() + 1, "Comments must stay below " + field + ": "
-                                        + details.localToScene(details.getBoundsInLocal()) + " vs " + commentBounds);
-                    }
+                for (String field : List.of("name", "matric", "attendance")) {
+                    Node details = card.lookup("#" + field);
+                    assertWithin(card.localToScene(card.getBoundsInLocal()),
+                            details.localToScene(details.getBoundsInLocal()));
                 }
             }
             saveScreenshot(stage, name);
