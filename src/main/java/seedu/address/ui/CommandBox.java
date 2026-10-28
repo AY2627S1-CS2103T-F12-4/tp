@@ -12,6 +12,7 @@ import javafx.scene.control.ListView;
 import javafx.scene.control.TextField;
 import javafx.scene.control.skin.ListViewSkin;
 import javafx.scene.input.KeyEvent;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.Region;
 import javafx.stage.Popup;
 import seedu.address.logic.commands.CommandResult;
@@ -27,6 +28,7 @@ import seedu.address.model.person.Group;
 public class CommandBox extends UiPart<Region> {
 
     public static final String ERROR_STYLE_CLASS = "error";
+    public static final String SUCCESS_STYLE_CLASS = "success";
     private static final String FXML = "CommandBox.fxml";
 
     private final CommandExecutor commandExecutor;
@@ -38,6 +40,8 @@ public class CommandBox extends UiPart<Region> {
 
     @FXML
     private TextField commandTextField;
+    @FXML
+    private HBox commandBox;
 
     /**
      * Creates a {@code CommandBox} with the given {@code CommandExecutor}.
@@ -163,6 +167,7 @@ public class CommandBox extends UiPart<Region> {
         try {
             commandExecutor.execute(commandText);
             commandTextField.setText("");
+            setStyleToIndicateCommandSuccess();
         } catch (CommandException | ParseException e) {
             setStyleToIndicateCommandFailure();
         }
@@ -172,20 +177,31 @@ public class CommandBox extends UiPart<Region> {
      * Sets the command box style to use the default style.
      */
     private void setStyleToDefault() {
-        commandTextField.getStyleClass().remove(ERROR_STYLE_CLASS);
+        commandTextField.getStyleClass().removeAll(ERROR_STYLE_CLASS, SUCCESS_STYLE_CLASS);
+        commandBox.getStyleClass().removeAll(ERROR_STYLE_CLASS, SUCCESS_STYLE_CLASS);
     }
 
     /**
      * Sets the command box style to indicate a failed command.
      */
-    private void setStyleToIndicateCommandFailure() {
+    void setStyleToIndicateCommandFailure() {
         ObservableList<String> styleClass = commandTextField.getStyleClass();
-
-        if (styleClass.contains(ERROR_STYLE_CLASS)) {
-            return;
+        if (!styleClass.contains(ERROR_STYLE_CLASS)) {
+            styleClass.add(ERROR_STYLE_CLASS);
         }
+        commandBox.getStyleClass().remove(SUCCESS_STYLE_CLASS);
+        if (!commandBox.getStyleClass().contains(ERROR_STYLE_CLASS)) {
+            commandBox.getStyleClass().add(ERROR_STYLE_CLASS);
+        }
+    }
 
-        styleClass.add(ERROR_STYLE_CLASS);
+    /** Sets the command box accent after a command completes successfully. */
+    void setStyleToIndicateCommandSuccess() {
+        commandTextField.getStyleClass().remove(ERROR_STYLE_CLASS);
+        commandBox.getStyleClass().remove(ERROR_STYLE_CLASS);
+        if (!commandBox.getStyleClass().contains(SUCCESS_STYLE_CLASS)) {
+            commandBox.getStyleClass().add(SUCCESS_STYLE_CLASS);
+        }
     }
 
     /** Returns whether the focused command box has a text edit that should receive the undo shortcut. */

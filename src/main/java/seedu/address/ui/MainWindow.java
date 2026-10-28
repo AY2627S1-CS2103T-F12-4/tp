@@ -4,6 +4,7 @@ import java.nio.file.Path;
 import java.util.logging.Logger;
 
 import javafx.event.ActionEvent;
+import javafx.event.Event;
 import javafx.fxml.FXML;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.TextInputControl;
@@ -124,6 +125,7 @@ public class MainWindow extends UiPart<Stage> {
         groupListPanel = new GroupListPanel(logic.getGroupList(), logic.activeGroupProperty(),
                 logic.showingAllStudentsProperty(), this::navigateToGroup);
         groupListPanelPlaceholder.getChildren().add(groupListPanel.getRoot());
+        setGroupNavigationKeys();
 
         personListPanel = new PersonListPanel(logic.getFilteredPersonList(), logic.getSessionList(),
                 logic.activeGroupProperty());
@@ -138,6 +140,21 @@ public class MainWindow extends UiPart<Stage> {
         commandBox = new CommandBox(this::executeCommand, logic.getGroupList());
         commandBoxPlaceholder.getChildren().add(commandBox.getRoot());
         setUndoAccelerator();
+    }
+
+    /**
+     * Keeps the existing up/down shortcuts available in the horizontal group strip.
+     */
+    private void setGroupNavigationKeys() {
+        groupListPanel.getRoot().addEventFilter(KeyEvent.KEY_PRESSED, event -> {
+            if (event.getCode() != KeyCode.UP && event.getCode() != KeyCode.DOWN) {
+                return;
+            }
+            KeyCode horizontalKey = event.getCode() == KeyCode.UP ? KeyCode.LEFT : KeyCode.RIGHT;
+            Event.fireEvent(event.getTarget(), new KeyEvent(KeyEvent.KEY_PRESSED, "", "", horizontalKey,
+                    event.isShiftDown(), event.isControlDown(), event.isAltDown(), event.isMetaDown()));
+            event.consume();
+        });
     }
 
     /**
@@ -220,7 +237,8 @@ public class MainWindow extends UiPart<Stage> {
         try {
             CommandResult commandResult = logic.execute(commandText);
             logger.info("Result: " + commandResult.getFeedbackToUser());
-            resultDisplay.setFeedbackToUser(commandResult.getFeedbackToUser());
+            resultDisplay.setSuccessFeedback(commandResult.getFeedbackToUser());
+            commandBox.setStyleToIndicateCommandSuccess();
             // A highlight is only kept until the next command, so it never marks an unrelated student
             commandResult.getPersonToShow()
                     .ifPresentOrElse(personListPanel::scrollTo, personListPanel::clearSelection);
@@ -236,7 +254,8 @@ public class MainWindow extends UiPart<Stage> {
             return commandResult;
         } catch (CommandException | ParseException e) {
             logger.info("An error occurred while executing command: " + commandText);
-            resultDisplay.setFeedbackToUser(e.getMessage());
+            resultDisplay.setErrorFeedback(e.getMessage());
+            commandBox.setStyleToIndicateCommandFailure();
             personListPanel.clearSelection();
             throw e;
         }

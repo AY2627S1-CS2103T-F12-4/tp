@@ -18,7 +18,9 @@ import javafx.scene.control.IndexedCell;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
+import javafx.scene.control.Tooltip;
 import javafx.scene.control.skin.VirtualFlow;
+import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.Region;
 import seedu.address.commons.core.LogsCenter;
 import seedu.address.model.person.Group;
@@ -44,6 +46,8 @@ public class PersonListPanel extends UiPart<Region> {
     private ListView<Person> personListView;
     @FXML
     private Label groupScope;
+    @FXML
+    private Label studentCount;
 
     /**
      * Creates a {@code PersonListPanel} with the given {@code ObservableList}.
@@ -55,6 +59,8 @@ public class PersonListPanel extends UiPart<Region> {
         this.sessions = sessions;
         groupScope.textProperty().bind(Bindings.createStringBinding(() -> activeGroup.get() == null
                 ? "All groups" : "Tutorial group " + activeGroup.get(), activeGroup));
+        studentCount.textProperty().bind(Bindings.createStringBinding(() -> personList.size()
+                + (personList.size() == 1 ? " student" : " students"), personList));
         personListView.setItems(personList);
         sessions.addListener((ListChangeListener<Session>) change -> personListView.refresh());
         personListView.setCellFactory(listView -> new PersonListViewCell());
@@ -140,16 +146,47 @@ public class PersonListPanel extends UiPart<Region> {
      * Custom {@code ListCell} that displays the graphics of a {@code Person} using a {@code PersonCard}.
      */
     class PersonListViewCell extends ListCell<Person> {
+        PersonListViewCell() {
+            // Let the list's viewport determine row width, so attendance wraps instead of scrolling sideways.
+            setPrefWidth(0);
+            setWrapText(true);
+        }
+
         @Override
         protected void updateItem(Person person, boolean empty) {
             super.updateItem(person, empty);
 
             if (empty || person == null) {
+                prefHeightProperty().unbind();
+                setPrefHeight(USE_COMPUTED_SIZE);
                 setGraphic(null);
                 setText(null);
             } else {
-                setGraphic(new PersonCard(person, getIndex() + 1, sessions).getRoot());
+                Region card = new PersonCard(person, getIndex() + 1, sessions).getRoot();
+                configureCardContents(card);
+                card.setMinWidth(0);
+                card.prefWidthProperty().bind(Bindings.createDoubleBinding(() ->
+                        Math.max(0, getWidth() - snappedLeftInset() - snappedRightInset()),
+                        widthProperty(), insetsProperty()));
+                // Notify the virtualized list when wrapping changes a row's preferred height.
+                prefHeightProperty().bind(Bindings.createDoubleBinding(() ->
+                        Math.max(card.minHeight(card.getWidth()), card.prefHeight(card.getWidth()))
+                                + snappedTopInset() + snappedBottomInset(),
+                        card.widthProperty(), card.needsLayoutProperty(), insetsProperty()));
+                setGraphic(card);
             }
+        }
+
+        private void configureCardContents(Region card) {
+            FlowPane attendance = (FlowPane) card.lookup("#attendance");
+            // Measure wrapping using the space available after resizing the row.
+            attendance.prefWrapLengthProperty().bind(Bindings.max(120, attendance.widthProperty()));
+            FlowPane tags = (FlowPane) card.lookup("#tags");
+            tags.getChildren().forEach(node -> {
+                Label label = (Label) node;
+                label.setMaxWidth(165);
+                label.setTooltip(new Tooltip(label.getText()));
+            });
         }
     }
 

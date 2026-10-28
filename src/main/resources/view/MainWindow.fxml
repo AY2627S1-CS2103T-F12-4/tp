@@ -6,14 +6,13 @@
 <?import javafx.scene.control.Menu?>
 <?import javafx.scene.control.MenuBar?>
 <?import javafx.scene.control.MenuItem?>
-<?import javafx.scene.control.SplitPane?>
 <?import javafx.scene.image.Image?>
-<?import javafx.scene.layout.StackPane?>
-<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.control.Label?>
 <?import javafx.scene.layout.VBox?>
+<?import javafx.scene.layout.StackPane?>
 
 <fx:root type="javafx.stage.Stage" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
-         title="Roster" minWidth="450" minHeight="600" onCloseRequest="#handleExit">
+         title="Roster" minWidth="740" minHeight="600" onCloseRequest="#handleExit">
   <icons>
     <Image url="@/images/address_book_32.png" />
   </icons>
@@ -24,7 +23,7 @@
         <URL value="@Extensions.css" />
       </stylesheets>
 
-      <VBox>
+      <VBox styleClass="app-shell">
         <MenuBar fx:id="menuBar" VBox.vgrow="NEVER">
           <Menu mnemonicParsing="false" text="File">
             <MenuItem mnemonicParsing="false" onAction="#handleExit" text="Exit" />
@@ -34,33 +33,34 @@
           </Menu>
         </MenuBar>
 
-        <StackPane VBox.vgrow="NEVER" fx:id="commandBoxPlaceholder" styleClass="pane-with-border">
+        <VBox spacing="12" VBox.vgrow="ALWAYS" styleClass="main-content">
           <padding>
-            <Insets top="5" right="10" bottom="5" left="10" />
+            <Insets top="14" right="12" bottom="10" left="12" />
           </padding>
-        </StackPane>
 
-        <StackPane VBox.vgrow="NEVER" fx:id="resultDisplayPlaceholder" styleClass="pane-with-border"
-                   minHeight="100" prefHeight="100" maxHeight="100">
-          <padding>
-            <Insets top="5" right="10" bottom="5" left="10" />
-          </padding>
-        </StackPane>
-
-        <HBox VBox.vgrow="ALWAYS">
-          <VBox styleClass="pane-with-border" minWidth="130" prefWidth="160" HBox.hgrow="NEVER">
-            <padding>
-              <Insets top="10" right="5" bottom="10" left="10" />
-            </padding>
-            <StackPane fx:id="groupListPanelPlaceholder" VBox.vgrow="ALWAYS" />
+          <VBox spacing="2">
+            <Label text="Roster" styleClass="page-title" />
+            <Label text="Manage students and attendance with commands" styleClass="page-subtitle" />
           </VBox>
-          <VBox fx:id="personList" styleClass="pane-with-border" minWidth="340" prefWidth="340" HBox.hgrow="ALWAYS">
+
+          <VBox spacing="8" styleClass="command-section">
             <padding>
-              <Insets top="10" right="10" bottom="10" left="5" />
+              <Insets top="12" right="14" bottom="12" left="14" />
             </padding>
+            <Label text="COMMAND" styleClass="section-eyebrow" />
+            <StackPane fx:id="commandBoxPlaceholder" />
+          </VBox>
+
+          <StackPane fx:id="resultDisplayPlaceholder" minHeight="70" prefHeight="70" maxHeight="110" />
+
+          <VBox fx:id="personList" spacing="8" styleClass="roster-panel" VBox.vgrow="ALWAYS">
+            <padding>
+              <Insets top="12" right="12" bottom="12" left="12" />
+            </padding>
+            <StackPane fx:id="groupListPanelPlaceholder" minHeight="56" prefHeight="56" maxHeight="56" />
             <StackPane fx:id="personListPanelPlaceholder" VBox.vgrow="ALWAYS" />
           </VBox>
-        </HBox>
+        </VBox>
 
         <StackPane fx:id="statusbarPlaceholder" VBox.vgrow="NEVER" />
       </VBox>
