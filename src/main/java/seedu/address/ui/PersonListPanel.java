@@ -18,7 +18,10 @@ import javafx.scene.control.IndexedCell;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
+import javafx.scene.control.Tooltip;
 import javafx.scene.control.skin.VirtualFlow;
+import javafx.scene.layout.FlowPane;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.Region;
 import seedu.address.commons.core.LogsCenter;
 import seedu.address.model.person.Group;
@@ -44,6 +47,8 @@ public class PersonListPanel extends UiPart<Region> {
     private ListView<Person> personListView;
     @FXML
     private Label groupScope;
+    @FXML
+    private Label studentCount;
 
     /**
      * Creates a {@code PersonListPanel} with the given {@code ObservableList}.
@@ -55,6 +60,8 @@ public class PersonListPanel extends UiPart<Region> {
         this.sessions = sessions;
         groupScope.textProperty().bind(Bindings.createStringBinding(() -> activeGroup.get() == null
                 ? "All groups" : "Tutorial group " + activeGroup.get(), activeGroup));
+        studentCount.textProperty().bind(Bindings.createStringBinding(() -> personList.size()
+                + (personList.size() == 1 ? " student" : " students"), personList));
         personListView.setItems(personList);
         sessions.addListener((ListChangeListener<Session>) change -> personListView.refresh());
         personListView.setCellFactory(listView -> new PersonListViewCell());
@@ -121,11 +128,12 @@ public class PersonListPanel extends UiPart<Region> {
     private boolean isFullyVisible(int index) {
         Optional<VirtualFlow<?>> flow = getVirtualFlow();
         IndexedCell<?> cell = flow.map(virtualFlow -> virtualFlow.getVisibleCell(index)).orElse(null);
-        if (cell == null) {
+        Node visibleArea = personListView.lookup(".clipped-container");
+        if (cell == null || visibleArea == null) {
             return false;
         }
-        // The flow's own bounds are the part of the list that shows cards
-        Bounds viewport = flow.get().localToScene(flow.get().getLayoutBounds());
+        // Scrollbars occupy part of the flow, so only its clipped content area shows complete cards.
+        Bounds viewport = visibleArea.localToScene(visibleArea.getBoundsInLocal());
         Bounds card = cell.localToScene(cell.getBoundsInLocal());
         return card.getMinY() >= viewport.getMinY() - VISIBILITY_TOLERANCE
                 && card.getMaxY() <= viewport.getMaxY() + VISIBILITY_TOLERANCE;
@@ -140,16 +148,59 @@ public class PersonListPanel extends UiPart<Region> {
      * Custom {@code ListCell} that displays the graphics of a {@code Person} using a {@code PersonCard}.
      */
     class PersonListViewCell extends ListCell<Person> {
+        PersonListViewCell() {
+            // Let the list's viewport determine row width, so attendance wraps instead of scrolling sideways.
+            setPrefWidth(0);
+            setWrapText(true);
+        }
+
         @Override
         protected void updateItem(Person person, boolean empty) {
             super.updateItem(person, empty);
 
             if (empty || person == null) {
+                prefHeightProperty().unbind();
+                setPrefHeight(USE_COMPUTED_SIZE);
                 setGraphic(null);
                 setText(null);
             } else {
-                setGraphic(new PersonCard(person, getIndex() + 1, sessions).getRoot());
+                Region card = new PersonCard(person, getIndex() + 1, sessions).getRoot();
+                card.setMinWidth(0);
+                Node viewport = personListView.lookup(".clipped-container");
+                card.prefWidthProperty().bind(Bindings.createDoubleBinding(() -> {
+                    double availableWidth = viewport == null ? getWidth() : viewport.getLayoutBounds().getWidth();
+                    return Math.max(0, availableWidth - snappedLeftInset() - snappedRightInset());
+                }, widthProperty(), insetsProperty(), viewport == null
+                        ? personListView.widthProperty() : viewport.layoutBoundsProperty()));
+                card.maxWidthProperty().bind(card.prefWidthProperty());
+                configureCardContents(card);
+                setGraphic(card);
+                // Measure the styled content before the virtualized list caches this row's height.
+                card.applyCss();
+                // Notify the virtualized list when wrapping changes a row's preferred height.
+                prefHeightProperty().bind(Bindings.createDoubleBinding(() ->
+                        Math.ceil(Math.max(card.minHeight(card.getPrefWidth()), card.prefHeight(card.getPrefWidth()))
+                                + snappedTopInset() + snappedBottomInset()),
+                        card.prefWidthProperty(), card.needsLayoutProperty(), insetsProperty()));
             }
+        }
+
+        private void configureCardContents(Region card) {
+            FlowPane attendance = (FlowPane) card.lookup("#attendance");
+            HBox details = (HBox) attendance.getParent();
+            double fixedColumnsWidth = details.getChildren().stream().filter(node -> node != attendance)
+                    .mapToDouble(node -> node.prefWidth(-1)).sum();
+            // Use the target column width even before the first layout, avoiding an oversized cached row.
+            attendance.prefWrapLengthProperty().bind(Bindings.createDoubleBinding(() ->
+                    Math.max(1, card.getPrefWidth() - card.getInsets().getLeft() - card.getInsets().getRight()
+                            - fixedColumnsWidth), card.prefWidthProperty(), card.insetsProperty()));
+            FlowPane tags = (FlowPane) card.lookup("#tags");
+            tags.getChildren().forEach(node -> {
+                Label label = (Label) node;
+                label.setMinWidth(0);
+                label.setMaxWidth(165);
+                label.setTooltip(new Tooltip(label.getText()));
+            });
         }
     }
 

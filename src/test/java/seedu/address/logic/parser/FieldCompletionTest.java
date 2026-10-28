@@ -32,7 +32,7 @@ public class FieldCompletionTest {
     @Test
     public void suggest_commands_completesOnlyTheCommandAndPreservesArguments() {
         assertEquals(List.of("add"), values("ad"));
-        assertEquals(List.of("edit", "exit", "export"), values("e"));
+        assertEquals(List.of("edit", "editsession", "exit", "export"), values("e"));
         assertEquals(List.of("comment"), values("com"));
         assertEquals(List.of("undo"), values("un"));
         assertEquals(List.of("list"), values("LI"));
@@ -140,6 +140,17 @@ public class FieldCompletionTest {
     public void suggest_caretOutsideText_throwsIllegalArgumentException() {
         assertThrows(IllegalArgumentException.class, () -> FieldCompletion.suggest("list", -1, groups));
         assertThrows(IllegalArgumentException.class, () -> FieldCompletion.suggest("list", 5, groups));
+    }
+
+    @Test
+    public void suggest_sessionManagement_commandsFieldsAndGroups() {
+        assertEquals(List.of("editsession"), values("edits"));
+        assertEquals(List.of("deletesession"), values("deletes"));
+        assertEquals(List.of("grp/", "w/", "d/"), values("editsession "));
+        assertEquals(List.of("grp/", "w/"), values("deletesession "));
+        assertEquals(List.of("T09", "T10", "TG01"), values("deletesession grp/t"));
+        assertEquals(List.of("d/"), values("editsession grp/T09 w/1 "));
+        assertTrue(values("deletesession grp/T09 w/1 ").isEmpty());
     }
 
     @Test

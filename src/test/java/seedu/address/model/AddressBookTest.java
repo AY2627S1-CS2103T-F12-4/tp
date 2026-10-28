@@ -24,6 +24,7 @@ import seedu.address.model.person.exceptions.DuplicatePersonException;
 import seedu.address.model.session.Session;
 import seedu.address.model.session.SessionDate;
 import seedu.address.model.session.Week;
+import seedu.address.model.session.exceptions.SessionNotFoundException;
 import seedu.address.testutil.PersonBuilder;
 
 public class AddressBookTest {
@@ -132,6 +133,21 @@ public class AddressBookTest {
         addressBook.addSession(weekFive);
 
         assertEquals(List.of(weekFive, weekSix), addressBook.getSessionList());
+    }
+
+    @Test
+    public void sessionChanges_invalidTargetOrIdentity_preserveRoster() {
+        addressBook.addGroup(T09_WEEK_1.getGroup());
+        addressBook.addSession(T09_WEEK_1);
+        addressBook.addPerson(new PersonBuilder(ALICE).withAttendance(T09_WEEK_1,
+                seedu.address.model.attendance.Status.PRESENT).build());
+        AddressBook before = new AddressBook(addressBook);
+        Session missing = new Session(T09_WEEK_1.getGroup(), new Week(2), new SessionDate("2026-08-18"));
+
+        assertThrows(SessionNotFoundException.class, () -> addressBook.removeSession(missing));
+        assertThrows(SessionNotFoundException.class, () -> addressBook.setSession(missing, missing));
+        assertThrows(IllegalArgumentException.class, () -> addressBook.setSession(T09_WEEK_1, missing));
+        assertEquals(before, addressBook);
     }
 
     @Test

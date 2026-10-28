@@ -1,10 +1,14 @@
 package seedu.address.ui;
 
+import java.awt.Point;
 import java.nio.file.Path;
+import java.util.List;
 import java.util.logging.Logger;
 
 import javafx.event.ActionEvent;
+import javafx.event.Event;
 import javafx.fxml.FXML;
+import javafx.geometry.Rectangle2D;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.TextInputControl;
 import javafx.scene.input.KeyCode;
@@ -12,6 +16,7 @@ import javafx.scene.input.KeyCodeCombination;
 import javafx.scene.input.KeyCombination;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.StackPane;
+import javafx.stage.Screen;
 import javafx.stage.Stage;
 import seedu.address.commons.core.GuiSettings;
 import seedu.address.commons.core.LogsCenter;
@@ -124,6 +129,7 @@ public class MainWindow extends UiPart<Stage> {
         groupListPanel = new GroupListPanel(logic.getGroupList(), logic.activeGroupProperty(),
                 logic.showingAllStudentsProperty(), this::navigateToGroup);
         groupListPanelPlaceholder.getChildren().add(groupListPanel.getRoot());
+        setGroupNavigationKeys();
 
         personListPanel = new PersonListPanel(logic.getFilteredPersonList(), logic.getSessionList(),
                 logic.activeGroupProperty());
@@ -138,6 +144,21 @@ public class MainWindow extends UiPart<Stage> {
         commandBox = new CommandBox(this::executeCommand, logic.getGroupList());
         commandBoxPlaceholder.getChildren().add(commandBox.getRoot());
         setUndoAccelerator();
+    }
+
+    /**
+     * Keeps the existing up/down shortcuts available in the horizontal group strip.
+     */
+    private void setGroupNavigationKeys() {
+        groupListPanel.getRoot().addEventFilter(KeyEvent.KEY_PRESSED, event -> {
+            if (event.getCode() != KeyCode.UP && event.getCode() != KeyCode.DOWN) {
+                return;
+            }
+            KeyCode horizontalKey = event.getCode() == KeyCode.UP ? KeyCode.LEFT : KeyCode.RIGHT;
+            Event.fireEvent(event.getTarget(), new KeyEvent(KeyEvent.KEY_PRESSED, "", "", horizontalKey,
+                    event.isShiftDown(), event.isControlDown(), event.isAltDown(), event.isMetaDown()));
+            event.consume();
+        });
     }
 
     /**
@@ -164,9 +185,21 @@ public class MainWindow extends UiPart<Stage> {
     private void setWindowDefaultSize(GuiSettings guiSettings) {
         primaryStage.setHeight(guiSettings.getWindowHeight());
         primaryStage.setWidth(guiSettings.getWindowWidth());
-        if (guiSettings.getWindowCoordinates() != null) {
-            primaryStage.setX(guiSettings.getWindowCoordinates().getX());
-            primaryStage.setY(guiSettings.getWindowCoordinates().getY());
+        Point coordinates = guiSettings.getWindowCoordinates();
+        if (coordinates == null) {
+            return;
+        }
+        Rectangle2D savedBounds = new Rectangle2D(coordinates.getX(), coordinates.getY(),
+                guiSettings.getWindowWidth(), guiSettings.getWindowHeight());
+        List<Rectangle2D> screens = Screen.getScreens().stream().map(Screen::getVisualBounds).toList();
+        if (WindowPlacement.isReachable(savedBounds, screens)) {
+            primaryStage.setX(coordinates.getX());
+            primaryStage.setY(coordinates.getY());
+        } else {
+            // The window was last on a screen that is no longer connected, so it would open out of reach
+            logger.info("Saved window position " + coordinates.getX() + ", " + coordinates.getY()
+                    + " is not on any connected screen, so the window is centred instead");
+            primaryStage.centerOnScreen();
         }
     }
 
@@ -220,7 +253,8 @@ public class MainWindow extends UiPart<Stage> {
         try {
             CommandResult commandResult = logic.execute(commandText);
             logger.info("Result: " + commandResult.getFeedbackToUser());
-            resultDisplay.setFeedbackToUser(commandResult.getFeedbackToUser());
+            resultDisplay.setSuccessFeedback(commandResult.getFeedbackToUser());
+            commandBox.setStyleToIndicateCommandSuccess();
             // A highlight is only kept until the next command, so it never marks an unrelated student
             commandResult.getPersonToShow()
                     .ifPresentOrElse(personListPanel::scrollTo, personListPanel::clearSelection);
@@ -236,7 +270,8 @@ public class MainWindow extends UiPart<Stage> {
             return commandResult;
         } catch (CommandException | ParseException e) {
             logger.info("An error occurred while executing command: " + commandText);
-            resultDisplay.setFeedbackToUser(e.getMessage());
+            resultDisplay.setErrorFeedback(e.getMessage());
+            commandBox.setStyleToIndicateCommandFailure();
             personListPanel.clearSelection();
             throw e;
         }

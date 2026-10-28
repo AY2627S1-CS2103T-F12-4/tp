@@ -10,9 +10,9 @@ title: Roster
 
 **Roster is a desktop application that helps NUS teaching assistants manage students across multiple tutorial groups.**
 
-Designed for keyboard-driven use during class, Roster aims to bring student details, attendance, participation, and assignment-completion records together, helping TAs identify students who may need additional support.
+Use commands to keep student details, tutorial groups, attendance and short comments together. Search by name, matriculation number or group, and export attendance to CSV for use outside Roster.
 
-**Development status:** Roster is under development. The planned MVP focuses on managing tutorial groups, adding and deleting students, listing and finding students, and recording attendance. Participation and assignment-completion tracking are part of the broader product direction.
+**Try Roster:** Download `roster.jar` from the [latest release](https://github.com/AY2627S1-CS2103T-F12-4/tp/releases/latest) and follow the [User Guide quick start](UserGuide.html#quick-start). Roster requires Java 25 and a writable home folder.
 
 ## Documentation
 

@@ -202,6 +202,16 @@ public class ModelManager implements Model {
     }
 
     @Override
+    public void setSession(Session target, Session editedSession) {
+        addressBook.setSession(target, editedSession);
+    }
+
+    @Override
+    public void deleteSession(Session session) {
+        addressBook.removeSession(session);
+    }
+
+    @Override
     public ObservableList<Session> getSessionList() {
         return addressBook.getSessionList();
     }

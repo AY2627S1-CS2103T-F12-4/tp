@@ -12,14 +12,14 @@ Roster is a **desktop application for NUS teaching assistants to manage students
 
 ## Quick start
 
-1. Ensure that Java `25` or later is installed on your computer.<br>
+1. Ensure that Java `25` is installed on your computer. Run `java -version` in your terminal to check the version.<br>
    **Mac users:** Ensure you have the precise JDK version prescribed [here](https://se-education.org/guides/tutorials/javaInstallationMac.html).
 
 1. Download the latest `.jar` file from the [Roster releases page](https://github.com/AY2627S1-CS2103T-F12-4/tp/releases).
 
-1. Copy the file to the folder you want to use as Roster's _home folder_.
+1. Copy the file to an empty, writable folder you want to use as Roster's _home folder_. Roster creates its data, preferences and log files there.
 
-1. Open a terminal, `cd` to the folder containing the JAR file, and run `java -jar roster.jar`.<br>
+1. Open a terminal, `cd` to the folder containing the JAR file, and run `java -jar "roster.jar"`.<br>
    A GUI similar to the one below should appear in a few seconds. Roster includes sample data on its first launch.<br>
    ![Roster user interface](images/Ui.png)
 
@@ -109,6 +109,23 @@ Parameter | Accepted value
 `s/STATUS` | `present` or `absent`, case-insensitive.
 `INDEX` | A positive integer identifying a student in the currently displayed list.
 
+### Reading command feedback and student rows
+
+The banner below the command box identifies the result of your last action:
+
+* **Ready** appears before you run a command.
+* **Command completed**, with a tick, confirms a successful action.
+* **Command not run**, with an exclamation mark, explains why a command failed.
+
+The command box also changes its border to indicate success or failure. Starting to type resets that
+input highlight; the banner keeps the previous feedback until the next action.
+
+The badge beside the roster heading counts the students currently displayed, so it changes when you
+search or switch tutorial groups. Each row shows student details, tags, group and attendance, with a
+comment underneath when one is present. Long names, email addresses, comments and attendance strips
+wrap within the row. Hover over a shortened tag to read its full text. Scroll vertically to reach
+additional students or the rest of a tall row.
+
 ### Completing command fields
 
 As you type, the command box suggests command names (e.g. `ad` completes to `add`),
@@ -166,9 +183,50 @@ Examples:
 * Sessions may be created out of order; attendance is displayed in teaching-week order.
 * The date must be a real date, but Roster does not check whether it falls within the specified teaching week.
 * Creating a session for an empty group is allowed.
-* Roster does not yet support editing or deleting sessions.
+* To correct a session's date, use `editsession`. To remove a session, use `deletesession`.
 
 On success, Roster displays a confirmation such as `Created session: T09 week 5 (2026-09-15)`.
+
+### Editing a tutorial session: `editsession`
+
+Changes the date of an existing session. Students keep their present, absent or unmarked status.
+
+Format: `editsession grp/GROUP w/WEEK d/DATE`
+
+Example: `editsession grp/T09 w/5 d/2026-09-16`
+
+* `grp/` and `w/` identify the existing session; `d/` supplies its new date. All three fields are required,
+  may appear in any order, and may each appear only once.
+* The group and teaching week remain unchanged. The new date must be a real date in `YYYY-MM-DD` format.
+  As with `session`, Roster does not check whether the date falls within the teaching week.
+* The command applies to the specified session across its entire group, even when a search hides some students.
+  Your current search or group selection stays active.
+* A missing session or an unchanged date produces an error without changing data or undo history.
+* Use `undo` to restore the previous date. Exported CSV records use the updated date.
+
+On success, Roster displays a confirmation such as
+`Updated session: T09 week 5 (2026-09-15 -> 2026-09-16). Attendance is unchanged.`
+
+### Deleting a tutorial session: `deletesession`
+
+Removes a session and every student's attendance records for that session. Students, tutorial groups,
+other teaching weeks and other groups' sessions are kept.
+
+Format: `deletesession grp/GROUP w/WEEK`
+
+Example: `deletesession grp/T09 w/5`
+
+* Both fields are required, may appear in any order, and may each appear only once.
+* Deletion happens immediately without confirmation. Check the group and week before running the command.
+  Use `undo` to restore the session and its attendance records.
+* This applies to the entire specified group, including students hidden by a search. Your current search
+  or group selection stays active. An empty group can also have its session deleted.
+* A missing session produces an error without changing data or undo history.
+* The deleted week disappears from students' attendance strips and CSV exports. `mark` cannot record
+  attendance for that week until the session is created again.
+* Recreating the session with `session` starts everyone as unmarked. Use `undo` instead to recover old marks.
+
+On success, Roster identifies the deleted session and confirms that its attendance records were removed.
 
 ### Adding a student: `add`
 
@@ -256,11 +314,12 @@ are rejected. A rejected list command leaves the data, active group and displaye
 
 ### Navigating tutorial groups
 
-The tutorial-group panel starts with **All students**, followed by registered groups in group-code order.
+The horizontal tutorial-group strip above the roster starts with **All students**, followed by
+registered groups in group-code order. Scroll along the strip if there are more groups than fit on screen.
 
 * Click a group to show its students and attendance, equivalent to `list grp/GROUP`.
 * Click **All students** to show the full roster, equivalent to `list`.
-* Use Tab to focus the group panel, Up/Down to choose an entry, and Enter to open it.
+* Use Tab to focus the group strip, Left/Right or Up/Down to choose an entry, and Enter to open it.
   Arrow keys alone do not change the displayed roster. Leaving the panel restores the active view's selection.
 * The panel follows typed commands: `list` selects **All students**, `list grp/GROUP` selects that group,
   and a successful `find` clears the selection, even when every student happens to match.
@@ -489,6 +548,8 @@ Examples:
   followed by `undo` removes the newly added student.
 * `delete 3` followed by `undo` restores the deleted student and their attendance records.
 * `clear` followed by `undo` restores the entire roster.
+* `editsession grp/T09 w/5 d/2026-09-16` followed by `undo` restores the previous session date.
+* `deletesession grp/T09 w/5` followed by `undo` restores that session and its attendance records.
 
 * Each `undo` reverses one successful data-changing command.
 * Multiple `undo` commands reverse earlier changes one at a time.
@@ -541,7 +602,7 @@ Roster automatically saves changes to its data. You do not need to save manually
 
 ### Editing the data file
 
-Roster data is saved as `data/addressbook.json` inside the folder from which Roster is launched. To keep it beside the JAR, open a terminal in the JAR folder and run `java -jar roster.jar`. Close Roster and back up the file before editing it directly.
+Roster data is saved as `data/addressbook.json` inside the folder from which Roster is launched. To keep it beside the JAR, open a terminal in the JAR folder and run `java -jar "roster.jar"`. Close Roster and back up the file before editing it directly.
 
 <div markdown="span" class="alert alert-warning">:exclamation: **Caution:**
 If your changes make the data file invalid, Roster starts with an empty roster the next time it runs. The invalid file remains on disk until a successful command causes Roster to save again. Back up the file before editing it.<br>
@@ -568,8 +629,7 @@ Manual edits can also produce unexpected behavior if values do not follow Roster
 
 ## Known issues
 
-1. **When using multiple screens**, if you move the application to a secondary screen and later use only the primary screen, the GUI may open off-screen. Delete the `preferences.json` file created by the application before running it again.
-2. **If you minimize the Help Window** and run `help` again, the original window remains minimized and no new Help Window appears. Restore the minimized Help Window manually.
+1. **If you minimize the Help Window** and run `help` again, the original window remains minimized and no new Help Window appears. Restore the minimized Help Window manually.
 
 --------------------------------------------------------------------------------------------------------------------
 
@@ -580,6 +640,8 @@ Action | Format, example
 **Help** | `help`
 **Create tutorial group** | `init grp/GROUP`<br>e.g. `init grp/T09`
 **Create session** | `session grp/GROUP w/WEEK d/DATE`<br>e.g. `session grp/T09 w/5 d/2026-09-15`
+**Edit session date** | `editsession grp/GROUP w/WEEK d/DATE`<br>e.g. `editsession grp/T09 w/5 d/2026-09-16`
+**Delete session** | `deletesession grp/GROUP w/WEEK`<br>e.g. `deletesession grp/T09 w/5`
 **Add student** | `add n/NAME e/EMAIL m/MATRIC grp/GROUP [t/TAG]...`<br>e.g. `add n/Alex Tan e/alex.tan@example.com m/A0123456X grp/T09`
 **Edit student** | `edit INDEX [n/NAME] [e/EMAIL] [m/MATRIC] [grp/GROUP] [t/TAG]...`<br>e.g. `edit 1 e/alex.tan@example.com`
 **List students** | `list [grp/GROUP]`<br>e.g. `list grp/T09`

@@ -77,9 +77,16 @@ The **API** of this component is specified in [`Ui.java`](https://github.com/AY2
 
 The UI consists of a `MainWindow` and its parts, such as `CommandBox`, `ResultDisplay`, `GroupListPanel`, `PersonListPanel`, and `StatusBarFooter`. All of these, including `MainWindow`, inherit from the abstract `UiPart` class, which captures common behavior among classes that represent visible GUI parts.
 
-* `GroupListPanel` lists **All students** and the registered tutorial groups. Choosing an entry runs the matching `list` command, so clicking and typing behave the same way.
-* `PersonListPanel` shows one `PersonCard` per displayed student. Each card asks `AttendanceCell` for one cell per session of the student's group, coloured by attendance status.
-* `CommandBox` suggests command words, prefixes and values as the user types, using `FieldCompletion` from the `Logic` component.
+* `GroupListPanel` lists **All students** and registered groups in a horizontal strip. Choosing an entry
+  runs the matching `list` command. Up/Down are retained as aliases for horizontal selection, and Enter
+  opens the selected view without replacing unfinished command text.
+* `PersonListPanel` binds the displayed-student count and shows one `PersonCard` per displayed student.
+  Card width follows the list cell's available width; the attendance flow measures height using its
+  current width, so all teaching weeks wrap instead of causing horizontal overflow or oversized rows.
+  Comments remain visible below the row's details, and long tags have tooltips.
+* `CommandBox` suggests command words, prefixes and values using `FieldCompletion`. Its border and
+  `ResultDisplay`'s banner receive consistent success/error state from `MainWindow`, including commands
+  invoked through navigation and undo shortcuts. Changing the input clears its previous highlight.
 
 The `UI` component uses the JavaFX UI framework. The layouts of these UI parts are defined in matching `.fxml` files in `src/main/resources/view`. For example, [`MainWindow.fxml`](https://github.com/AY2627S1-CS2103T-F12-4/tp/blob/master/src/main/resources/view/MainWindow.fxml) specifies the layout of [`MainWindow`](https://github.com/AY2627S1-CS2103T-F12-4/tp/blob/master/src/main/java/seedu/address/ui/MainWindow.java).
 
@@ -166,6 +173,36 @@ Classes used by multiple components are in the `seedu.address.commons` package.
 ## **Implementation**
 
 This section describes some noteworthy details on how certain features are implemented.
+
+### Editing and deleting tutorial sessions
+
+`editsession grp/GROUP w/WEEK d/DATE` changes only the date of an existing session.
+`deletesession grp/GROUP w/WEEK` removes that session and every student's attendance for it.
+Their parsers reject missing, repeated and invalid fields before creating the commands.
+Each command looks up the session by group/week before changing the model; editing to the same date
+is rejected so that it does not add an empty undo step.
+
+`ModelManager` delegates to `AddressBook#setSession` and `AddressBook#removeSession`. Both operate on
+the complete student list, independently of the displayed search or group filter. They build replacement
+immutable students before changing the session list, retaining names, email, matriculation numbers,
+groups, tags, comments and unrelated attendance.
+
+An `Attendance` embeds a complete `Session`, including its date. Updating only `UniqueSessionList`
+would therefore leave stale dates in students' stored attendance. Editing replaces each affected
+attendance with one referring to the edited session and its original status. Unmarked students stay
+unmarked. Deletion removes only attendance with the target group/week identity; it does not infer an absence.
+`UniqueSessionList#setSession` disallows changes to the session's group/week identity and preserves
+teaching-week display order. Assertions check that edited attendance has the current date and that
+deleted sessions leave no attendance records behind.
+
+Both commands use the normal save-and-commit path in `LogicManager`, so they create one undo step each.
+Undo restores the session and attendance together. A failed save restores the previous roster without
+committing history. Existing observable lists refresh the attendance strips; no storage schema change
+or migration is needed. Field completion offers the new commands, their prefixes and registered groups.
+
+**Design choice:** keep group/week as a stable session identity. Rescheduling changes the date while
+retaining marks. Moving attendance to a different teaching week or group would be a separate operation
+with different meaning; these commands do not silently transfer it.
 
 ### Filtered student search
 
@@ -872,6 +909,66 @@ relative to that launch folder. Keep backups of any real data outside the test f
    the application should open again without an error.
 2. Resize and move the window, then close it normally. Relaunch from the same folder.
    Expected: the previous window size and position are restored from `preferences.json`.
+3. Saved position off every screen: close Roster, then in `preferences.json` set `windowCoordinates` to
+   `{ "x" : 100000, "y" : 100000 }`, as if the window was last on a monitor that is now disconnected. Relaunch.
+   Expected: the window opens centred on the screen, and the log says the saved position was not on any
+   connected screen.
+
+### Checking the redesigned interface
+
+1. Launch with a disposable roster. Before entering a command, expect the banner to show **Ready**.
+   Run `list`, then an unknown command. Expect success and error titles/icons respectively, with a
+   matching input highlight. Start typing again: the input highlight resets while feedback stays visible.
+2. Add several groups and students, then use the horizontal group strip and search. Expect the student
+   count to follow the displayed list. Leave a draft command in the input while navigating; it must remain
+   unchanged. Use Left/Right and Up/Down to choose groups, then Enter to open them.
+3. Give a student a long name, email, tag and comment, and create sessions for all 13 teaching weeks.
+   At 740 by 600 and larger window sizes, details and attendance must wrap within the student row.
+   All weeks remain reachable by vertical scrolling. Hover over a shortened tag to see the full text.
+4. Add a student at the beginning, middle and end of a long roster, and after an empty search. At 1000
+   by 700, a normal student's complete highlighted row must be visible, including all 13 attendance cells.
+5. Make an undoable edit, run an invalid command, then invoke the undo shortcut from outside the command
+   input. Expect restored data and success styling. Invoke undo after history is exhausted: expect error
+   styling. These checks also apply when the compatible visual theme is integrated.
+
+### Editing and deleting tutorial sessions
+
+Use a disposable test folder. Run these commands to prepare marked and unmarked students:
+
+```text
+clear
+init grp/T09
+init grp/T10
+session grp/T09 w/1 d/2026-08-11
+session grp/T09 w/2 d/2026-08-18
+session grp/T10 w/1 d/2026-08-12
+add n/Alex Tan e/alex@example.com m/A0000001X grp/T09
+add n/Bernice Tan e/bernice@example.com m/A0000002X grp/T09
+add n/Chris Tan e/chris@example.com m/A0000003X grp/T10
+list
+mark 1 w/1 s/present
+mark 1 w/2 s/absent
+mark 2 w/1 s/absent
+```
+
+1. Run `find n/Alex`, then `editsession grp/T09 w/1 d/2026-08-13`.
+   Expected: only Alex remains displayed and his week 1 mark stays present. Run `list` and export to a
+   new CSV file; both T09 students' week 1 rows use `2026-08-13` and retain their statuses.
+2. Run `undo`. Expected: both T09 attendance records use the original date again.
+3. Run `find n/Alex`, then `deletesession grp/T09 w/1`. Expected: Alex's week 1 cell disappears,
+   but week 2 stays absent. Run `list`: Bernice's week 1 cell also disappears, while Chris's week 1
+   cell remains unmarked. All students and both groups remain.
+4. Run `undo`. Expected: T09 week 1 returns, with Alex present and Bernice absent.
+5. Try an unchanged date, a missing week, duplicate fields, an invalid date and an extra parameter:
+   `editsession grp/T09 w/1 d/2026-08-11`, `deletesession grp/T09 w/13`,
+   `deletesession grp/T09 w/1 w/2`, `editsession grp/T09 w/1 d/2026-02-29`,
+   `deletesession grp/T09 w/1 d/2026-08-11`. Expected: errors and no changes. These attempts do not
+   add undo steps; the next `undo` still reverses the last successful data change.
+6. Delete T09 week 1 again, then recreate it with `session grp/T09 w/1 d/2026-08-13`.
+   Expected: both T09 students are unmarked for week 1; deleted marks do not reappear.
+7. Edit a session date, exit and relaunch. Expected: the updated date and unchanged marks are retained.
+   Delete a session, exit and relaunch. Expected: that session and its marks stay removed, with no
+   data-loading error. Check exports after each operation.
 
 ### Deleting a student
 

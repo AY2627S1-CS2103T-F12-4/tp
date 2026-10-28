@@ -1,9 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Label?>
 <?import javafx.scene.control.TextArea?>
-<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
 
-<StackPane fx:id="placeHolder" styleClass="pane-with-border" xmlns="http://javafx.com/javafx/17"
-    xmlns:fx="http://javafx.com/fxml/1">
-  <TextArea fx:id="resultDisplay" editable="false" styleClass="result-display"/>
-</StackPane>
+<HBox fx:id="placeHolder" alignment="TOP_LEFT" spacing="10" styleClass="result-banner"
+      xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1">
+  <padding>
+    <Insets top="11" right="14" bottom="11" left="14" />
+  </padding>
+  <Label fx:id="resultIcon" text="&#10003;" styleClass="result-icon" />
+  <VBox spacing="2" HBox.hgrow="ALWAYS">
+    <Label fx:id="resultTitle" text="Ready" styleClass="result-title" />
+    <TextArea fx:id="resultDisplay" text="Enter a command above to update the roster."
+              editable="false" focusTraversable="true" prefRowCount="1" wrapText="true"
+              styleClass="result-message" VBox.vgrow="ALWAYS" />
+  </VBox>
+</HBox>

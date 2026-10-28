@@ -23,7 +23,6 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
-import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import seedu.address.logic.LogicManager;
 import seedu.address.model.AddressBook;
@@ -92,7 +91,7 @@ public class GroupNavigationUiTest {
                 stage.getScene().getRoot().layout();
                 Label rowIndex = (Label) stage.getScene().lookup("#personListView").lookup("#id");
                 assertEquals("1. ", rowIndex.getText());
-                assertEquals(Color.WHITE, cell(groups, 1).getTextFill());
+                assertTrue(cell(groups, 1).isSelected());
 
                 press(groups, KeyCode.DOWN);
                 assertEquals("T10", groups.getSelectionModel().getSelectedItem());

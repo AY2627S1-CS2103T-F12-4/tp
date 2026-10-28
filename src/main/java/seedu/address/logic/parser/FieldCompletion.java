@@ -12,8 +12,8 @@ import java.util.stream.Stream;
 
 /** Supplies field completions without executing or validating commands. */
 public final class FieldCompletion {
-    private static final List<String> COMMANDS = List.of("add", "clear", "comment", "delete", "edit", "exit",
-            "export", "find", "help", "init", "list", "mark", "redo", "session", "undo");
+    private static final List<String> COMMANDS = List.of("add", "clear", "comment", "delete", "deletesession",
+            "edit", "editsession", "exit", "export", "find", "help", "init", "list", "mark", "redo", "session", "undo");
 
     private FieldCompletion() {}
 
@@ -46,7 +46,8 @@ public final class FieldCompletion {
             case "comment" -> List.of("c/", "c-/");
             case "export" -> List.of("f/", "grp/");
             case "init", "list" -> List.of("grp/");
-            case "session" -> List.of("grp/", "w/", "d/");
+            case "session", "editsession" -> List.of("grp/", "w/", "d/");
+            case "deletesession" -> List.of("grp/", "w/");
             case "mark" -> List.of("w/", "s/");
             case "find" -> List.of("n/", "m/", "grp/");
             default -> List.of();
