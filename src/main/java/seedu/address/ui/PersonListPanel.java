@@ -21,6 +21,7 @@ import javafx.scene.control.ListView;
 import javafx.scene.control.Tooltip;
 import javafx.scene.control.skin.VirtualFlow;
 import javafx.scene.layout.FlowPane;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.Region;
 import seedu.address.commons.core.LogsCenter;
 import seedu.address.model.person.Group;
@@ -109,20 +110,7 @@ public class PersonListPanel extends UiPart<Region> {
                 cancelPendingScroll();
                 return;
             }
-            getVirtualFlow().ifPresent(flow -> {
-                IndexedCell<?> cell = flow.getVisibleCell(index);
-                Node viewport = personListView.lookup(".clipped-container");
-                if (cell == null || viewport == null) {
-                    flow.scrollTo(index);
-                    return;
-                }
-                Bounds visibleArea = viewport.localToScene(viewport.getBoundsInLocal());
-                Bounds card = cell.localToScene(cell.getBoundsInLocal());
-                double adjustment = card.getMinY() < visibleArea.getMinY()
-                        ? card.getMinY() - visibleArea.getMinY()
-                        : Math.max(0, card.getMaxY() - visibleArea.getMaxY());
-                flow.scrollPixels(adjustment);
-            });
+            getVirtualFlow().ifPresent(flow -> flow.scrollTo(index));
         };
         scene.addPostLayoutPulseListener(pendingScroll);
     }
@@ -177,29 +165,35 @@ public class PersonListPanel extends UiPart<Region> {
                 setText(null);
             } else {
                 Region card = new PersonCard(person, getIndex() + 1, sessions).getRoot();
-                configureCardContents(card);
                 card.setMinWidth(0);
                 Node viewport = personListView.lookup(".clipped-container");
                 card.prefWidthProperty().bind(Bindings.createDoubleBinding(() -> {
-                    double availableWidth = viewport == null ? getWidth()
-                            : Math.min(getWidth(), viewport.getLayoutBounds().getWidth());
+                    double availableWidth = viewport == null ? getWidth() : viewport.getLayoutBounds().getWidth();
                     return Math.max(0, availableWidth - snappedLeftInset() - snappedRightInset());
                 }, widthProperty(), insetsProperty(), viewport == null
                         ? personListView.widthProperty() : viewport.layoutBoundsProperty()));
                 card.maxWidthProperty().bind(card.prefWidthProperty());
+                configureCardContents(card);
+                setGraphic(card);
+                // Measure the styled content before the virtualized list caches this row's height.
+                card.applyCss();
                 // Notify the virtualized list when wrapping changes a row's preferred height.
                 prefHeightProperty().bind(Bindings.createDoubleBinding(() ->
-                        Math.max(card.minHeight(card.getWidth()), card.prefHeight(card.getWidth()))
-                                + snappedTopInset() + snappedBottomInset(),
-                        card.widthProperty(), card.needsLayoutProperty(), insetsProperty()));
-                setGraphic(card);
+                        Math.ceil(Math.max(card.minHeight(card.getPrefWidth()), card.prefHeight(card.getPrefWidth()))
+                                + snappedTopInset() + snappedBottomInset()),
+                        card.prefWidthProperty(), card.needsLayoutProperty(), insetsProperty()));
             }
         }
 
         private void configureCardContents(Region card) {
             FlowPane attendance = (FlowPane) card.lookup("#attendance");
-            // Measure wrapping using the space available after resizing the row.
-            attendance.prefWrapLengthProperty().bind(Bindings.max(120, attendance.widthProperty()));
+            HBox details = (HBox) attendance.getParent();
+            double fixedColumnsWidth = details.getChildren().stream().filter(node -> node != attendance)
+                    .mapToDouble(node -> node.prefWidth(-1)).sum();
+            // Use the target column width even before the first layout, avoiding an oversized cached row.
+            attendance.prefWrapLengthProperty().bind(Bindings.createDoubleBinding(() ->
+                    Math.max(1, card.getPrefWidth() - card.getInsets().getLeft() - card.getInsets().getRight()
+                            - fixedColumnsWidth), card.prefWidthProperty(), card.insetsProperty()));
             FlowPane tags = (FlowPane) card.lookup("#tags");
             tags.getChildren().forEach(node -> {
                 Label label = (Label) node;
