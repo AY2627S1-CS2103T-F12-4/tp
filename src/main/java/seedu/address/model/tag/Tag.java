@@ -3,9 +3,14 @@ package seedu.address.model.tag;
 import static java.util.Objects.requireNonNull;
 import static seedu.address.commons.util.AppUtil.checkArgument;
 
+import java.util.Locale;
+
 /**
  * Represents a Tag in the address book.
  * Guarantees: immutable; name is valid as declared in {@link #isValidTagName(String)}
+ * <p>
+ * Tags that differ only in letter case are equal, so a student cannot have both {@code exchange} and
+ * {@code Exchange}. A set of tags keeps the spelling that was added first.
  */
 public class Tag {
 
@@ -45,12 +50,13 @@ public class Tag {
             return false;
         }
 
-        return tagName.equals(otherTag.tagName);
+        return tagName.equalsIgnoreCase(otherTag.tagName);
     }
 
     @Override
     public int hashCode() {
-        return tagName.hashCode();
+        // Must agree with equals, which ignores letter case
+        return tagName.toLowerCase(Locale.ROOT).hashCode();
     }
 
     /**

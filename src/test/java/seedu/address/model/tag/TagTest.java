@@ -1,5 +1,6 @@
 package seedu.address.model.tag;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static seedu.address.testutil.Assert.assertThrows;
@@ -17,6 +18,20 @@ public class TagTest {
     public void constructor_invalidTagName_throwsIllegalArgumentException() {
         String invalidTagName = "";
         assertThrows(IllegalArgumentException.class, () -> new Tag(invalidTagName));
+    }
+
+    @Test
+    public void equals_ignoresLetterCase() {
+        Tag tag = new Tag("exchange");
+
+        assertTrue(tag.equals(new Tag("exchange")));
+        assertTrue(tag.equals(new Tag("Exchange")));
+        assertTrue(tag.equals(new Tag("EXCHANGE")));
+        assertEquals(tag.hashCode(), new Tag("EXCHANGE").hashCode());
+
+        assertFalse(tag.equals(new Tag("exchanges")));
+        assertFalse(tag.equals(null));
+        assertFalse(tag.equals("exchange"));
     }
 
     @Test
