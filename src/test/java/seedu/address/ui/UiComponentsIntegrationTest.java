@@ -295,6 +295,7 @@ public class UiComponentsIntegrationTest {
                     .sorted((first, second) -> Integer.compare(first.getIndex(), second.getIndex())).toList();
             for (ListCell<?> row : rows) {
                 Node card = row.getGraphic();
+                assertWithin(row.localToScene(row.getLayoutBounds()), card.localToScene(card.getBoundsInLocal()));
                 Label comment = (Label) card.lookup("#comment");
                 if (comment.isManaged()) {
                     Bounds commentBounds = comment.localToScene(comment.getBoundsInLocal());
@@ -304,7 +305,8 @@ public class UiComponentsIntegrationTest {
                     for (String field : List.of("name", "email", "attendance", "tags")) {
                         Node details = card.lookup("#" + field);
                         assertTrue(details.localToScene(details.getBoundsInLocal()).getMaxY()
-                                <= commentBounds.getMinY() + 1, "Comments must stay below the student's details");
+                                <= commentBounds.getMinY() + 1, "Comments must stay below " + field + ": "
+                                        + details.localToScene(details.getBoundsInLocal()) + " vs " + commentBounds);
                     }
                 }
             }
