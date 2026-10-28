@@ -149,15 +149,6 @@ public class UiComponentsIntegrationTest {
                     ListView<?> students = (ListView<?>) stage.getScene().lookup("#personListView");
                     Bounds viewport = students.lookup(".clipped-container")
                             .localToScene(students.lookup(".clipped-container").getBoundsInLocal());
-                    if (cardBounds.getWidth() > viewport.getWidth() + 1) {
-                        String measurement = "UI viewport diagnostic: requested=" + size[0]
-                                + ", window=" + stage.getWidth() + ", scene=" + stage.getScene().getWidth()
-                                + ", card=" + cardBounds + ", cardLayout=" + card.getLayoutBounds()
-                                + ", viewport=" + viewport + ", viewportLayout="
-                                + students.lookup(".clipped-container").getLayoutBounds() + "\n";
-                        new java.io.FileOutputStream(java.io.FileDescriptor.err).write(
-                                measurement.getBytes(java.nio.charset.StandardCharsets.UTF_8));
-                    }
                     assertTrue(cardBounds.getWidth() <= viewport.getWidth() + 1,
                             "Student cards must fit the viewport without hiding weeks off screen at " + size[0]
                                     + ": card=" + cardBounds + ", viewport=" + viewport);
