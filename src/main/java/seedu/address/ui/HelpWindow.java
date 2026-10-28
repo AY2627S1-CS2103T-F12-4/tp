@@ -83,9 +83,14 @@ public class HelpWindow extends UiPart<Stage> {
     }
 
     /**
-     * Focuses on the help window.
+     * Brings the help window to the user's attention, restoring it if it has been minimised and
+     * raising it above the main window.
+     * Requesting focus is not enough on its own: a minimised stage still counts as showing, and
+     * focus cannot be given to a window that is not on screen.
      */
     public void focus() {
+        getRoot().setIconified(false);
+        getRoot().toFront();
         getRoot().requestFocus();
     }
 
