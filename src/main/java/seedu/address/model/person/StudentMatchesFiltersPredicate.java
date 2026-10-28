@@ -31,8 +31,18 @@ public class StudentMatchesFiltersPredicate implements Predicate<Person> {
     @Override
     public boolean test(Person person) {
         requireNonNull(person);
-        return (namePredicate == null || namePredicate.test(person))
-                && (matric == null || matric.equals(person.getMatric()))
+        return (namePredicate == null || namePredicate.test(person)) && matchesExceptName(person);
+    }
+
+    /**
+     * Returns whether every filter other than the name matches {@code person}.
+     * A student whose name was mistyped should still be suggested only if they belong to the
+     * group and matriculation number that were searched for, so those filters are applied on
+     * their own when looking for near misses.
+     */
+    public boolean matchesExceptName(Person person) {
+        requireNonNull(person);
+        return (matric == null || matric.equals(person.getMatric()))
                 && (group == null || group.equals(person.getGroup()));
     }
 

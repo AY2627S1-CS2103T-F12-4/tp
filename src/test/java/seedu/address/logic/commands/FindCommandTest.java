@@ -89,7 +89,10 @@ public class FindCommandTest {
     public void execute_reversedPhrase_noStudentsFound() throws Exception {
         CommandResult result = parser.parseCommand("find n/tan john").execute(model);
 
-        assertEquals("No students found matching \"tan john\". Try another name.", result.getFeedbackToUser());
+        assertEquals("No students found matching \"tan john\". "
+                + "Did you mean: John Tan (A0000012B), John Tanner (A0000015E)?",
+                result.getFeedbackToUser());
+        // The suggestion is feedback only, so a reversed phrase still displays nobody
         assertEquals(List.of(), model.getFilteredPersonList());
         assertEquals(roster, model.getAddressBook());
     }

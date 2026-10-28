@@ -66,13 +66,22 @@ public class NameSimilarityScorerTest {
     }
 
     @Test
-    public void score_transpositionAwayFromThePrefix_fallsJustBelowTheThreshold() {
-        // "sahra" for "Sarah" scores 0.893, which the 0.9 threshold rejects by 0.007. The swap
-        // sits past the shared prefix, so it earns a smaller Winkler bonus than "jonh" for
-        // "John" does. This test pins the boundary: if the threshold is ever lowered, that
-        // should be a decision someone makes here rather than a surprise.
-        assertFalse(isSimilar("sahra", "Sarah"));
+    public void score_transpositionAwayFromThePrefix_clearsTheThreshold() {
+        // A swap past the shared prefix earns a smaller Winkler bonus than one inside it, so
+        // "sahra" scores 0.893 where "sarh" scores 0.953. Both are typos for the same name and
+        // both are now accepted; an earlier 0.9 threshold rejected this one by 0.007.
+        assertTrue(isSimilar("sahra", "Sarah"));
         assertEquals(0.893, jaroWinkler("sahra", "sarah"), TOLERANCE);
+    }
+
+    @Test
+    public void score_justEitherSideOfTheThreshold_pinsWhereTheCutSits() {
+        // The nearest pair on each side of the cut. If the threshold moves, one of these flips,
+        // which should be a decision someone makes here rather than a surprise.
+        assertTrue(isSimilar("srah", "Sarah"));
+        assertEquals(0.865, score("srah", "Sarah"), TOLERANCE);
+        assertFalse(isSimilar("ben", "Bernice"));
+        assertEquals(0.848, score("ben", "Bernice"), TOLERANCE);
     }
 
     @Test
