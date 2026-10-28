@@ -105,6 +105,12 @@ public interface Model {
     /** Adds a tutorial session. */
     void addSession(Session session);
 
+    /** Changes a session's date and keeps the existing attendance statuses. */
+    void setSession(Session target, Session editedSession);
+
+    /** Deletes a session and all attendance for it, including students outside the current view. */
+    void deleteSession(Session session);
+
     /** Returns an unmodifiable view of the tutorial sessions. */
     ObservableList<Session> getSessionList();
 

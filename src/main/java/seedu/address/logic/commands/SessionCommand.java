@@ -31,6 +31,7 @@ public class SessionCommand extends Command {
             "Tutorial group %1$s does not exist. Create it first with: init grp/%1$s";
     public static final String MESSAGE_DUPLICATE_SESSION =
             "%1$s already has a session for week %2$s (%3$s).";
+    public static final String MESSAGE_SESSION_NOT_FOUND = "%1$s has no session for week %2$s.";
 
     private static final Logger logger = LogsCenter.getLogger(SessionCommand.class);
 

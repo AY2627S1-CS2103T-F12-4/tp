@@ -183,9 +183,50 @@ Examples:
 * Sessions may be created out of order; attendance is displayed in teaching-week order.
 * The date must be a real date, but Roster does not check whether it falls within the specified teaching week.
 * Creating a session for an empty group is allowed.
-* Roster does not yet support editing or deleting sessions.
+* To correct a session's date, use `editsession`. To remove a session, use `deletesession`.
 
 On success, Roster displays a confirmation such as `Created session: T09 week 5 (2026-09-15)`.
+
+### Editing a tutorial session: `editsession`
+
+Changes the date of an existing session. Students keep their present, absent or unmarked status.
+
+Format: `editsession grp/GROUP w/WEEK d/DATE`
+
+Example: `editsession grp/T09 w/5 d/2026-09-16`
+
+* `grp/` and `w/` identify the existing session; `d/` supplies its new date. All three fields are required,
+  may appear in any order, and may each appear only once.
+* The group and teaching week remain unchanged. The new date must be a real date in `YYYY-MM-DD` format.
+  As with `session`, Roster does not check whether the date falls within the teaching week.
+* The command applies to the specified session across its entire group, even when a search hides some students.
+  Your current search or group selection stays active.
+* A missing session or an unchanged date produces an error without changing data or undo history.
+* Use `undo` to restore the previous date. Exported CSV records use the updated date.
+
+On success, Roster displays a confirmation such as
+`Updated session: T09 week 5 (2026-09-15 -> 2026-09-16). Attendance is unchanged.`
+
+### Deleting a tutorial session: `deletesession`
+
+Removes a session and every student's attendance records for that session. Students, tutorial groups,
+other teaching weeks and other groups' sessions are kept.
+
+Format: `deletesession grp/GROUP w/WEEK`
+
+Example: `deletesession grp/T09 w/5`
+
+* Both fields are required, may appear in any order, and may each appear only once.
+* Deletion happens immediately without confirmation. Check the group and week before running the command.
+  Use `undo` to restore the session and its attendance records.
+* This applies to the entire specified group, including students hidden by a search. Your current search
+  or group selection stays active. An empty group can also have its session deleted.
+* A missing session produces an error without changing data or undo history.
+* The deleted week disappears from students' attendance strips and CSV exports. `mark` cannot record
+  attendance for that week until the session is created again.
+* Recreating the session with `session` starts everyone as unmarked. Use `undo` instead to recover old marks.
+
+On success, Roster identifies the deleted session and confirms that its attendance records were removed.
 
 ### Adding a student: `add`
 
@@ -507,6 +548,8 @@ Examples:
   followed by `undo` removes the newly added student.
 * `delete 3` followed by `undo` restores the deleted student and their attendance records.
 * `clear` followed by `undo` restores the entire roster.
+* `editsession grp/T09 w/5 d/2026-09-16` followed by `undo` restores the previous session date.
+* `deletesession grp/T09 w/5` followed by `undo` restores that session and its attendance records.
 
 * Each `undo` reverses one successful data-changing command.
 * Multiple `undo` commands reverse earlier changes one at a time.
@@ -580,6 +623,8 @@ Action | Format, example
 **Help** | `help`
 **Create tutorial group** | `init grp/GROUP`<br>e.g. `init grp/T09`
 **Create session** | `session grp/GROUP w/WEEK d/DATE`<br>e.g. `session grp/T09 w/5 d/2026-09-15`
+**Edit session date** | `editsession grp/GROUP w/WEEK d/DATE`<br>e.g. `editsession grp/T09 w/5 d/2026-09-16`
+**Delete session** | `deletesession grp/GROUP w/WEEK`<br>e.g. `deletesession grp/T09 w/5`
 **Add student** | `add n/NAME e/EMAIL m/MATRIC grp/GROUP [t/TAG]...`<br>e.g. `add n/Alex Tan e/alex.tan@example.com m/A0123456X grp/T09`
 **Edit student** | `edit INDEX [n/NAME] [e/EMAIL] [m/MATRIC] [grp/GROUP] [t/TAG]...`<br>e.g. `edit 1 e/alex.tan@example.com`
 **List students** | `list [grp/GROUP]`<br>e.g. `list grp/T09`

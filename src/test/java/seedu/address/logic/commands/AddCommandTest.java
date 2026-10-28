@@ -297,6 +297,16 @@ public class AddCommandTest {
         }
 
         @Override
+        public void setSession(Session target, Session editedSession) {
+            throw new AssertionError("This method should not be called.");
+        }
+
+        @Override
+        public void deleteSession(Session session) {
+            throw new AssertionError("This method should not be called.");
+        }
+
+        @Override
         public ObservableList<Session> getSessionList() {
             throw new AssertionError("This method should not be called.");
         }

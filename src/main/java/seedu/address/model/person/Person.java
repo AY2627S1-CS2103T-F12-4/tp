@@ -145,6 +145,14 @@ public class Person {
         return new Person(name, email, matric, group, tags, updatedAttendances, comment);
     }
 
+    /** Returns a copy with attendance for {@code session} removed, preserving every other field. */
+    public Person withoutAttendance(Session session) {
+        requireAllNonNull(session);
+        Set<Attendance> updatedAttendances = new HashSet<>(attendances);
+        updatedAttendances.removeIf(attendance -> attendance.isForSession(session));
+        return new Person(name, email, matric, group, tags, updatedAttendances, comment);
+    }
+
     /**
      * Returns a copy of this person carrying {@code updatedComment} in place of their current one.
      */
