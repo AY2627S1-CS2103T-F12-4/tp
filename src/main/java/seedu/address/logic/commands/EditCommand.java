@@ -109,7 +109,10 @@ public class EditCommand extends Command {
                     + " after moving them from " + personToEdit.getGroup() + " to " + editedPerson.getGroup());
         }
         model.updateFilteredPersonList(PREDICATE_SHOW_ALL_PERSONS);
-        return new CommandResult(String.format(MESSAGE_EDIT_PERSON_SUCCESS, Messages.format(editedPerson)));
+        // The displayed list is ordered by matriculation number, so an edit can move the student.
+        // Reporting them lets the roster point at them again instead of losing the highlight.
+        return new CommandResult(String.format(MESSAGE_EDIT_PERSON_SUCCESS,
+                Messages.format(editedPerson)), editedPerson);
     }
 
     @Override

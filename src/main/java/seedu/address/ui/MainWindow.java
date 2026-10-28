@@ -189,8 +189,10 @@ public class MainWindow extends UiPart<Stage> {
      * Keeps an open panel showing the current version of its student after a command.
      * The student is found again by matriculation number, which identifies them, so an edit or a
      * new comment is reflected; the panel closes if they are no longer displayed.
+     * {@code changed} is the student the command reported, which covers the one case the
+     * matriculation number cannot: an edit that changed the number being searched for.
      */
-    private void refreshStudentDetail() {
+    private void refreshStudentDetail(Person changed) {
         if (!studentDetailPanel.isShowing()) {
             return;
         }
@@ -200,6 +202,15 @@ public class MainWindow extends UiPart<Stage> {
         for (int i = 0; i < displayed.size(); i++) {
             if (displayed.get(i).getMatric().value.equals(shown)) {
                 showStudentDetail(displayed.get(i), i + 1);
+                return;
+            }
+        }
+        // The open student's number no longer matches anyone, so an edit changed it. Only the
+        // command knows who it touched, and only a displayed student can be shown.
+        if (changed != null) {
+            int index = displayed.indexOf(changed);
+            if (index >= 0) {
+                showStudentDetail(changed, index + 1);
                 return;
             }
         }
@@ -335,7 +346,7 @@ public class MainWindow extends UiPart<Stage> {
             // A highlight is only kept until the next command, so it never marks an unrelated student
             commandResult.getPersonToShow()
                     .ifPresentOrElse(personListPanel::scrollTo, personListPanel::clearSelection);
-            refreshStudentDetail();
+            refreshStudentDetail(commandResult.getPersonToShow().orElse(null));
 
             if (commandResult.isShowHelp()) {
                 handleHelp();

@@ -20,6 +20,8 @@ import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 import javafx.scene.control.skin.VirtualFlow;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.FlowPane;
@@ -69,10 +71,17 @@ public class PersonListPanel extends UiPart<Region> {
         sessions.addListener((ListChangeListener<Session>) change -> personListView.refresh());
         personListView.setCellFactory(listView -> new PersonListViewCell());
         personListView.setOnMouseClicked(this::openClickedStudent);
+        // A filter, not a handler: a focused list consumes Enter itself to end its own editing.
+        personListView.addEventFilter(KeyEvent.KEY_PRESSED, event -> {
+            if (event.getCode() == KeyCode.ENTER) {
+                openSelectedStudent();
+                event.consume();
+            }
+        });
     }
 
     /**
-     * Sets what happens when a student's row is clicked, which is how their details are opened.
+     * Sets what happens when a student's row is chosen, which is how their details are opened.
      * The callback receives the student and their row number in the displayed list.
      */
     public void setOnStudentChosen(BiConsumer<Person, Integer> onStudentChosen) {
@@ -93,7 +102,24 @@ public class PersonListPanel extends UiPart<Region> {
         }
         if (target instanceof ListCell<?> cell && !cell.isEmpty() && cell.getItem() instanceof Person person) {
             personListView.getSelectionModel().select(cell.getIndex());
-            onStudentChosen.accept(person, cell.getIndex() + 1);
+            report(person, cell.getIndex() + 1);
+        }
+    }
+
+    /**
+     * Opens the highlighted student, which is how the keyboard reaches the details that the row no
+     * longer shows. Enter means the same here as it does in the group navigator.
+     */
+    private void openSelectedStudent() {
+        Person person = personListView.getSelectionModel().getSelectedItem();
+        if (person != null) {
+            report(person, personListView.getSelectionModel().getSelectedIndex() + 1);
+        }
+    }
+
+    private void report(Person person, int displayedIndex) {
+        if (onStudentChosen != null) {
+            onStudentChosen.accept(person, displayedIndex);
         }
     }
 

@@ -136,6 +136,14 @@ public class StudentDetailUiTest {
                 assertTrue(detailShowing(stage));
                 assertEquals("Alice Tan", detailText(stage, "studentName"));
 
+                // An edit of the matriculation number changes what identifies the open student,
+                // so the panel has to follow the student the command reported instead of closing
+                input.setText("edit 1 m/A0000003X");
+                input.fireEvent(new ActionEvent());
+                assertTrue(detailShowing(stage));
+                assertEquals("Alice Tan", detailText(stage, "studentName"));
+                assertEquals("A0000003X", detailText(stage, "studentMatric"));
+
                 // Once the student is no longer displayed there is nothing to show
                 input.setText("delete 1");
                 input.fireEvent(new ActionEvent());
