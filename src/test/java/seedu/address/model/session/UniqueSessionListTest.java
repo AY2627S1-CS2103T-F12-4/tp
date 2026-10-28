@@ -53,6 +53,32 @@ public class UniqueSessionListTest {
     }
 
     @Test
+    public void setSession_sameIdentityWithDifferentTargetDate_updatesStoredSession() {
+        sessions.add(WEEK_FIVE);
+        sessions.add(WEEK_SIX);
+        Session target = new Session(T09, new Week(5), new SessionDate("2026-09-16"));
+        Session edited = new Session(T09, new Week(5), new SessionDate("2026-10-01"));
+
+        assertTrue(sessions.contains(target));
+        sessions.setSession(target, edited);
+
+        assertEquals(List.of(edited, WEEK_SIX), sessions.asUnmodifiableObservableList());
+    }
+
+    @Test
+    public void remove_originalTargetAfterDateEdit_removesOnlySameIdentity() {
+        sessions.add(WEEK_FIVE);
+        sessions.add(WEEK_SIX);
+        Session edited = new Session(T09, new Week(5), new SessionDate("2026-10-01"));
+        sessions.setSession(WEEK_FIVE, edited);
+
+        assertTrue(sessions.contains(WEEK_FIVE));
+        sessions.remove(WEEK_FIVE);
+
+        assertEquals(List.of(WEEK_SIX), sessions.asUnmodifiableObservableList());
+    }
+
+    @Test
     public void setSession_changedIdentityOrMissingTarget_preservesList() {
         sessions.add(WEEK_FIVE);
         assertThrows(IllegalArgumentException.class, () -> sessions.setSession(WEEK_FIVE, WEEK_SIX));

@@ -44,23 +44,26 @@ public class UniqueSessionList implements Iterable<Session> {
         internalList.sort(DISPLAY_ORDER);
     }
 
-    /** Replaces a session's details without changing its group/week identity or display order. */
+    /** Replaces the session with the target's group/week identity, preserving display order. */
     public void setSession(Session target, Session editedSession) {
         requireAllNonNull(target, editedSession);
         checkArgument(target.isSameSession(editedSession), "Editing cannot change a session's group or week");
-        int index = internalList.indexOf(target);
-        if (index < 0) {
-            throw new SessionNotFoundException();
-        }
-        internalList.set(index, editedSession);
+        internalList.set(indexOfSameSession(target), editedSession);
     }
 
-    /** Removes an existing session. */
+    /** Removes the session with the target's group/week identity, regardless of its date. */
     public void remove(Session target) {
         requireNonNull(target);
-        if (!internalList.remove(target)) {
-            throw new SessionNotFoundException();
+        internalList.remove(indexOfSameSession(target));
+    }
+
+    private int indexOfSameSession(Session target) {
+        for (int index = 0; index < internalList.size(); index++) {
+            if (internalList.get(index).isSameSession(target)) {
+                return index;
+            }
         }
+        throw new SessionNotFoundException();
     }
 
     /** Returns the session for {@code group} and {@code week}, if one exists. */
