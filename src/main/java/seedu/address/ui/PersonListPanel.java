@@ -109,7 +109,20 @@ public class PersonListPanel extends UiPart<Region> {
                 cancelPendingScroll();
                 return;
             }
-            getVirtualFlow().ifPresent(flow -> flow.scrollTo(index));
+            getVirtualFlow().ifPresent(flow -> {
+                IndexedCell<?> cell = flow.getVisibleCell(index);
+                Node viewport = personListView.lookup(".clipped-container");
+                if (cell == null || viewport == null) {
+                    flow.scrollTo(index);
+                    return;
+                }
+                Bounds visibleArea = viewport.localToScene(viewport.getBoundsInLocal());
+                Bounds card = cell.localToScene(cell.getBoundsInLocal());
+                double adjustment = card.getMinY() < visibleArea.getMinY()
+                        ? card.getMinY() - visibleArea.getMinY()
+                        : Math.max(0, card.getMaxY() - visibleArea.getMaxY());
+                flow.scrollPixels(adjustment);
+            });
         };
         scene.addPostLayoutPulseListener(pendingScroll);
     }
@@ -127,11 +140,12 @@ public class PersonListPanel extends UiPart<Region> {
     private boolean isFullyVisible(int index) {
         Optional<VirtualFlow<?>> flow = getVirtualFlow();
         IndexedCell<?> cell = flow.map(virtualFlow -> virtualFlow.getVisibleCell(index)).orElse(null);
-        if (cell == null) {
+        Node visibleArea = personListView.lookup(".clipped-container");
+        if (cell == null || visibleArea == null) {
             return false;
         }
-        // The flow's own bounds are the part of the list that shows cards
-        Bounds viewport = flow.get().localToScene(flow.get().getLayoutBounds());
+        // Scrollbars occupy part of the flow, so only its clipped content area shows complete cards.
+        Bounds viewport = visibleArea.localToScene(visibleArea.getBoundsInLocal());
         Bounds card = cell.localToScene(cell.getBoundsInLocal());
         return card.getMinY() >= viewport.getMinY() - VISIBILITY_TOLERANCE
                 && card.getMaxY() <= viewport.getMaxY() + VISIBILITY_TOLERANCE;
