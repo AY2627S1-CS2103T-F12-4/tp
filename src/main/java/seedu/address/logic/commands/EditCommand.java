@@ -52,7 +52,6 @@ public class EditCommand extends Command {
 
     public static final String MESSAGE_EDIT_PERSON_SUCCESS = "Edited student: %1$s";
     public static final String MESSAGE_NOT_EDITED = "At least one field to edit must be provided.";
-    public static final String MESSAGE_DUPLICATE_PERSON = "This student already exists in Roster.";
     public static final String MESSAGE_UNKNOWN_PARAMETER =
             "Unexpected input. Use only: n/, e/, m/, grp/ and t/.";
 
@@ -92,7 +91,8 @@ public class EditCommand extends Command {
         }
 
         if (!personToEdit.isSamePerson(editedPerson) && model.hasPerson(editedPerson)) {
-            throw new CommandException(MESSAGE_DUPLICATE_PERSON);
+            // Name the clashing matriculation number, as add does, so the user knows what to change
+            throw new CommandException(String.format(AddCommand.MESSAGE_DUPLICATE_PERSON, editedPerson.getMatric()));
         }
 
         boolean isEmailTaken = model.getAddressBook().getPersonList().stream()
