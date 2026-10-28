@@ -2,7 +2,9 @@ package seedu.address.logic.commands;
 
 import static java.util.Objects.requireNonNull;
 
+import java.util.List;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 import seedu.address.commons.core.LogsCenter;
 import seedu.address.commons.util.ToStringBuilder;
@@ -11,7 +13,9 @@ import seedu.address.model.Model;
 import seedu.address.model.person.Group;
 import seedu.address.model.person.Matric;
 import seedu.address.model.person.NameContainsQueryPredicate;
+import seedu.address.model.person.Person;
 import seedu.address.model.person.StudentMatchesFiltersPredicate;
+import seedu.address.model.person.TopSimilarStudents;
 
 /**
  * Finds students matching every supplied filter, ordered by matriculation number.
@@ -31,6 +35,10 @@ public class FindCommand extends Command {
             "No students found matching filters: %1$s. Try another filter.";
     public static final String MESSAGE_UNKNOWN_PARAMETER =
             "Unexpected parameter. Use only n/KEYWORD, m/MATRIC or grp/GROUP.";
+    public static final String MESSAGE_DID_YOU_MEAN =
+            "No students found matching \"%1$s\". Did you mean: %2$s?";
+    public static final String MESSAGE_FILTER_DID_YOU_MEAN =
+            "No students found matching filters: %1$s. Did you mean: %2$s?";
 
     private static final Logger logger = LogsCenter.getLogger(FindCommand.class);
 
@@ -54,20 +62,61 @@ public class FindCommand extends Command {
             logger.fine("Search rejected: tutorial group is not registered.");
             throw new CommandException(String.format(ListCommand.MESSAGE_GROUP_NOT_FOUND, predicate.getGroup().get()));
         }
+        TopSimilarStudents similar = collectSimilarStudents(model);
         model.updateFilteredPersonList(predicate);
         assert model.getActiveGroup().isEmpty() : "A global search must clear the active tutorial group";
         int count = model.getFilteredPersonList().size();
         logger.fine("Student search completed with " + count + " matching students.");
+
+        String suggestions = count == 0 && similar != null && !similar.isEmpty()
+                ? describe(similar.best())
+                : null;
+
         if (!predicate.isNameOnly()) {
-            return new CommandResult(count == 0
-                    ? String.format(MESSAGE_FILTER_NO_RESULTS, predicate.describeFilters())
-                    : String.format(MESSAGE_FILTER_SUCCESS, count, predicate.describeFilters()));
+            if (count == 0) {
+                return new CommandResult(suggestions == null
+                        ? String.format(MESSAGE_FILTER_NO_RESULTS, predicate.describeFilters())
+                        : String.format(MESSAGE_FILTER_DID_YOU_MEAN, predicate.describeFilters(), suggestions));
+            }
+            return new CommandResult(String.format(MESSAGE_FILTER_SUCCESS, count, predicate.describeFilters()));
         }
+
         String query = predicate.getNamePredicate().orElseThrow().getQuery();
-        String message = count == 0
-                ? String.format(MESSAGE_NO_RESULTS, query)
-                : String.format(MESSAGE_SUCCESS, count, query);
-        return new CommandResult(message);
+        if (count == 0) {
+            return new CommandResult(suggestions == null
+                    ? String.format(MESSAGE_NO_RESULTS, query)
+                    : String.format(MESSAGE_DID_YOU_MEAN, query, suggestions));
+        }
+        return new CommandResult(String.format(MESSAGE_SUCCESS, count, query));
+    }
+
+    /**
+     * Returns the students whose names come closest to the search query, or null when no name was
+     * searched for and there is therefore nothing to have mistyped.
+     * <p>
+     * The roster is walked once here, alongside deciding which students match exactly, so the near
+     * misses are found without a second pass. Only students satisfying the other filters are
+     * offered, so a suggestion never comes from outside the group that was searched.
+     */
+    private TopSimilarStudents collectSimilarStudents(Model model) {
+        if (predicate.getNamePredicate().isEmpty()) {
+            return null;
+        }
+        TopSimilarStudents similar =
+                new TopSimilarStudents(predicate.getNamePredicate().get().getQuery());
+        for (Person person : model.getAddressBook().getPersonList()) {
+            if (!predicate.test(person) && predicate.matchesExceptName(person)) {
+                similar.consider(person);
+            }
+        }
+        return similar;
+    }
+
+    /** Names the suggested students with their matriculation numbers, which tell them apart. */
+    private static String describe(List<Person> students) {
+        return students.stream()
+                .map(person -> person.getName().fullName + " (" + person.getMatric().value + ")")
+                .collect(Collectors.joining(", "));
     }
 
     @Override

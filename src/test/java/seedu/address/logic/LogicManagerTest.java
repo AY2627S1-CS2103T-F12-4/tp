@@ -152,11 +152,16 @@ public class LogicManagerTest {
                 new JsonUserPrefsStorage(temporaryFolder.resolve("readOnlyUserPrefs.json"))));
 
         countingLogic.execute("list");
-        countingLogic.execute("find n/Alex");
         countingLogic.execute("help");
         countingLogic.execute("exit");
 
         assertEquals(0, countingModel.addressBookReadCount);
+
+        // find reads the roster once, to look for names close to one that matched nothing
+        countingLogic.execute("find n/Alex");
+
+        // Still only the one read: copying the roster for history would read it again
+        assertEquals(1, countingModel.addressBookReadCount);
     }
 
     @Test

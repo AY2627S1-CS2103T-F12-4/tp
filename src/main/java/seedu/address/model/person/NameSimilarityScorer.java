@@ -13,13 +13,24 @@ import java.util.Locale;
  * Scores run from 0.0 (nothing in common) to 1.0 (identical). The measure is Jaro-Winkler, which
  * rewards a shared leading prefix. An edit distance normalized by length cannot do this job: at
  * short query lengths a single typo costs too much. {@code sarh} against {@code Sarah} is one edit
- * in five characters, scoring 0.80, below the 0.90 a near miss has to clear, while Jaro-Winkler
- * scores that pair 0.95 and {@code sarh} against {@code Sandra} 0.80, separating them cleanly.
+ * in five characters, scoring 0.80, while Jaro-Winkler scores that pair 0.95 and {@code sarh}
+ * against {@code Sandra} 0.80, separating them cleanly.
  */
 public final class NameSimilarityScorer {
 
-    /** Scores at or above this are close enough to show when nothing matches exactly. */
-    public static final double DEFAULT_THRESHOLD = 0.9;
+    /**
+     * Scores at or above this are close enough to show when nothing matches exactly.
+     * <p>
+     * Set where real typos fall rather than at a round number. Swapping two letters away from the
+     * start of a name, as in {@code srah} for {@code Sarah}, scores 0.865, while a genuinely
+     * different student such as {@code ben} against {@code Bernice} scores 0.848. The cut sits
+     * between them. A lower bar would start suggesting on very little: {@code amy} against
+     * {@code Amirah} is only 0.733.
+     * <p>
+     * The cost of being slightly generous is small, because a suggestion is only ever offered
+     * once an exact search has already found nobody.
+     */
+    public static final double DEFAULT_THRESHOLD = 0.85;
 
     /** Weight given to each character of shared prefix, as defined by Winkler. */
     private static final double PREFIX_WEIGHT = 0.1;
