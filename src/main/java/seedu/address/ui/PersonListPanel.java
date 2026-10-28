@@ -165,9 +165,14 @@ public class PersonListPanel extends UiPart<Region> {
                 Region card = new PersonCard(person, getIndex() + 1, sessions).getRoot();
                 configureCardContents(card);
                 card.setMinWidth(0);
-                card.prefWidthProperty().bind(Bindings.createDoubleBinding(() ->
-                        Math.max(0, getWidth() - snappedLeftInset() - snappedRightInset()),
-                        widthProperty(), insetsProperty()));
+                Node viewport = personListView.lookup(".clipped-container");
+                card.prefWidthProperty().bind(Bindings.createDoubleBinding(() -> {
+                    double availableWidth = viewport == null ? getWidth()
+                            : Math.min(getWidth(), viewport.getLayoutBounds().getWidth());
+                    return Math.max(0, availableWidth - snappedLeftInset() - snappedRightInset());
+                }, widthProperty(), insetsProperty(), viewport == null
+                        ? personListView.widthProperty() : viewport.layoutBoundsProperty()));
+                card.maxWidthProperty().bind(card.prefWidthProperty());
                 // Notify the virtualized list when wrapping changes a row's preferred height.
                 prefHeightProperty().bind(Bindings.createDoubleBinding(() ->
                         Math.max(card.minHeight(card.getWidth()), card.prefHeight(card.getWidth()))

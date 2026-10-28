@@ -150,7 +150,8 @@ public class UiComponentsIntegrationTest {
                     Bounds viewport = students.lookup(".clipped-container")
                             .localToScene(students.lookup(".clipped-container").getBoundsInLocal());
                     assertTrue(cardBounds.getWidth() <= viewport.getWidth() + 1,
-                            "Student cards must fit the viewport without hiding weeks off screen");
+                            "Student cards must fit the viewport without hiding weeks off screen at " + size[0]
+                                    + ": card=" + cardBounds + ", viewport=" + viewport);
                     assertTrue(students.getHeight() > 80, "The roster must remain usable at the minimum size");
                     saveScreenshot(stage, "layout-" + size[0] + "x" + size[1] + ".png");
                     return null;
