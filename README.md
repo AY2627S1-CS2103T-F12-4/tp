@@ -6,11 +6,11 @@
 
 ![Roster user interface](docs/images/Ui.png)
 
-> **Development status:** Roster is under development. This page describes the intended product; the planned MVP focuses on student rosters and attendance.
+> **Alpha testing:** Download `roster.jar` from the [latest release](https://github.com/AY2627S1-CS2103T-F12-4/tp/releases/latest) and follow the [User Guide](docs/UserGuide.md#quick-start).
 
 **Roster is a desktop application that helps teaching assistants manage students across multiple tutorial groups.**
 
-Designed for fast, keyboard-driven use during class, Roster allows TAs to record attendance, track participation and assignment completion, and review student progress without juggling multiple spreadsheets. By keeping each student's information and progress records in one place, Roster helps TAs identify students who may require timely and targeted support.
+Designed for fast, keyboard-driven use during class, Roster allows TAs to record attendance and short comments, search student records and export attendance to CSV. Keeping student details and attendance together helps TAs identify students who may need additional support.
 
 ## Who is Roster for?
 
@@ -20,18 +20,20 @@ Roster is designed for NUS teaching assistants who manage multiple tutorial grou
 
 Keep each student's details, tutorial group and attendance together instead of maintaining separate spreadsheets. Roster aims to reduce the effort of finding and updating class records, so TAs can focus on teaching and identifying students who may need timely, targeted support.
 
-## Planned features
+## Features
 
-The initial MVP is planned to support:
+Roster supports:
 
 - **Tutorial groups:** Create separate groups and move between group views without mixing up their student records.
 - **Student records:** Add students with their identifying details and tutorial group, and delete records that are no longer needed.
 - **Roster views:** List students across all groups or view the students in one tutorial group.
 - **Student search:** Find students by complete or partial name, exact matriculation number, tutorial group, or a combination of these filters.
 - **Attendance:** Record a student as present or absent for a tutorial session, while keeping unrecorded attendance distinct from confirmed absence.
+- **Comments:** Append, replace or clear a short comment for a student.
+- **Undo:** Reverse changes during the current application session.
 - **CSV export:** Export attendance for all students or a specified tutorial group to a new CSV file.
 
-Participation records and assignment-completion tracking are part of the broader product direction, beyond the initial MVP. Roster does not cover grading or communicating with students.
+Participation records and assignment-completion tracking are not implemented. Roster does not cover grading or communicating with students.
 
 ## Documentation
 

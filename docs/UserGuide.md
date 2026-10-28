@@ -12,14 +12,14 @@ Roster is a **desktop application for NUS teaching assistants to manage students
 
 ## Quick start
 
-1. Ensure that Java `25` or later is installed on your computer.<br>
+1. Ensure that Java `25` is installed on your computer. Run `java -version` in your terminal to check the version.<br>
    **Mac users:** Ensure you have the precise JDK version prescribed [here](https://se-education.org/guides/tutorials/javaInstallationMac.html).
 
 1. Download the latest `.jar` file from the [Roster releases page](https://github.com/AY2627S1-CS2103T-F12-4/tp/releases).
 
-1. Copy the file to the folder you want to use as Roster's _home folder_.
+1. Copy the file to an empty, writable folder you want to use as Roster's _home folder_. Roster creates its data, preferences and log files there.
 
-1. Open a terminal, `cd` to the folder containing the JAR file, and run `java -jar roster.jar`.<br>
+1. Open a terminal, `cd` to the folder containing the JAR file, and run `java -jar "roster.jar"`.<br>
    A GUI similar to the one below should appear in a few seconds. Roster includes sample data on its first launch.<br>
    ![Roster user interface](images/Ui.png)
 
@@ -542,7 +542,7 @@ Roster automatically saves changes to its data. You do not need to save manually
 
 ### Editing the data file
 
-Roster data is saved as `data/addressbook.json` inside the folder from which Roster is launched. To keep it beside the JAR, open a terminal in the JAR folder and run `java -jar roster.jar`. Close Roster and back up the file before editing it directly.
+Roster data is saved as `data/addressbook.json` inside the folder from which Roster is launched. To keep it beside the JAR, open a terminal in the JAR folder and run `java -jar "roster.jar"`. Close Roster and back up the file before editing it directly.
 
 <div markdown="span" class="alert alert-warning">:exclamation: **Caution:**
 If your changes make the data file invalid, Roster starts with an empty roster the next time it runs. The invalid file remains on disk until a successful command causes Roster to save again. Back up the file before editing it.<br>
