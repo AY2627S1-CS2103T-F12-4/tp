@@ -162,6 +162,14 @@ public class LogicManagerTest {
 
         // Still only the one read: copying the roster for history would read it again
         assertEquals(1, countingModel.addressBookReadCount);
+
+        // A search that finds someone has no near misses to look for, so it never reads the roster
+        Person alex = new PersonBuilder().withName("Alex Yeoh").build();
+        countingModel.addGroup(alex.getGroup());
+        countingModel.addPerson(alex);
+        int readsBeforeMatch = countingModel.addressBookReadCount;
+        countingLogic.execute("find n/Alex");
+        assertEquals(readsBeforeMatch, countingModel.addressBookReadCount);
     }
 
     @Test
