@@ -17,9 +17,15 @@ import seedu.address.model.person.Comment;
  */
 public class CommentCommandParser implements Parser<CommentCommand> {
 
-    public static final String MESSAGE_BOTH_PREFIXES =
-            "Use either " + PREFIX_COMMENT + " to add to the comment or "
-                    + PREFIX_COMMENT_REPLACE + " to replace it, not both.";
+    /**
+     * Shown when more than one comment prefix is found. This is usually a note that happens to contain
+     * " c/" or " c-/" rather than a deliberate second prefix, so the message explains how to write it.
+     */
+    public static final String MESSAGE_MULTIPLE_PREFIXES =
+            "Give only one " + PREFIX_COMMENT + " (to add) or " + PREFIX_COMMENT_REPLACE + " (to replace). "
+                    + "A space followed by " + PREFIX_COMMENT + " or " + PREFIX_COMMENT_REPLACE
+                    + " starts another one, so if your comment contains one, remove the space before it, "
+                    + "e.g. \"ask about (c/c++)\" instead of \"ask about c/c++\".";
 
     public static final String MESSAGE_EMPTY_APPEND =
             "There is nothing to add. Use " + PREFIX_COMMENT_REPLACE + " on its own to clear the comment.";
@@ -42,14 +48,14 @@ public class CommentCommandParser implements Parser<CommentCommand> {
             throw new ParseException(String.format(MESSAGE_INVALID_COMMAND_FORMAT, CommentCommand.MESSAGE_USAGE), pe);
         }
 
-        argMultimap.verifyNoDuplicatePrefixesFor(PREFIX_COMMENT, PREFIX_COMMENT_REPLACE);
+        int prefixCount = argMultimap.getAllValues(PREFIX_COMMENT).size()
+                + argMultimap.getAllValues(PREFIX_COMMENT_REPLACE).size();
+        if (prefixCount > 1) {
+            throw new ParseException(MESSAGE_MULTIPLE_PREFIXES);
+        }
 
         Optional<String> addition = argMultimap.getValue(PREFIX_COMMENT);
         Optional<String> replacement = argMultimap.getValue(PREFIX_COMMENT_REPLACE);
-
-        if (addition.isPresent() && replacement.isPresent()) {
-            throw new ParseException(MESSAGE_BOTH_PREFIXES);
-        }
         if (addition.isEmpty() && replacement.isEmpty()) {
             throw new ParseException(String.format(MESSAGE_INVALID_COMMAND_FORMAT, CommentCommand.MESSAGE_USAGE));
         }

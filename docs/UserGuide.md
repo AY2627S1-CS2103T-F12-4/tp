@@ -438,7 +438,7 @@ Because `c/` appends, you can add to a note during the tutorial without retyping
 </div>
 
 <div markdown="span" class="alert alert-warning">:exclamation: **Caution:**
-A comment cannot contain a space followed by `c/` or `c-/`, because Roster reads those as the start of another parameter. A note such as `ask about c/c++` is rejected rather than saved incorrectly.
+A comment cannot contain a space followed by `c/` or `c-/`, because Roster reads those as the start of another parameter. A note such as `ask about c/c++` is rejected rather than saved incorrectly. Write it without the space before `c/`, for example `ask about (c/c++)`.
 </div>
 
 ### Deleting all displayed students: `delete all`
