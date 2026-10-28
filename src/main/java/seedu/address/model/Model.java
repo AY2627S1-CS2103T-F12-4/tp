@@ -54,6 +54,15 @@ public interface Model {
     /** Reapplies the next address book state after an undo. */
     void redoAddressBook();
 
+    /** Returns whether the most recently undone change can be reapplied. */
+    boolean canRedoAddressBook();
+
+    /** Returns the command name for the next redo. */
+    String getRedoDescription();
+
+    /** Restores a complete snapshot after an unsuccessful save. */
+    void restoreAddressBookHistory(VersionedAddressBook snapshot);
+
     /** Discards all undo history and keeps the current address book as the new starting state. */
     void resetAddressBookHistory();
 

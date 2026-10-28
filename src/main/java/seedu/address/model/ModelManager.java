@@ -112,6 +112,24 @@ public class ModelManager implements Model {
     }
 
     @Override
+    public boolean canRedoAddressBook() {
+        return addressBook.canRedo();
+    }
+
+    @Override
+    public String getRedoDescription() {
+        return addressBook.getRedoDescription();
+    }
+
+    @Override
+    public void restoreAddressBookHistory(VersionedAddressBook snapshot) {
+        addressBook.restoreHistory(snapshot.getHistoryStates(), snapshot.getHistoryCommands(),
+                snapshot.getHistoryPointer());
+        addressBook.resetData(snapshot);
+        updateFilteredPersonList(PREDICATE_SHOW_ALL_PERSONS);
+    }
+
+    @Override
     public ReadOnlyAddressBook getAddressBook() {
         return addressBook;
     }

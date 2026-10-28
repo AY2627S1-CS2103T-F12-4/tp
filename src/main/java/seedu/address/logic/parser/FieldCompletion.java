@@ -13,7 +13,7 @@ import java.util.stream.Stream;
 /** Supplies field completions without executing or validating commands. */
 public final class FieldCompletion {
     private static final List<String> COMMANDS = List.of("add", "clear", "comment", "delete", "deletesession",
-            "edit", "editsession", "exit", "export", "find", "help", "init", "list", "mark", "session", "undo");
+            "edit", "editsession", "exit", "export", "find", "help", "init", "list", "mark", "redo", "session", "undo");
 
     private FieldCompletion() {}
 

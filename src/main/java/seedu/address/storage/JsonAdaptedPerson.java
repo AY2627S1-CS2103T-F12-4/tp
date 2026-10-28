@@ -79,6 +79,9 @@ class JsonAdaptedPerson {
      * @throws IllegalValueException if there were any data constraints violated in the adapted person.
      */
     public Person toModelType() throws IllegalValueException {
+        if (tags.contains(null) || attendances.contains(null)) {
+            throw new IllegalValueException("Person tag and attendance records must not be null.");
+        }
         final List<Tag> personTags = new ArrayList<>();
         for (JsonAdaptedTag tag : tags) {
             personTags.add(tag.toModelType());

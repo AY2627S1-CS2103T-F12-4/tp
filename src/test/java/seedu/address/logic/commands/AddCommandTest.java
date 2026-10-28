@@ -232,6 +232,21 @@ public class AddCommandTest {
         }
 
         @Override
+        public boolean canRedoAddressBook() {
+            throw new AssertionError("This method should not be called.");
+        }
+
+        @Override
+        public String getRedoDescription() {
+            throw new AssertionError("This method should not be called.");
+        }
+
+        @Override
+        public void restoreAddressBookHistory(seedu.address.model.VersionedAddressBook snapshot) {
+            throw new AssertionError("This method should not be called.");
+        }
+
+        @Override
         public void redoAddressBook() {
             throw new AssertionError("This method should not be called.");
         }

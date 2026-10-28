@@ -12,12 +12,11 @@ import seedu.address.commons.core.LogsCenter;
 import seedu.address.logic.commands.Command;
 import seedu.address.logic.commands.Command.HistoryAction;
 import seedu.address.logic.commands.CommandResult;
-import seedu.address.logic.commands.UndoCommand;
 import seedu.address.logic.commands.exceptions.CommandException;
 import seedu.address.logic.parser.AddressBookParser;
 import seedu.address.logic.parser.exceptions.ParseException;
-import seedu.address.model.AddressBook;
 import seedu.address.model.Model;
+import seedu.address.model.VersionedAddressBook;
 import seedu.address.model.person.Group;
 import seedu.address.model.person.Person;
 import seedu.address.model.session.Session;
@@ -52,12 +51,16 @@ public class LogicManager implements Logic {
         logger.info("----------------[USER COMMAND][" + commandText + "]");
 
         Command command = addressBookParser.parseCommand(commandText);
-        AddressBook stateBeforeCommand = command.requiresSave()
-                ? new AddressBook(model.getAddressBook()) : null;
+        VersionedAddressBook stateBeforeCommand = command.requiresSave()
+                ? new VersionedAddressBook(model.getAddressBook()) : null;
         CommandResult commandResult = command.execute(model);
 
         if (!command.requiresSave()) {
             return commandResult;
+        }
+
+        if (command.getHistoryAction() == HistoryAction.COMMIT) {
+            model.commitAddressBook(command.getUndoDescription());
         }
 
         try {
@@ -70,21 +73,13 @@ public class LogicManager implements Logic {
             throw new CommandException(String.format(FILE_OPS_ERROR_FORMAT, ioe.getMessage()), ioe);
         }
 
-        if (command.getHistoryAction() == HistoryAction.COMMIT) {
-            model.commitAddressBook(command.getUndoDescription());
-        }
-
         return commandResult;
     }
 
-    private void rollBackCommand(Command command, AddressBook stateBeforeCommand) {
+    private void rollBackCommand(Command command, VersionedAddressBook stateBeforeCommand) {
         logger.warning("Saving failed, so the changes made by " + command.getUndoDescription()
                 + " are being rolled back");
-        if (command instanceof UndoCommand) {
-            model.redoAddressBook();
-        } else if (command.getHistoryAction() != HistoryAction.NONE) {
-            model.setAddressBook(stateBeforeCommand);
-        }
+        model.restoreAddressBookHistory(stateBeforeCommand);
     }
 
     @Override
