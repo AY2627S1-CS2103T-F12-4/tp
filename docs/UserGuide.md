@@ -121,10 +121,19 @@ The command box also changes its border to indicate success or failure. Starting
 input highlight; the banner keeps the previous feedback until the next action.
 
 The badge beside the roster heading counts the students currently displayed, so it changes when you
-search or switch tutorial groups. Each row shows student details, tags, group and attendance, with a
-comment underneath when one is present. Long names, email addresses, comments and attendance strips
-wrap within the row. Hover over a shortened tag to read its full text. Scroll vertically to reach
-additional students or the rest of a tall row.
+search or switch tutorial groups. Each row shows the student's name, matriculation number, group and
+attendance. Scroll vertically to reach additional students or the rest of a tall attendance row.
+
+Click a student row to open their details on the right, or focus the student list, select a row with
+the arrow keys and press Enter. The panel shows their email, tags, comments, and attendance by session.
+The attendance percentage counts only marked sessions; unmarked sessions are shown separately.
+Scroll inside the panel to read later sessions. Click another row to switch students.
+
+Close the panel with its × button or Escape to see the full roster and command box again. If command
+completion suggestions are open, Escape dismisses those first. Opening or closing details does not
+change the roster, active group, or displayed row numbers. Successful commands refresh an open panel;
+it closes if its student is no longer displayed. After undoing a matriculation-number edit, reopen the
+student's row to view their restored details.
 
 ### Completing command fields
 
@@ -298,7 +307,7 @@ The group must already exist. Listing an empty group is allowed; listing a nonex
 | Empty roster               | `No students in Roster. Create a tutorial group and add students to get started.` |
 | Unknown group              | `Tutorial group T09 does not exist. Create it first with: init grp/T09`           |
 
-Each student's card shows their details and attendance for every session of their group, in teaching-week order:
+Each student's card shows their name, matriculation number, group and attendance for every session of their group, in teaching-week order:
 A green `✓` means present, a red `✗` means absent, and a grey `—` means unmarked.
 A student added after a session also shows `—` until their attendance is recorded. Weeks with no session have no cell. The list scrolls when needed.
 
@@ -354,7 +363,11 @@ Format: `find [n/KEYWORD] [m/MATRIC] [grp/GROUP]`
   may contain only a subset of that group's students.
 * Name-only searches retain feedback such as `Found 2 student(s) matching "John".` Other searches report
   the result count and normalized filters, for example `Found 1 student(s) matching filters: n/"John" grp/T09.`
-  No-match searches show an empty list and feedback suggesting another name or filter.
+  No-match searches show an empty list. If a name was supplied, Roster may suggest up to three similar
+  names with their matriculation numbers. Suggestions respect any matriculation-number and group filters.
+  They are hints only: run another search using the suggested name or matriculation number to display
+  that student before using an index-based command. For example, `find n/srah` may suggest Sarah.
+  If no names are sufficiently similar, Roster asks you to try another name or filter.
 * Blank or malformed values, repeated prefixes, unsupported parameters, text before the first prefix,
   and `find` without filters are rejected without changing the displayed list or active group.
 * `mark INDEX`, `delete INDEX` and `edit INDEX` use the displayed result indexes. Deleting a student refreshes
@@ -627,9 +640,9 @@ Manual edits can also produce unexpected behavior if values do not follow Roster
 
 --------------------------------------------------------------------------------------------------------------------
 
-## Known issues
+## Help window
 
-1. **If you minimize the Help Window** and run `help` again, the original window remains minimized and no new Help Window appears. Restore the minimized Help Window manually.
+Running `help` again restores the existing Help window if it is minimized and brings it to the front.
 
 --------------------------------------------------------------------------------------------------------------------
 
