@@ -863,6 +863,10 @@ relative to that launch folder. Keep backups of any real data outside the test f
    the application should open again without an error.
 2. Resize and move the window, then close it normally. Relaunch from the same folder.
    Expected: the previous window size and position are restored from `preferences.json`.
+3. Saved position off every screen: close Roster, then in `preferences.json` set `windowCoordinates` to
+   `{ "x" : 100000, "y" : 100000 }`, as if the window was last on a monitor that is now disconnected. Relaunch.
+   Expected: the window opens centred on the screen, and the log says the saved position was not on any
+   connected screen.
 
 ### Deleting a student
 
