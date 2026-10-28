@@ -464,6 +464,7 @@
 }
 
 .detail-close {
+    -fx-padding: 0;
     -fx-background-color: transparent;
     -fx-cursor: hand;
     -fx-font-size: 14px;
