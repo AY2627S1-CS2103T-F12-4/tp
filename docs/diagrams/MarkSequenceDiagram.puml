@@ -65,15 +65,15 @@ deactivate MarkCommand
 MarkCommand -[hidden]-> LogicManager
 destroy MarkCommand
 
-LogicManager -> Storage : saveAddressBook(...)
-activate Storage
-Storage --> LogicManager
-deactivate Storage
-
 LogicManager -> Model : commitAddressBook("mark")
 activate Model
 Model --> LogicManager
 deactivate Model
+
+LogicManager -> Storage : saveAddressBook(...)
+activate Storage
+Storage --> LogicManager
+deactivate Storage
 
 [<-- LogicManager : result
 deactivate LogicManager

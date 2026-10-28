@@ -97,6 +97,9 @@ class JsonSerializableAddressBook {
      * @throws IllegalValueException if there were any data constraints violated.
      */
     public AddressBook toModelType() throws IllegalValueException {
+        if (persons.contains(null) || sessions.contains(null)) {
+            throw new IllegalValueException("Roster person and session records must not be null.");
+        }
         AddressBook addressBook = new AddressBook();
         for (String groupCode : groups) {
             if (!Group.isValidGroup(groupCode)) {
