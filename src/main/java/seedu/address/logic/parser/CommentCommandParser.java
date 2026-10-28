@@ -23,8 +23,9 @@ public class CommentCommandParser implements Parser<CommentCommand> {
      */
     public static final String MESSAGE_MULTIPLE_PREFIXES =
             "Give only one " + PREFIX_COMMENT + " (to add) or " + PREFIX_COMMENT_REPLACE + " (to replace). "
-                    + "A space followed by " + PREFIX_COMMENT + " or " + PREFIX_COMMENT_REPLACE
-                    + " starts another one, so if your comment contains one, remove the space before it, "
+                    + "Roster reads " + PREFIX_COMMENT + " or " + PREFIX_COMMENT_REPLACE
+                    + " after a space as the start of another one, so if your comment contains one, "
+                    + "put another character right before it, "
                     + "e.g. \"ask about (c/c++)\" instead of \"ask about c/c++\".";
 
     public static final String MESSAGE_EMPTY_APPEND =
