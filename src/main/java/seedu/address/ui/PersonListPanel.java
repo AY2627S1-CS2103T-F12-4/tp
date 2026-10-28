@@ -203,6 +203,7 @@ public class PersonListPanel extends UiPart<Region> {
             FlowPane tags = (FlowPane) card.lookup("#tags");
             tags.getChildren().forEach(node -> {
                 Label label = (Label) node;
+                label.setMinWidth(0);
                 label.setMaxWidth(165);
                 label.setTooltip(new Tooltip(label.getText()));
             });

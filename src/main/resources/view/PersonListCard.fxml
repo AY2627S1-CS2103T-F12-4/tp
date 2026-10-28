@@ -12,15 +12,15 @@
     <Insets top="8" right="10" bottom="8" left="10" />
   </padding>
   <VBox spacing="8" minWidth="0" minHeight="0" HBox.hgrow="ALWAYS">
-    <HBox alignment="CENTER_LEFT" minHeight="0">
+    <HBox alignment="CENTER_LEFT" minWidth="0" minHeight="0">
       <Label fx:id="id" minWidth="30" prefWidth="30" maxWidth="30" styleClass="row-index" />
       <VBox alignment="CENTER_LEFT" minWidth="170" prefWidth="170" maxWidth="170" spacing="2">
         <Label fx:id="name" minWidth="0" maxWidth="165" wrapText="true" styleClass="student-name" />
         <Label fx:id="matric" styleClass="student-meta" />
-        <FlowPane fx:id="tags" hgap="4" vgap="2" prefWrapLength="165" maxWidth="165" />
+        <FlowPane fx:id="tags" hgap="4" vgap="2" minWidth="0" prefWrapLength="165" maxWidth="165" />
       </VBox>
       <VBox alignment="CENTER_LEFT" minWidth="170" prefWidth="170" maxWidth="170">
-        <Label fx:id="email" maxWidth="160" wrapText="true" styleClass="contact-primary" />
+        <Label fx:id="email" minWidth="0" maxWidth="160" wrapText="true" styleClass="contact-primary" />
       </VBox>
       <HBox alignment="CENTER_LEFT" minWidth="60" prefWidth="60" maxWidth="60">
         <Label fx:id="group" styleClass="group-badge" />
@@ -28,6 +28,6 @@
       <FlowPane fx:id="attendance" alignment="CENTER_LEFT" hgap="6" vgap="5"
                 minWidth="0" minHeight="0" prefWrapLength="120" HBox.hgrow="ALWAYS" />
     </HBox>
-    <Label fx:id="comment" wrapText="true" maxWidth="Infinity" styleClass="student-meta" />
+    <Label fx:id="comment" minWidth="0" wrapText="true" maxWidth="Infinity" styleClass="student-meta" />
   </VBox>
 </HBox>
