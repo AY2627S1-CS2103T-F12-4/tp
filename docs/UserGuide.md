@@ -551,8 +551,7 @@ Manual edits can also produce unexpected behavior if values do not follow Roster
 
 ## Known issues
 
-1. **When using multiple screens**, if you move the application to a secondary screen and later use only the primary screen, the GUI may open off-screen. Delete the `preferences.json` file created by the application before running it again.
-2. **If you minimize the Help Window** and run `help` again, the original window remains minimized and no new Help Window appears. Restore the minimized Help Window manually.
+1. **If you minimize the Help Window** and run `help` again, the original window remains minimized and no new Help Window appears. Restore the minimized Help Window manually.
 
 --------------------------------------------------------------------------------------------------------------------
 
