@@ -6,13 +6,13 @@ title: Roster
 [![CI Status](https://github.com/AY2627S1-CS2103T-F12-4/tp/actions/workflows/gradle.yml/badge.svg)](https://github.com/AY2627S1-CS2103T-F12-4/tp/actions/workflows/gradle.yml)
 [![codecov](https://codecov.io/gh/AY2627S1-CS2103T-F12-4/tp/branch/master/graph/badge.svg)](https://codecov.io/gh/AY2627S1-CS2103T-F12-4/tp)
 
-![Roster user interface](images/Ui.png)
+![Roster user interface](images/Ui.png?v=1.5-final)
 
 **Roster is a desktop application that helps NUS teaching assistants manage students across multiple tutorial groups.**
 
 Use commands to keep student details, tutorial groups, attendance and short comments together. Search by name, matriculation number or group, and export attendance to CSV for use outside Roster.
 
-**Try Roster:** Download `roster.jar` from the [latest release](https://github.com/AY2627S1-CS2103T-F12-4/tp/releases/latest) and follow the [User Guide quick start](UserGuide.html#quick-start). Roster requires Java 25 and a writable home folder.
+**Try Roster:** Download `roster.jar` from the [latest release](https://github.com/AY2627S1-CS2103T-F12-4/tp/releases/latest) and follow the [User Guide quick start](UserGuide.html#quick-start). Roster requires Java 25. Put the JAR in a writable folder and launch it from that folder so your roster stays in one place.
 
 ## Documentation
 

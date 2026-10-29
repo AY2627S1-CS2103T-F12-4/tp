@@ -17,23 +17,27 @@ Roster is a **desktop application for NUS teaching assistants to manage students
 
 1. Download the latest `.jar` file from the [Roster releases page](https://github.com/AY2627S1-CS2103T-F12-4/tp/releases).
 
-1. Copy the file to an empty, writable folder you want to use as Roster's _home folder_. Roster creates its data, preferences and log files there.
+1. Copy the file to an empty, writable folder you want to use as Roster's _home folder_. Save the downloaded JAR as `roster.jar` for the commands below. Roster creates its data, preferences and log files in the folder from which you launch it.
 
 1. Open a terminal, `cd` to the folder containing the JAR file, and run `java -jar "roster.jar"`.<br>
-   A GUI similar to the one below should appear in a few seconds. Roster includes sample data on its first launch.<br>
-   ![Roster user interface](images/Ui.png)
+   Use the terminal command even if double-clicking the JAR does not open it. A GUI similar to the one below should appear in a few seconds. Roster includes sample students in T09 on its first launch; the screenshot shows an example after attendance has been recorded.<br>
+   ![Roster user interface](images/Ui.png?v=1.5-final)
 
 1. Type a command in the command box and press Enter to execute it. For example, type **`help`** and press Enter to open the help window.
 
 1. Try this typical attendance workflow:
 
-   * `init grp/T09` : Creates tutorial group `T09`.
-   * `add n/Alex Tan e/alex.tan@example.com m/A0123456X grp/T09` : Adds Alex Tan to `T09`.
-   * `session grp/T09 w/5 d/2026-09-15` : Creates the week 5 session for `T09`.
-   * `list grp/T09` : Shows the students in `T09` and makes it the active group.
+   * `init grp/T11` : Creates tutorial group `T11`, separate from the sample group T09.
+   * `add n/Alex Tan e/alex.tan@example.com m/A0123456X grp/T11` : Adds Alex Tan to `T11`.
+   * `session grp/T11 w/5 d/2026-09-15` : Creates the week 5 session for `T11`.
+   * `list grp/T11` : Shows Alex as student 1 and makes T11 the active group.
    * `mark 1 w/5 s/present` : Marks the first displayed student present for week 5.
 
 1. Refer to the [Features](#features) section for full details of each command.
+
+**Use a writable folder:** Avoid system or other write-protected folders when choosing where to launch Roster.
+If saving fails, check that the launch folder and its data folder are writable, then retry the command.
+See [Saving data](#saving-data) for how Roster preserves your data after a save error.
 
 --------------------------------------------------------------------------------------------------------------------
 
@@ -55,13 +59,15 @@ For each session in a student's tutorial group, their attendance is one of three
 
 Creating a session does not automatically mark any student. A student added after sessions have been created is also unmarked for those earlier sessions.
 
-Roster does not yet support returning a recorded status to unmarked. You can, however, replace `present` with `absent`, or vice versa, by running `mark` again.
+`mark` accepts only `present` or `absent`; there is no separate command to reset a status to unmarked.
+You can replace either recorded status with the other by running `mark` again. To reverse a recent mark,
+use [undo](#undoing-the-previous-change-undo) while that change remains in the retained history.
 
 ### Displayed list and active group
 
 * `list` shows every student and clears the active group.
 * `list grp/GROUP` shows one group's students and makes that group active.
-* `find` searches every group and clears the active group.
+* `find` searches the complete roster and clears the active group. Add `grp/GROUP` to restrict the results to one group.
 * Students are listed by matriculation number in ascending order.
 * `INDEX` always refers to the list currently displayed. The same student may have a different index after `list`, `list grp/GROUP`, or `find`.
 
@@ -130,6 +136,7 @@ Click a student row to open their details on the right, or focus the student lis
 the arrow keys and press Enter. The panel opens over the right of the roster, so the command box and the
 result of your last command stay visible while it is open. It shows the student's email, tags, comments, and attendance by session.
 The attendance percentage counts only marked sessions; unmarked sessions are shown separately.
+Session dates in this panel include the year, for example `Tue 11 Aug 2026`.
 Scroll inside the panel to read later sessions. Click another row to switch students.
 
 Close the panel with its × button or Escape to see the full roster again. If command
@@ -172,7 +179,7 @@ Shows a message explaining how to access this User Guide.
 
 Format: `help`
 
-![Help message](images/helpMessage.png)
+![Help message](images/helpMessage.png?v=1.5)
 
 ### Creating a tutorial group: `init`
 
@@ -445,7 +452,7 @@ Examples:
 
 * `INDEX` refers to the currently displayed student list.
 * `c/` only ever adds. Repeated notes are joined with `; ` in the order they were added, so a comment reads as a short history.
-* A semicolon followed by a space separates notes, whether Roster added it or you typed it. `comment 1 c/Bring notes; revise recursion` records two notes and the student's details list them separately. A semicolon with nothing after it, such as `see slides 3;4`, is ordinary text and stays within one note.
+* A semicolon followed by a space separates notes, whether Roster added it or you typed it. `comment 1 c/Bring notes; revise recursion` records two notes and the student's details list them separately. A semicolon with no space after it, such as `see slides 3;4`, is ordinary text and stays within one note.
 * `c-/` is the only form that discards an existing note, so a comment is never lost without you having typed it.
 * A comment is limited to 500 characters. Adding to a comment fails if the combined text would be longer, and the existing comment is left unchanged.
 * Clearing a student who has no comment reports that there was nothing to clear.
@@ -631,6 +638,8 @@ Exits the application.
 
 Format: `exit`
 
+You can also close the main window normally. Data-changing commands save immediately; exiting is not a separate save step.
+
 ### Clearing all data: `clear`
 
 Deletes every student, tutorial group, session and attendance record.
@@ -643,6 +652,9 @@ Clearing happens immediately without confirmation. Use `undo` to restore the cle
 
 Roster automatically saves changes to its data. You do not need to save manually.
 
+The default roster file is `data/addressbook.json`, relative to the folder from which you launch Roster.
+Keep launching from the same folder to reopen the same roster. This JSON file also contains undo/redo history.
+
 If saving fails, Roster reports the error and restores the previous data, undo/redo history and displayed group
 or search. After resolving the file problem, you can retry the command with the same displayed students.
 
@@ -650,9 +662,21 @@ or search. After resolving the file problem, you can retry the command with the 
 
 Roster data is saved as `data/addressbook.json` inside the folder from which Roster is launched. To keep it beside the JAR, open a terminal in the JAR folder and run `java -jar "roster.jar"`. Close Roster and back up the file before editing it directly.
 
+Manual edits are supported when the file remains valid JSON and its records follow Roster's data rules.
+For example, changing a student's name to another valid name can be done directly in the file.
+Using Roster's commands is the recommended way to change records because the commands validate your input.
+
+**Group codes in the data file must already be uppercase**, such as `T09` or `TG01`. The automatic
+uppercasing of command input does not apply when loading JSON. Changing a saved group code from `T09`
+to `t09` is an invalid manual edit. Group codes in students, registered groups, sessions and attendance
+must also stay consistent with one another.
+
 <div markdown="span" class="alert alert-warning">:exclamation: **Caution:**
-If your changes make the data file invalid, Roster starts with an empty roster the next time it runs. The invalid file remains on disk until a successful command causes Roster to save again. Back up the file before editing it.<br>
-Manual edits can also produce unexpected behavior if values do not follow Roster's rules. Edit the data file only if you are confident that you can update it correctly.
+An invalid manual edit can prevent the entire roster from loading, even if only one record was changed.
+Roster then starts with an empty roster; it does not automatically repair the file or recover the previous data.
+Startup itself leaves the invalid file on disk, but a later successful data-changing command may overwrite it.<br>
+If the roster becomes empty after a manual edit, close Roster without running further commands, restore your
+backup file while Roster is closed, and reopen it. Incorrect edits without a usable backup can result in data loss.
 </div>
 
 --------------------------------------------------------------------------------------------------------------------
@@ -676,6 +700,9 @@ Manual edits can also produce unexpected behavior if values do not follow Roster
 ## Help window
 
 Running `help` again restores the existing Help window if it is minimized and brings it to the front.
+
+On macOS, keep the Help window in its normal windowed mode. If a secondary window behaves unexpectedly in
+fullscreen, leave fullscreen and reopen it with `help`.
 
 --------------------------------------------------------------------------------------------------------------------
 

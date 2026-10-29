@@ -18,7 +18,7 @@ title: Developer Guide
 
 ## **Setting up, getting started**
 
-Refer to the guide [_Setting up and getting started_](SettingUp.md).
+Refer to the guide [_Setting up and getting started_](SettingUp.html).
 
 --------------------------------------------------------------------------------------------------------------------
 
@@ -31,7 +31,7 @@ Refer to the guide [_Setting up and getting started_](SettingUp.md).
 
 ### Architecture
 
-<img src="images/ArchitectureDiagram.png" width="280" />
+<img src="images/ArchitectureDiagram.png" width="280" alt="Main initializes UI, Logic, Model and Storage; Commons supports these components" />
 
 The ***Architecture Diagram*** given above explains the high-level design of the App.
 
@@ -56,7 +56,11 @@ The bulk of the app's work is done by the following four components:
 
 The *Sequence Diagram* below shows how the components interact with each other for the scenario where the user issues the command `delete 1`.
 
-<img src="images/ArchitectureSequenceDiagram.png" width="574" />
+<img src="images/ArchitectureSequenceDiagram.png?v=1.5" width="650" alt="Deleting a student, committing history, saving and returning feedback across the architecture components" />
+
+This is the successful path for a data-changing command. Parsing and command objects are hidden at this
+level. Read-only commands skip committing and saving; failures during saving restore the pre-command data,
+history and student-list view, as described under [Undo and redo](#undo-and-redo-feature).
 
 Each of the four main components (also shown in the diagram above),
 
@@ -65,7 +69,7 @@ Each of the four main components (also shown in the diagram above),
 
 For example, the `Logic` component defines its API in `Logic.java` and implements it in `LogicManager.java`. Other components interact with a component through its interface rather than its concrete class, preventing them from coupling to that component's implementation, as illustrated in the following partial class diagram.
 
-<img src="images/ComponentManagers.png" width="300" />
+<img src="images/ComponentManagers.png" width="300" alt="Each component manager implements its component interface" />
 
 The sections below give more details of each component.
 
@@ -73,7 +77,10 @@ The sections below give more details of each component.
 
 The **API** of this component is specified in [`Ui.java`](https://github.com/AY2627S1-CS2103T-F12-4/tp/blob/master/src/main/java/seedu/address/ui/Ui.java)
 
-![Structure of the UI Component](images/UiClassDiagram.png)
+![Selected UI classes and their containment relationships](images/UiClassDiagram.png?v=1.5)
+
+The diagram focuses on the main window, navigation, student panels and completion. The other UI parts
+listed below and their inheritance arrows are omitted for readability; they also extend `UiPart`.
 
 The UI consists of a `MainWindow` and its parts, such as `CommandBox`, `ResultDisplay`, `GroupListPanel`, `PersonListPanel`, `StudentDetailPanel`, and `StatusBarFooter`. All of these, including `MainWindow`, inherit from the abstract `UiPart` class, which captures common behavior among classes that represent visible GUI parts.
 
@@ -92,7 +99,8 @@ The UI consists of a `MainWindow` and its parts, such as `CommandBox`, `ResultDi
   `CommandResult` also identifies the updated student when their number changes. If the student is no
   longer displayed, the panel closes. Escape closes it unless completion suggestions are open.
   `AttendanceSummary` counts sessions of the student's own group and excludes unmarked sessions from
-  the attendance percentage.
+  the attendance percentage. Session dates use the English format `EEE d MMM uuuu`, including the year
+  (for example, `Tue 11 Aug 2026`).
 * `CommandBox` suggests command words, prefixes and values using `FieldCompletion`. Its border and
   `ResultDisplay`'s banner receive consistent success/error state from `MainWindow`, including commands
   invoked through navigation and undo shortcuts. Changing the input clears its previous highlight.
@@ -112,11 +120,11 @@ The `UI` component,
 
 Here's a (partial) class diagram of the `Logic` component:
 
-<img src="images/LogicClassDiagram.png" width="550"/>
+<img src="images/LogicClassDiagram.png" width="550" alt="LogicManager connects command parsing and execution to Model and Storage" />
 
 The sequence diagram below illustrates the interactions within the `Logic` component, taking `execute("delete 1")` API call as an example.
 
-![Interactions Inside the Logic Component for the `delete 1` Command](images/DeleteSequenceDiagram.png)
+![Interactions Inside the Logic Component for the `delete 1` Command](images/DeleteSequenceDiagram.png?v=1.5)
 
 <div markdown="span" class="alert alert-info">:information_source: **Note:** The lifeline for `DeleteCommandParser` should end at the destroy marker (X), but due to a limitation of PlantUML, it continues to the end of the diagram.
 </div>
@@ -127,11 +135,20 @@ How the `Logic` component works:
 1. This results in a `Command` object (more precisely, an object of one of its subclasses e.g., `DeleteCommand`) which is executed by the `LogicManager`.
 1. The command can communicate with the `Model` when it is executed (e.g. to delete a person).<br>
    Note that although this is shown as a single step in the diagram above for simplicity, the code can require several interactions between the command object and the `Model` to complete the operation.
-1. The result of the command execution is encapsulated as a `CommandResult` object which is returned from `Logic`.
+1. The command returns a `CommandResult`. For a command that changes roster data, `LogicManager` commits
+   its history entry and saves the roster before returning that result to the UI. Undo and redo save
+   their restored history position without committing a new entry. A successful command that leaves
+   roster data unchanged also skips committing and saving, preserving any redo branch.
+1. If saving fails, `LogicManager` restores the previous roster, history and student-list view, then
+   throws a `CommandException`. The UI shows an error instead of the earlier success result.
+
+`LogicManager` records these save-lifecycle steps at `FINE` and logs a failed save with its cause at
+`WARNING`. See the [logging guide](Logging.html) for enabling detailed output. A history snapshot
+committed in memory is not evidence that the subsequent save succeeded.
 
 Here are the other classes in `Logic` (omitted from the class diagram above) that are used for parsing a user command:
 
-<img src="images/ParserClasses.png" width="600"/>
+<img src="images/ParserClasses.png" width="600" alt="AddressBookParser selects a command parser, which uses ArgumentTokenizer and ParserUtil" />
 
 How the parsing works:
 * When called upon to parse a user command, the `AddressBookParser` class creates an `XYZCommandParser` (`XYZ` is a placeholder for the specific command name, e.g., `AddCommandParser`). The parser uses the other classes shown above to parse the user command and create an `XYZCommand` object (e.g., `AddCommand`). The `AddressBookParser` returns that object as a `Command` object.
@@ -163,7 +180,7 @@ collection-wrapper classes, such as `UniquePersonList`.
 
 **API** : [`Storage.java`](https://github.com/AY2627S1-CS2103T-F12-4/tp/blob/master/src/main/java/seedu/address/storage/Storage.java)
 
-<img src="images/StorageClassDiagram.png" width="550" />
+<img src="images/StorageClassDiagram.png" width="550" alt="StorageManager delegates JSON persistence to roster and preference storage classes" />
 
 The `Storage` component,
 * can save both address book data and user preference data in JSON format, and read them back into corresponding objects.
@@ -172,6 +189,21 @@ The `Storage` component,
 * rejects a data file whose records are inconsistent, such as duplicate students or attendance for a session that does not exist. Roster then starts with an empty roster rather than with partly loaded data.
 * also holds `CsvAttendanceExporter` and `CsvFileAccess`, which the `export` command uses to write CSV reports inside Roster's home folder.
 * depends on some classes in the `Model` component (because the `Storage` component's job is to save/retrieve objects that belong to the `Model`)
+
+#### Manual data-file edits
+
+The JSON roster is human-editable, but edited records must still satisfy the storage schema and model
+constraints. Loading is different from entering a command: `ParserUtil` normalizes command values, while
+the JSON adapters validate saved values as they stand. In particular, `Group.isValidGroup` requires one
+or two uppercase letters followed by two digits. A saved `t09` is invalid even though typing `grp/t09`
+in a command is accepted and normalized to `T09`.
+
+An invalid group in the current roster causes conversion to fail with a `DataLoadingException` at the
+storage boundary. `MainApp#initModelManager` then starts an empty roster instead of partially loading
+records. Startup does not erase the original file, but a subsequent successful data-changing command
+can replace it. The [UG's data-file editing instructions](UserGuide.html#editing-the-data-file) explain
+the uppercase requirement, backups and recovery. Correctly formatted edits, such as a valid student-name
+change, remain supported.
 
 ### Common classes
 
@@ -293,7 +325,8 @@ index, week and status, and creates a `MarkCommand`. When the command executes, 
 1. replaces the student through `Model#setPerson`. The displayed list updates itself, and its order and indexes
    stay the same, so the TA can carry on marking by index.
 
-`LogicManager` then commits the roster to the history and saves the roster and history together. The sequence diagram below shows
+`LogicManager` commits and saves only if the attendance changed. Marking the same status again preserves
+undo/redo history without adding a snapshot. The sequence diagram below shows
 `mark 1 w/5 s/present`. For simplicity, it leaves out `MarkCommandParser`, which works as `DeleteCommandParser`
 does in the [Logic component](#logic-component).
 
@@ -359,12 +392,11 @@ separator itself is never shown as part of a note.
 list of groups, and never executes or validates a command. `CommandBox` shows its suggestions in a pop-up list.
 Each suggestion records the range of text it replaces, so accepting one leaves the rest of the command unchanged.
 
-### Commenting on a student
+### Comment command execution
 
-The `comment` command attaches free-text remarks to a student, so that a tutor can record observations
-about them over a semester. `CommentCommandParser` recognises two prefixes: `c/` adds to whatever comment
-the student already has, while `c-/` replaces it, and `c-/` on its own clears it. Supplying both prefixes,
-or `c/` with no text, is rejected during parsing rather than at execution.
+`CommentCommandParser` turns the append, replace and clear forms described under
+[Student comments](#student-comments) into a `CommentCommand`. Supplying both comment prefixes, or
+`c/` with no text, is rejected during parsing rather than at execution.
 
 `CommentCommand` resolves the index against the displayed student list and asks `Comment` for the length
 of the combined text before making any change. An append that would exceed `Comment.MAX_LENGTH` is
@@ -381,8 +413,8 @@ The sequence below follows `comment 3 c/asks good questions` after parsing.
   text the tutor has already recorded.
 * Make `c-/` an explicit prefix rather than treating an empty `c/` as a clear, so that destroying an
   existing comment is always deliberate.
-* Leave the displayed list unfiltered after the update, so the indexes the tutor is reading off the
-  screen stay valid and several students can be commented on in succession.
+* Preserve the current displayed-list filter after the update, so the indexes the tutor is reading off
+  the screen stay valid and several students can be commented on in succession.
 * Store the comment as a single normalised string rather than a list of remarks. Comments are read by a
   person rather than queried, so the simpler field avoids storage and UI changes that nothing yet needs.
 
@@ -415,15 +447,18 @@ outside the window are released. Loading does not rewrite the file; the next suc
 history. Save-failure rollback restores the pre-command bounded history, including a boundary tentatively dropped
 by a commit that could not be saved.
 
-`LogicManager` captures the full pre-command roster and history, executes the command, commits data-changing
-commands, and then saves the roster and history together. An unsuccessful save restores the complete pre-command
-snapshot, including any redo states removed by a tentative commit. Read-only commands bypass this process.
+`LogicManager` captures the full pre-command roster, history and student-list view, executes the command,
+commits data-changing commands, and then saves the roster and history together. Commands with
+`HistoryAction.COMMIT` are compared against the captured roster: if data is unchanged, they return without
+adding a history entry, discarding redo states or writing the file. Undo and redo still save their selected
+history position. An unsuccessful save restores the complete pre-command snapshot, including any redo states
+removed by a tentative commit. Read-only commands bypass this process.
 `JsonAddressBookStorage` writes a temporary file in the same directory and replaces the destination atomically
 when supported, falling back to replacement when atomic moves are unavailable. This avoids separately saving
 roster data and history. History retains previous student data even after deletion or clear.
 
 After a data-changing command such as `add`, `delete`, or `clear` executes, `LogicManager` calls
-`Model#commitAddressBook()` before saving the roster and history together. Read-only and failed commands do not change the history. The default history action
+`Model#commitAddressBook(String)` before saving the roster and history together. Read-only, unchanged and failed commands do not change the history. The default history action
 is derived from `Command#requiresSave()`, while special commands such as `undo` override it. This makes new
 data-changing commands undoable unless they explicitly opt out.
 
@@ -432,7 +467,7 @@ For example, the user executes `add n/David …​`, causing the modified addres
 
 ![UndoRedoState2](images/UndoRedoState2.png)
 
-<div markdown="span" class="alert alert-info">:information_source: **Note:** If a command fails its execution, it will not call `Model#commitAddressBook()`, so the address book state will not be saved into the `addressBookStateList`.
+<div markdown="span" class="alert alert-info">:information_source: **Note:** If a command fails during execution, `LogicManager` does not call `Model#commitAddressBook(String)`, so no history entry is committed. If saving fails after a commit, the earlier roster and history are restored.
 
 </div>
 
@@ -448,15 +483,11 @@ than attempting to perform the undo.
 
 The following sequence diagram shows how an undo operation goes through the `Logic` component:
 
-![UndoSequenceDiagram](images/UndoSequenceDiagram-Logic.png)
-
-<div markdown="span" class="alert alert-info">:information_source: **Note:** The lifeline for `UndoCommand` should end at the destroy marker (X), but due to a limitation of PlantUML, it continues to the end of the diagram.
-
-</div>
+![UndoSequenceDiagram](images/UndoSequenceDiagram-Logic.png?v=1.5)
 
 Similarly, how an undo operation goes through the `Model` component is shown below:
 
-![UndoSequenceDiagram](images/UndoSequenceDiagram-Model.png)
+![UndoSequenceDiagram](images/UndoSequenceDiagram-Model.png?v=1.5)
 
 The user can execute `redo`, which calls `Model#redoAddressBook()` to move the history pointer one position
 right and restore that snapshot. Undo and redo both save the restored data and pointer. An unsuccessful save
@@ -478,7 +509,7 @@ complete roster, including groups, sessions, students, and attendance records.
 The following activity diagram summarizes what happens when a user executes a new command, including the
 rollback when the data file cannot be saved:
 
-<img src="images/CommitActivityDiagram.png" width="300" alt="Activity diagram for saving and committing a command" />
+<img src="images/CommitActivityDiagram.png?v=1.5" width="890" alt="Command execution with unchanged-data detection, history commit before saving, and rollback on save failure" />
 
 #### Design considerations:
 
@@ -497,10 +528,10 @@ rollback when the data file cannot be saved:
 
 ## **Documentation, logging, testing, dev-ops**
 
-* [Documentation guide](Documentation.md)
-* [Testing guide](Testing.md)
-* [Logging guide](Logging.md)
-* [DevOps guide](DevOps.md)
+* [Documentation guide](Documentation.html)
+* [Testing guide](Testing.html)
+* [Logging guide](Logging.html)
+* [DevOps guide](DevOps.html)
 
 --------------------------------------------------------------------------------------------------------------------
 
@@ -514,56 +545,68 @@ rollback when the data file cannot be saved:
 * is new to being a TA: forgetful, disorganised, and has a lot on their mind
 * struggles to manage several tutorial groups simultaneously
 * has a technical background
-* needs to take attendance, record participation, track assignment completion and review individual
-  progress during tutorials
+* needs to take attendance and keep short notes about individual students during tutorials
 * needs to move between tutorial groups quickly, as routine actions must be fast and require little
   attention while teaching and interacting with students
 * reviews the collected information after class to identify students who may need additional support
 * prefers typing to mouse interactions and is reasonably comfortable using CLI apps
 
-**Value proposition**: Maintain and review attendance, participation and assignment-completion records for
-students across multiple tutorial groups in one contact-book-style application, with updates fast enough to
-make during class — faster than managing spreadsheets or a typical mouse-driven GUI application.
+**Value proposition**: Keep student details, tutorial groups, dated attendance and short comments in one
+desktop application. Typed commands support updates during class, and CSV exports let the TA share
+attendance records with a course coordinator. Participation scoring and assignment tracking are future
+requirements, not features available in the current version.
 
 
 ### User stories
 
-Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unlikely to have) - `*`
+Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unlikely to have) - `*`.
 
-| Priority | As a …​                                    | I want to …​                     | So that I can…​                                                        |
-| -------- | ------------------------------------------ | ------------------------------ | ---------------------------------------------------------------------- |
-| `* * *`  | new TA | create a new tutorial group | add students to it |
-| `* * *`  | TA | add a student to a tutorial group | keep a record of everyone I am responsible for |
-| `* * *`  | TA | delete a student from a tutorial group | remove a record entered with wrong details, or a student who dropped the module |
-| `* * *`  | new TA | view my students | see who I am responsible for |
-| `* * *`  | forgetful TA | search for a student by name | avoid having to remember which group contains the student |
-| `* * *`  | TA | mark a student present or absent for a session | keep an accurate attendance record |
-| `* * *`  | disorganised TA | distinguish unmarked attendance from confirmed absence | be sure missing records are not mistaken for absences |
-| `* * *`  | TA | switch between tutorial groups | manage multiple classes without mixing up their records |
-| `* * *`  | new TA| assign each student to exactly one tutorial group | keep students from different groups from being mixed together |
-| `* * *`  | TA | view a student's attendance for every session of their tutorial group | understand the student's attendance pattern over time |
-| `* *`    | TA | edit a student's information | keep their details up to date |
-| `* *`    | new TA unfamiliar with the app | see the app pre-loaded with sample students and attendance records | know what the data should look like before entering my own |
-| `* *`    | new TA | remove all sample data | start with a clean record |
-| `* *`    | cautious TA just starting out | get a warning before permanently deleting a student | avoid losing data from an accidental keystroke |
-| `* *`    | new TA | record whether a student has completed an assignment | monitor assignment progress |
-| `* *`    | TA who occasionally mistypes a command | undo my last action | avoid redoing work after a small mistake |
-| `* *`    | TA | move a student to another tutorial group | keep group changes accurate when a student swaps groups |
-| `* *`    | TA | mark attendance for an entire tutorial group in one action | spend less time recording attendance |
-| `* *`    | experienced TA | find a student by matriculation number | find the right student even when two students share a name |
-| `* *`    | experienced TA | mark a student's attendance by matriculation number | avoid marking the wrong student after the displayed list is filtered |
-| `* *`    | experienced TA | identify students with incomplete assignments | follow up on students who may be falling behind |
-| `* *`    | experienced TA | view a summary of a tutorial group's attendance | identify general trends and students who may need support |
-| `* *`    | experienced TA | export students' attendance records | share or analyse the records outside the app |
-| `* *`    | experienced TA | export attendance with the columns my course coordinator specifies | load the file into the gradebook without editing it first |
-| `* *`    | experienced TA | export attendance keyed by matriculation number | match rows to the official roster even when names are recorded differently |
-| `*`      | TA getting familiar with the app | sort students by attendance percentage | quickly spot who is struggling |
-| `*`      | TA | sort students by participation score | review students in a useful order |
-| `*`      | TA | leave a short comment on a student | remember context about the student for later sessions |
-| `*`      | experienced TA | archive completed tutorial groups | keep old records available without cluttering my active workspace |
-| `*`      | experienced TA | use keyboard shortcuts for common actions | update records without repeatedly using the mouse |
-| `*`      | experienced TA co-teaching a large module | see which TA is responsible for each student | avoid duplicating work across the teaching team |
-| `*`      | experienced TA | review how a tutorial group's attendance and participation change over time | recognise broader changes in the group's engagement |
+**Current** stories are supported by the present implementation. **Future** stories remain as backlog
+requirements and do not describe available commands. Priority records importance, not implementation status.
+
+| Priority | As a …​                                    | I want to …​                     | So that I can…​                                                        | Status |
+| -------- | ------------------------------------------ | ------------------------------ | ---------------------------------------------------------------------- | ------- |
+| `* * *`  | new TA | create a new tutorial group | add students to it | Current |
+| `* * *`  | TA | add a student to a tutorial group | keep a record of everyone I am responsible for | Current |
+| `* * *`  | TA | delete a student from a tutorial group | remove a record entered with wrong details, or a student who dropped the module | Current |
+| `* * *`  | new TA | view my students | see who I am responsible for | Current |
+| `* * *`  | forgetful TA | search for a student by name | avoid having to remember which group contains the student | Current |
+| `* * *`  | TA | mark a student present or absent for a session | keep an accurate attendance record | Current |
+| `* * *`  | disorganised TA | distinguish unmarked attendance from confirmed absence | be sure missing records are not mistaken for absences | Current |
+| `* * *`  | TA | switch between tutorial groups | manage multiple classes without mixing up their records | Current |
+| `* * *`  | new TA| assign each student to exactly one tutorial group | keep students from different groups from being mixed together | Current |
+| `* * *`  | TA | view a student's attendance for every session of their tutorial group | understand the student's attendance pattern over time | Current |
+| `* *`    | TA | edit a student's information | keep their details up to date | Current |
+| `* *`    | new TA unfamiliar with the app | see the app pre-loaded with sample students | know what the data should look like before entering my own | Current |
+| `* *`    | new TA | remove all sample data | start with a clean record | Current |
+| `* *`    | cautious TA just starting out | get a warning before permanently deleting a student | avoid losing data from an accidental keystroke | Future |
+| `* *`    | new TA | record whether a student has completed an assignment | monitor assignment progress | Future |
+| `* *`    | TA who occasionally mistypes a command | undo my last action | avoid redoing work after a small mistake | Current |
+| `* *`    | TA | move a student to another tutorial group | keep group changes accurate when a student swaps groups | Current |
+| `* *`    | TA | mark attendance for an entire tutorial group in one action | spend less time recording attendance | Current |
+| `* *`    | experienced TA | find a student by matriculation number | find the right student even when two students share a name | Current |
+| `* *`    | experienced TA | mark a student's attendance by matriculation number | avoid marking the wrong student after the displayed list is filtered | Future |
+| `* *`    | experienced TA | identify students with incomplete assignments | follow up on students who may be falling behind | Future |
+| `* *`    | experienced TA | view a summary of a tutorial group's attendance | identify general trends and students who may need support | Future |
+| `* *`    | experienced TA | export students' attendance records | share or analyse the records outside the app | Current |
+| `* *`    | experienced TA | export attendance with the columns my course coordinator specifies | load the file into the gradebook without editing it first | Future |
+| `* *`    | experienced TA | export attendance keyed by matriculation number | match rows to the official roster even when names are recorded differently | Current |
+| `*`      | TA getting familiar with the app | sort students by attendance percentage | quickly spot who is struggling | Future |
+| `*`      | TA | sort students by participation score | review students in a useful order | Future |
+| `*`      | TA | leave a short comment on a student | remember context about the student for later sessions | Current |
+| `*`      | experienced TA | archive completed tutorial groups | keep old records available without cluttering my active workspace | Future |
+| `*`      | experienced TA | use keyboard shortcuts for common actions | update records without repeatedly using the mouse | Current |
+| `*`      | experienced TA co-teaching a large module | see which TA is responsible for each student | avoid duplicating work across the teaching team | Future |
+| `*`      | experienced TA | review how a tutorial group's attendance and participation change over time | recognise broader changes in the group's engagement | Future |
+| `* * *` | TA | create a dated session for a teaching week | record attendance against the correct tutorial meeting | Current |
+| `* *` | TA | correct or remove a tutorial session | fix scheduling mistakes without editing the data file | Current |
+| `* *` | TA | review the sessions of an empty tutorial group | check its timetable before adding students | Current |
+| `* *` | TA | replace or clear a student's comment | keep follow-up notes accurate | Current |
+| `* *` | TA | redo a change I undid | recover from an accidental undo | Current |
+| `* *` | TA | retain recent undo/redo history after restarting | correct a recent mistake across teaching sessions | Current |
+| `* *` | TA | complete command fields using the keyboard | enter commands with less repeated typing | Current |
+| `* *` | TA | inspect a student's details and attendance percentage | review that student's marked and unmarked sessions | Current |
+| `* *` | TA | receive a clear error when saving fails | retry the command without losing the roster or my current view | Current |
 
 ### Use cases
 
@@ -870,9 +913,45 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 
 **Extensions**
 
-* 1a. No change has been made since Roster was started, or every change has already been undone.
+* 1a. No saved undo history is available, or the oldest retained history boundary has been reached.
 
     * 1a1. Roster shows an error message.
+
+      Use case ends.
+
+**Use case: UC12 - Export attendance records**
+
+**MSS**
+
+1. TA requests an export, giving a new CSV destination and optionally a tutorial group.
+2. Roster writes the matching students and attendance to the file, independently of the displayed list.
+3. Roster confirms the destination and exported student and row counts.
+
+   Use case ends.
+
+**Extensions**
+
+* 1a. The destination is invalid, outside the permitted folder, already exists, or has no existing parent folder.
+
+    * 1a1. Roster shows an error and leaves existing files and the roster unchanged.
+
+      Use case resumes at step 1 with a corrected destination.
+
+* 1b. The specified tutorial group does not exist.
+
+    * 1b1. Roster shows an error without writing the export.
+
+      Use case resumes at step 1.
+
+* 2a. No student matches the requested scope.
+
+    * 2a1. Roster writes only the CSV header and reports zero students and data rows.
+
+      Use case ends.
+
+* 2b. Writing the temporary file or publishing it fails.
+
+    * 2b1. Roster attempts to remove temporary output and reports the file error. The roster and displayed list are unchanged.
 
       Use case ends.
 
@@ -886,13 +965,13 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 
 4. Local storage: Roster should store application data locally in a human-editable text format, without requiring a separate database server or an online account.
 
-5. Data persistence: Following a successful save and normal application shutdown, reopening Roster should restore the saved tutorial groups, student details, and recorded attendance, participation, and assignment-completion information without alteration.
+5. Data persistence: Following a successful save and normal application shutdown, reopening Roster from the same working folder should restore the saved tutorial groups, sessions, student details, attendance, comments and retained undo/redo history without alteration.
 
 6. Input-error tolerance: Invalid commands or parameter values should not terminate the application or modify existing records. After displaying an error, Roster should remain available for the user to enter another command.
 
 7. Error-message clarity: Input-error messages should identify the invalid or missing input and explain the expected format or accepted values, so that users can correct their commands without interpreting technical exception messages.
 
-8. Terminology consistency: The user interface, command feedback, User Guide, and Developer Guide should use consistent terms for students, tutorial groups, sessions, attendance, participation, and assignment completion.
+8. Terminology consistency: The user interface, command feedback, User Guide, and Developer Guide should use consistent terms for students, tutorial groups, sessions, attendance and comments.
 
 
 ### Glossary
@@ -907,7 +986,7 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 * **Index**: The one-based position of a student in the currently displayed list. It is not a property of the student: the same student's index changes when the list is filtered.
 * **Mainstream OS**: Windows, Linux, Unix, or macOS
 * **Matriculation number**: The unique identifier NUS assigns to each student, e.g. `A0287654J`. Roster uses it to tell apart students with the same name.
-* **Participation score**: A measure of how much a student contributed during a session, recorded alongside attendance.
+* **Participation score (future requirement)**: A proposed measure of a student's contribution during a session. The current version does not record this score.
 * **Present / Absent**: The two attendance statuses a TA can record for a student at a session.
 * **Session**: A record that a tutorial group met in a particular teaching week, together with the date of that meeting. A tutorial group has at most one session per teaching week.
 * **Student**: A person enrolled in one of the TA's tutorial groups. Each student belongs to exactly one tutorial group.
@@ -956,13 +1035,14 @@ relative to that launch folder. Keep backups of any real data outside the test f
    Click the row or select it and press Enter to read email, tags, comments and individual sessions in
    the detail panel. Scroll within the panel to reach all 13 weeks. Verify that the × button is visible
    and closes the panel; Escape should also close it after any completion popup has been dismissed.
+   Check that each session date includes its year; editing a date to another year must update the panel.
    Run `comment`, `mark`, `editsession`, `undo` and `redo` while details are open and check that they
    refresh. Filtering out or deleting the student must close the panel.
 4. Add a student at the beginning, middle and end of a long roster, and after an empty search. At 1000
    by 700, a normal student's complete highlighted row must be visible, including all 13 attendance cells.
 5. Make an undoable edit, run an invalid command, then invoke the undo shortcut from outside the command
    input. Expect restored data and success styling. Invoke undo after history is exhausted: expect error
-   styling. These checks also apply when the compatible visual theme is integrated.
+   styling.
 
 ### Editing and deleting tutorial sessions
 
@@ -1020,6 +1100,49 @@ list
 3. Run `undo`. Expected: John is restored, with any attendance records he had. Run `delete 1` again.
 4. Exit and relaunch. Expected: John remains deleted and Alice remains in the roster.
 
+### Creating groups, adding and editing students
+
+Start with `clear`, then enter:
+
+```text
+init grp/T09
+init grp/T10
+add n/John Tan e/john@example.com m/A0000001X grp/T09 t/class-rep
+add n/Alice Tan e/alice@example.com m/A0000002X grp/T09
+session grp/T09 w/5 d/2026-09-15
+session grp/T10 w/5 d/2026-09-16
+list grp/T09
+mark 1 w/5 s/present
+```
+
+1. Try `init grp/T09`, `add n/Ben Lim e/ben@example.com m/A0000001X grp/T09`, and
+   `add n/Ben Lim e/ben@example.com m/A0000003X grp/T99`.
+   Expected: duplicate-group, duplicate-student and unknown-group errors respectively; no extra student or group.
+2. Run `edit 1 n/John Tan (Jack) e/jack@example.com t/needs-follow-up`.
+   Expected: John's fields change, his tag is replaced, attendance remains present and the full roster is displayed.
+3. Run `edit 1 grp/T10`. Expected: John moves to T10 and becomes unmarked for T10's session.
+   Feedback names the groups and the one cleared attendance record. Run `undo`: John returns to T09 with his mark.
+4. Run `edit 1 t/`. Expected: John's tags are cleared. Try `edit 1 m/A0000002X` and `edit 1`.
+   Expected: errors, with both students and their details unchanged.
+5. Run `list grp/T10`. Expected: an empty student list with T10's week 5 session and date `2026-09-16`.
+   Run `list` to see both students again.
+
+### Command completion and help
+
+Prepare the data from [Creating groups, adding and editing students](#creating-groups-adding-and-editing-students).
+
+1. Type `ad` without pressing Enter. Accept `add` with Tab, then type ` n/`.
+   Expected: command completion changes the command text; it does not add a student.
+2. Replace the draft with `list grp/T`, select T09 with Up/Down and accept with Tab.
+   Expected: the selected group replaces the value fragment. Enter executes the completed command.
+3. Type `mark 1 w/5 s/a` and accept `absent` with Tab. Expected: John's mark stays present until
+   Enter is pressed; pressing Enter changes it to absent. Type `mark 1 w/5 s/p` without pressing Enter,
+   then press Shift+Tab: focus moves backwards without accepting a suggestion or changing attendance.
+4. Type `comment 1 c`. Expected: append and replace prefixes are offered. After accepting `c/`,
+   `c-/` is not offered for the same command. Clear the draft without executing it.
+5. Run `help`. Expected: the Help window links to Roster's online User Guide. Minimize it and run `help`
+   again: the existing window is restored. Close it and verify that the command box still accepts commands.
+
 ### Recording attendance
 
 Start with `clear`, then prepare two groups with one session each:
@@ -1069,9 +1192,38 @@ Prepare the data from [Recording attendance](#recording-attendance), then run `l
 5. Try `comment 1`, `comment 1 c/a c-/b` and a `c/` note that would make the comment longer than 500 characters.
    Expected: an error each time, with the comment unchanged.
 
+### Undo, redo, clearing and history persistence
+
+Start with `clear`, then enter:
+
+```text
+init grp/T09
+add n/John Tan e/john@example.com m/A0000001X grp/T09
+session grp/T09 w/5 d/2026-09-15
+mark 1 w/5 s/present
+comment 1 c/attentive
+```
+
+1. Run `undo`. Expected: the comment disappears, while John's attendance remains present.
+   Run `exit`, relaunch from the same folder and run `redo`: the comment returns. Run `redo` again:
+   an error reports that there is nothing to redo.
+2. Run `undo`, `list grp/T09`, `edit 1 n/John Tan` and the invalid command `mark 1 w/14 s/present`.
+   Expected: the unchanged-name edit and invalid command add no history step. Run `redo`:
+   the comment returns, demonstrating that navigation, unchanged data and errors preserved redo.
+3. Run `undo`, then `comment 1 c-/needs follow-up`, then `redo`.
+   Expected: the new comment is kept and redo reports that there is nothing to redo.
+4. Run `clear`. Expected: all students, groups and sessions disappear. Run `undo`:
+   John, T09, its session, the present mark and the comment all return. Run `redo`: the roster is empty again.
+   Run `undo` to restore the test roster.
+5. Replace John's comment 16 times, using `comment 1 c-/History 01` through `comment 1 c-/History 16`.
+   Run `undo` 15 times. Expected: the comment is `History 01`; another `undo` fails because older changes
+   are outside the retained history. Run `redo` 15 times: `History 16` returns. All students and sessions remain.
+
 ### Saving and recovering data
 
-1. Save and reload: complete the setup above, run `exit`, and relaunch from the same folder.
+Use the disposable roster from [Recording attendance](#recording-attendance), keeping a backup outside the test folder.
+
+1. Save and reload: run `exit` and relaunch from the same folder.
    Expected: registered groups and the remaining students are restored from `data/addressbook.json`.
 2. Missing data file: close Roster and move `data/addressbook.json` to a backup outside the test folder.
    Relaunch. Expected: sample data is loaded because no saved roster is found. Close using the window
@@ -1084,6 +1236,15 @@ Prepare the data from [Recording attendance](#recording-attendance), then run `l
 4. Recovery: close Roster, restore the known-good backup as `data/addressbook.json`, and relaunch.
    Expected: the original groups, students, sessions and attendance are restored. Do not edit JSON while
    Roster is running, because a later save can replace external edits.
+5. Valid manual edit: close Roster and copy the known-good backup to `data/addressbook.json`, leaving
+   the backup unchanged. In that working file, change a student's `name` in the top-level `persons`
+   list to `John Lim`, then relaunch. Expected: the edited name loads and the other
+   students, groups and sessions remain. Undo history can be discarded if it no longer matches the edited roster.
+   Close Roster and restore the original backup before the next case.
+6. Invalid group case: change one student's `group` in the top-level `persons` list from `T09` to `t09`,
+   leaving the rest of the backup unchanged. Relaunch. Expected: an empty roster because saved group
+   codes require uppercase letters; startup leaves the invalid file unchanged. Close without running
+   commands, restore the original backup and relaunch: the original roster returns.
 
 ### Filtered student search
 
@@ -1102,6 +1263,9 @@ add n/Johnny Lim e/johnny@example.com m/A0000001X grp/T10
    Expected: both commands report errors, preserving the T09 view and active group.
 3. Run `find n/John m/A0000001X grp/T09`.
    Expected: no matches because every supplied filter must match.
+4. Run `find n/Johm grp/T09`. Expected: no displayed students, with John Tan and `A0000002X` suggested
+   in the feedback. Johnny Lim is excluded because he belongs to T10. Run `find m/A0000002X`:
+   John appears, demonstrating that a suggestion is a hint rather than a displayed search result.
 
 ### Attendance CSV export
 
@@ -1123,3 +1287,17 @@ add n/Johnny Lim e/johnny@example.com m/A0000001X grp/T10
    Expected: an error, with no outside file created. A missing export parent directory also produces
    an error without changing roster records or the displayed list.
 
+### Save failure and retry
+
+Use the disposable data from [Recording attendance](#recording-attendance) and back up the roster first.
+
+1. Run `list grp/T09` and note the displayed students and attendance. While Roster stays open, move
+   `data/addressbook.json` to the backup location and create a directory named `addressbook.json` inside `data`.
+   This deliberately prevents the data file from being replaced.
+2. Run `mark all w/5 s/absent`. Expected: a save error; John's and Alice's previous attendance, the T09 view
+   and the undo/redo history are restored. Ben must remain hidden and unchanged.
+3. Remove only the empty directory created in step 1 and restore the backup file. Retry the same command.
+   Expected: only the two displayed T09 students are marked absent and the change is saved.
+4. Run `find n/John` and `mark 1 w/5 s/present`, then repeat steps 1–3 using `find n/John` as the
+   starting view and `mark all w/5 s/absent` as the command. Expected: the failed save preserves that search;
+   after restoring the file, retry marks only John. Restore the normal file before closing the test application.
