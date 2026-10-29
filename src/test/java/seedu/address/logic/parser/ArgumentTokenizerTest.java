@@ -15,6 +15,14 @@ public class ArgumentTokenizerTest {
     private final Prefix hatQ = new Prefix("^Q");
 
     @Test
+    public void tokenize_horizontalSeparators_preservesWhitespaceInsideValues() {
+        String value = "Bring\u00a0notes\tplease";
+        ArgumentMultimap arguments = ArgumentTokenizer.tokenize("\u00a01\u2003p/\t" + value + "\u202f", pSlash);
+        assertPreamblePresent(arguments, "1");
+        assertArgumentPresent(arguments, pSlash, value);
+    }
+
+    @Test
     public void tokenize_emptyArgsString_noValues() {
         String argsString = "  ";
         ArgumentMultimap argMultimap = ArgumentTokenizer.tokenize(argsString, pSlash);
