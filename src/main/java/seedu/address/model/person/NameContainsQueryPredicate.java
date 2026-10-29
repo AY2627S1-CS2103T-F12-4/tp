@@ -18,7 +18,6 @@ public class NameContainsQueryPredicate implements Predicate<Person> {
 
     private final String query;
     private final Pattern substringPattern;
-    private final Pattern wholeWordPattern;
 
     /**
      * Creates a predicate from a valid search phrase, normalizing its whitespace.
@@ -29,7 +28,6 @@ public class NameContainsQueryPredicate implements Predicate<Person> {
         checkArgument(isValidQuery(this.query), MESSAGE_CONSTRAINTS);
         int flags = Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE;
         substringPattern = Pattern.compile(Pattern.quote(this.query), flags);
-        wholeWordPattern = Pattern.compile("(?<!\\S)" + Pattern.quote(this.query) + "(?!\\S)", flags);
     }
 
     /**
@@ -54,13 +52,6 @@ public class NameContainsQueryPredicate implements Predicate<Person> {
     @Override
     public boolean test(Person person) {
         return substringPattern.matcher(normalizeName(person)).find();
-    }
-
-    /**
-     * Returns whether the complete query matches whole name words rather than part of a word.
-     */
-    public boolean isWholeWordMatch(Person person) {
-        return wholeWordPattern.matcher(normalizeName(person)).find();
     }
 
     private String normalizeName(Person person) {
