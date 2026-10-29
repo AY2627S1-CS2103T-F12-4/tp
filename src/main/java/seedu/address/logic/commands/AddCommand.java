@@ -34,8 +34,8 @@ public class AddCommand extends Command {
             + PREFIX_EMAIL + "johnd@example.com "
             + PREFIX_MATRIC + "A0123456X "
             + PREFIX_GROUP + "T09 "
-            + PREFIX_TAG + "friends "
-            + PREFIX_TAG + "owesMoney";
+            + PREFIX_TAG + "exchange "
+            + PREFIX_TAG + "classrep";
 
     public static final String MESSAGE_SUCCESS = "Added %1$s (%2$s) to tutorial group %3$s.";
     public static final String MESSAGE_SUCCESS_SHOWING_GROUP =
