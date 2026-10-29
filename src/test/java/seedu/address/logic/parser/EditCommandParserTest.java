@@ -74,6 +74,16 @@ public class EditCommandParserTest {
     }
 
     @Test
+    public void parse_unsupportedParameterAndInvalidIndex_reportsUnsupportedParameterFirst() {
+        assertParseFailure(parser, "0 x/value", EditCommand.MESSAGE_UNKNOWN_PARAMETER);
+    }
+
+    @Test
+    public void parse_relationshipConnectorAndUnsupportedParameter_reportsUnsupportedParameter() {
+        assertParseFailure(parser, "1 n/Ravi s/o Kumar x/value", EditCommand.MESSAGE_UNKNOWN_PARAMETER);
+    }
+
+    @Test
     public void parse_relationshipConnectorInName_success() {
         Index targetIndex = INDEX_FIRST_PERSON;
         EditPersonDescriptor descriptor = new EditPersonDescriptorBuilder().withName("Ravi s/o Kumar").build();
