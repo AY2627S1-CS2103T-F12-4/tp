@@ -349,8 +349,9 @@ Format: `find [n/KEYWORD] [m/MATRIC] [grp/GROUP]`
   and in the same order: `john tan` matches `John Tan` and `John Tanner`, but not `John Lim` or `Tan John`.
   Accents and punctuation remain significant.
 * A name query must contain 1–100 characters after whitespace normalization:
-  letters and their accents, spaces, hyphens, apostrophes, full stops,
+  letters and their accents, spaces, hyphens, apostrophes, full stops, brackets,
   or complete `s/o`, `d/o`, `a/l`, `a/p` abbreviations, with at least one letter.
+  For example, `find n/Tan Ah Kow (Mike)` finds the student by their full name.
 * Surrounding whitespace is ignored, and repeated whitespace is treated as one space. Copied commands
   may use Unicode spaces; line breaks within search arguments are also treated as spaces.
 * `m/MATRIC` matches the complete matriculation number. Letter case is ignored; partial numbers are rejected.
