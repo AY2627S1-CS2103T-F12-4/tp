@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static seedu.address.testutil.FxTestUtil.onFxThread;
+import static seedu.address.testutil.FxTestUtil.waitForRenderingCycles;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,6 +17,7 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.Bounds;
 import javafx.scene.Scene;
+import javafx.scene.control.Button;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 import javafx.scene.control.TextField;
@@ -23,6 +25,7 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.stage.Popup;
 import javafx.stage.Stage;
@@ -185,6 +188,71 @@ public class CommandBoxTest {
                 return null;
             });
         }
+    }
+
+    @Test
+    public void completion_shiftTabMovesFocusBackwards_plainTabStillAcceptsSuggestion() throws Exception {
+        List<String> executed = new ArrayList<>();
+        CountDownLatch focused = new CountDownLatch(1);
+        Button previous = onFxThread(() -> new Button("Previous control"));
+        Stage stage = onFxThread(() -> {
+            CommandBox box = new CommandBox(command -> {
+                executed.add(command);
+                return new CommandResult("Done");
+            }, FXCollections.observableArrayList(new Group("T09")));
+            previous.setFocusTraversable(true);
+            Stage window = new Stage();
+            window.setScene(new Scene(new VBox(previous, box.getRoot()), 500, 160));
+            TextField input = (TextField) window.getScene().lookup("#commandTextField");
+            input.focusedProperty().addListener((observable, oldValue, value) -> {
+                if (value) {
+                    focused.countDown();
+                }
+            });
+            window.show();
+            window.requestFocus();
+            input.requestFocus();
+            return window;
+        });
+        try {
+            assertTrue(focused.await(10, TimeUnit.SECONDS), "Command input did not receive focus");
+            onFxThread(() -> {
+                TextField input = (TextField) stage.getScene().lookup("#commandTextField");
+                input.setText("lis");
+                input.end();
+                Popup suggestions = popup(stage);
+                assertTrue(suggestions.isShowing());
+                input.fireEvent(new KeyEvent(KeyEvent.KEY_PRESSED, "", "", KeyCode.TAB,
+                        true, false, false, false));
+
+                assertEquals("lis", input.getText());
+                assertTrue(previous.isFocused(), "Shift+Tab should focus the preceding control");
+                assertFalse(suggestions.isShowing());
+                assertTrue(executed.isEmpty());
+
+                input.requestFocus();
+                input.setText("li");
+                input.end();
+                assertTrue(suggestions.isShowing());
+                press(input, KeyCode.TAB);
+                assertEquals("list", input.getText());
+                assertTrue(input.isFocused());
+                assertFalse(suggestions.isShowing());
+                assertTrue(executed.isEmpty());
+
+                input.fireEvent(new KeyEvent(KeyEvent.KEY_PRESSED, "", "", KeyCode.TAB,
+                        true, false, false, false));
+                assertEquals("list", input.getText());
+                assertTrue(previous.isFocused());
+                return null;
+            });
+        } finally {
+            onFxThread(() -> {
+                stage.close();
+                return null;
+            });
+        }
+        waitForRenderingCycles(2);
     }
 
     private static void assertVisible(ListView<?> options, int index) {
