@@ -84,6 +84,8 @@ Roster does not yet support returning a recorded status to unmarked. You can, ho
 
 * A prefix marks the start of a parameter. Values containing `/` are accepted where explicitly supported, such as relationship abbreviations in names and CSV file paths.
 
+* Commands such as `init`, `session`, `edit` and `mark` accept spaces, tabs or copied horizontal whitespace such as non-breaking spaces between fields and around parameter values. Whitespace inside values follows that field's rules. Commands must stay on one line, except for `find`, which also accepts line breaks.
+
 * Unless a command states otherwise, each parameter may appear only once.
 
 * `INDEX` must be a positive integer and always refers to the currently displayed list.
