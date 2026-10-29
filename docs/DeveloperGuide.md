@@ -345,6 +345,9 @@ number of attempts. The highlight is cleared by the next command, including one 
 `comment INDEX c/COMMENT` appends to a student's `Comment`, joining notes with `; `, while `c-/COMMENT` replaces it
 and an empty `c-/` clears it. Only `c-/` discards existing text, so a note is never lost by accident. A comment is
 limited to 500 characters, and an append that would exceed the limit is rejected without changing the comment.
+`; ` is the note separator in both directions: `StudentDetailPanel.commentNotes` splits a stored comment on it, so a
+separator the tutor types also starts a new note. A semicolon with no following space is ordinary text, and the
+separator itself is never shown as part of a note.
 
 ### Field completion
 
@@ -895,7 +898,7 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 * **Attendance percentage**: The number of sessions a student was marked present for, divided by the number of sessions the student has been marked for. Unmarked sessions are excluded.
 * **Active group**: The tutorial group whose students are displayed after `list grp/GROUP` or a click in the group panel. `list` and `find` clear it.
 * **Attendance strip**: The row on a student's entry that shows one cell per session of their tutorial group, in teaching-week order, such as `W5: ✓`. A green `✓` means present, a red `✗` absent and a grey `—` unmarked.
-* **Comment**: A short note, of up to 500 characters, that a TA keeps about a student.
+* **Comment**: Up to 500 characters of notes that a TA keeps about a student, separated by `; ` and shown as one entry per note.
 * **Displayed list**: The students currently shown in the student list. Every `INDEX`, and `all` in `mark all` and `delete all`, refers to this list.
 * **Course coordinator**: The staff member in charge of a module, who collects attendance records from the TAs.
 * **Index**: The one-based position of a student in the currently displayed list. It is not a property of the student: the same student's index changes when the list is filtered.
@@ -1057,7 +1060,9 @@ Prepare the data from [Recording attendance](#recording-attendance), then run `l
    Expected: John's comment reads `attentive; asks good questions`.
 2. Run `comment 1 c-/needs help`. Expected: the comment is replaced by `needs help`.
 3. Run `comment 1 c-/`. Expected: the comment is cleared and John's detail panel shows **No comment yet**.
-4. Try `comment 1`, `comment 1 c/a c-/b` and a `c/` note that would make the comment longer than 500 characters.
+4. Run `comment 1 c-/Bring notes; revise recursion`. Expected: the detail panel shows two notes, since `; ` separates
+   notes; `comment 1 c-/see slides 3;4` shows one, since the semicolon has no space after it.
+5. Try `comment 1`, `comment 1 c/a c-/b` and a `c/` note that would make the comment longer than 500 characters.
    Expected: an error each time, with the comment unchanged.
 
 ### Saving and recovering data
