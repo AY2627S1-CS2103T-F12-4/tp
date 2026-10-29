@@ -126,6 +126,19 @@ public class CommandBoxTest {
                         .map(node -> (ListCell<?>) node).filter(row -> row.getIndex() == 0).findFirst().orElseThrow();
                 assertEquals(Color.WHITE, highlighted.getTextFill());
                 assertEquals(Color.web("#2563eb"), highlighted.getBackground().getFills().getFirst().getFill());
+                for (MouseButton button : List.of(MouseButton.SECONDARY, MouseButton.MIDDLE)) {
+                    for (var type : List.of(MouseEvent.MOUSE_PRESSED, MouseEvent.MOUSE_RELEASED,
+                            MouseEvent.MOUSE_CLICKED)) {
+                        cell.fireEvent(new MouseEvent(type, 5, 5, 5, 5, button, 1,
+                                false, false, false, false, false,
+                                button == MouseButton.MIDDLE && type == MouseEvent.MOUSE_PRESSED,
+                                button == MouseButton.SECONDARY && type == MouseEvent.MOUSE_PRESSED,
+                                true, button == MouseButton.SECONDARY, true, null));
+                    }
+                    assertEquals("list grp/T1", input.getText());
+                    assertTrue(executed.isEmpty());
+                    assertTrue(popup.isShowing());
+                }
                 for (var type : List.of(MouseEvent.MOUSE_PRESSED, MouseEvent.MOUSE_RELEASED,
                         MouseEvent.MOUSE_CLICKED)) {
                     cell.fireEvent(new MouseEvent(type, 5, 5, 5, 5, MouseButton.PRIMARY, 1,
