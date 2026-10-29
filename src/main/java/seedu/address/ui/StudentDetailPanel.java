@@ -42,9 +42,9 @@ public class StudentDetailPanel extends UiPart<Region> {
     private static final String NO_COMMENT = "No comment yet";
     private static final String NO_SESSIONS = "This group has no sessions yet.";
     private static final String NOTHING_MARKED = "No sessions marked yet";
-    /** Dates read as "Tue 18 Aug" here, which is shorter than the stored form and still unambiguous. */
+    /** Dates read as "Tue 18 Aug 2026" here: the year is shown so a mistyped date can be seen. */
     private static final DateTimeFormatter DATE_FORMAT =
-            DateTimeFormatter.ofPattern("EEE d MMM", Locale.ENGLISH);
+            DateTimeFormatter.ofPattern("EEE d MMM uuuu", Locale.ENGLISH);
 
     /** The student on show, or null while the panel is hidden. */
     private Person shown;
