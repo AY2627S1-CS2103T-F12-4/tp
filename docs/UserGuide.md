@@ -216,6 +216,7 @@ Example: `editsession grp/T09 w/5 d/2026-09-16`
 * The command applies to the specified session across its entire group, even when a search hides some students.
   Your current search or group selection stays active.
 * A missing session or an unchanged date produces an error without changing data or undo history.
+* Extra text or unsupported parameters are rejected. The error names the unexpected input and shows the command format.
 * Use `undo` to restore the previous date. Exported CSV records use the updated date.
 
 On success, Roster displays a confirmation such as
@@ -231,6 +232,8 @@ Format: `deletesession grp/GROUP w/WEEK`
 Example: `deletesession grp/T09 w/5`
 
 * Both fields are required, may appear in any order, and may each appear only once.
+* Extra text or unsupported parameters (including `d/`) are rejected. The error names the unexpected input
+  and shows the command format.
 * Deletion happens immediately without confirmation. Check the group and week before running the command.
   Use `undo` to restore the session and its attendance records.
 * This applies to the entire specified group, including students hidden by a search. Your current search
