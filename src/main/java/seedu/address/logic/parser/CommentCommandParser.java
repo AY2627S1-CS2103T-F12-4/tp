@@ -19,12 +19,15 @@ public class CommentCommandParser implements Parser<CommentCommand> {
 
     /**
      * Shown when more than one comment prefix is found. This is usually a note that happens to contain
-     * " c/" or " c-/" rather than a deliberate second prefix, so the message explains how to write it.
+     * " c/" or " c-/" rather than a deliberate second prefix, so the message shows a correct command first
+     * and then explains how to write the prefix inside a comment.
      */
     public static final String MESSAGE_MULTIPLE_PREFIXES =
-            "Give only one " + PREFIX_COMMENT + " (to add) or " + PREFIX_COMMENT_REPLACE + " (to replace). "
-                    + "Roster reads " + PREFIX_COMMENT + " or " + PREFIX_COMMENT_REPLACE
-                    + " after a space as the start of another one, so if your comment contains one, "
+            "Give only one " + PREFIX_COMMENT + " to add or " + PREFIX_COMMENT_REPLACE + " to replace, e.g. "
+                    + CommentCommand.COMMAND_WORD + " 1 " + PREFIX_COMMENT + "attentive or "
+                    + CommentCommand.COMMAND_WORD + " 1 " + PREFIX_COMMENT_REPLACE + "needs help.\n"
+                    + "Caution: " + PREFIX_COMMENT + " or " + PREFIX_COMMENT_REPLACE
+                    + " after a space starts another one. If your comment contains one, "
                     + "put another character right before it, "
                     + "e.g. \"ask about (c/c++)\" instead of \"ask about c/c++\".";
 
