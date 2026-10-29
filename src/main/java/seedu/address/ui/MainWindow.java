@@ -347,6 +347,7 @@ public class MainWindow extends UiPart<Stage> {
             commandResult.getPersonToShow()
                     .ifPresentOrElse(personListPanel::scrollTo, personListPanel::clearSelection);
             refreshStudentDetail(commandResult.getPersonToShow().orElse(null));
+            groupListPanel.refreshActiveView();
 
             if (commandResult.isShowHelp()) {
                 handleHelp();
