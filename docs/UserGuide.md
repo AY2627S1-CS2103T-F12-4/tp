@@ -280,6 +280,8 @@ Examples:
 * Invalid values, unsupported parameters, and duplicate information are rejected without changing the student.
 
 On success, Roster displays `Edited student:` followed by the updated student details.
+If a group change removes attendance records, the confirmation also names the old and new groups,
+reports how many records were cleared, and reminds you to use `undo` to restore them.
 
 
 ### Listing students: `list`
