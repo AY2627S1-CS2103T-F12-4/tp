@@ -36,7 +36,8 @@ public class NameContainsQueryPredicateTest {
     @Test
     public void isValidQuery_supportedCharacters_returnsTrue() {
         for (String query : new String[]{"A", "Anne-Marie", "O'Neil", "O\u2019Neil", "J. Tan",
-            "\u00c9lodie", "E\u0301lodie", "a".repeat(100), "\ud801\udc00".repeat(100)}) {
+            "\u00c9lodie", "E\u0301lodie", "a".repeat(100), "\ud801\udc00".repeat(100),
+            "Tan Ah Kow (Mike)", "(Mike)", "(Mike"}) {
             assertTrue(NameContainsQueryPredicate.isValidQuery(query), query);
         }
     }
@@ -44,7 +45,7 @@ public class NameContainsQueryPredicateTest {
     @Test
     public void isValidQuery_unsupportedCharactersOrLength_returnsFalse() {
         for (String query : new String[]{"", " ", "123", "John2", ".'-", "\u0301", "John@Tan",
-            "John/Tan", "John_Tan", "John\u0000Tan", "a".repeat(101), "\ud801\udc00".repeat(101)}) {
+            "John/Tan", "John_Tan", "John\u0000Tan", "a".repeat(101), "\ud801\udc00".repeat(101), "()"}) {
             assertFalse(NameContainsQueryPredicate.isValidQuery(query), query);
         }
     }
