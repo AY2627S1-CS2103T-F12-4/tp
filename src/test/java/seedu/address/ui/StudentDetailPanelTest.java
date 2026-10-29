@@ -88,6 +88,8 @@ public class StudentDetailPanelTest {
             assertEquals("50% of marked sessions", text(panel, "attendanceRate"));
             assertEquals(0.5, ((ProgressBar) panel.getRoot().lookup("#attendanceBar")).getProgress(), 0.0001);
             assertEquals(2, ((Pane) panel.getRoot().lookup("#sessionRows")).getChildren().size());
+            // #195: the year is shown so a mistyped date can be spotted in the panel
+            assertEquals(List.of("Tue 11 Aug 2026", "Tue 18 Aug 2026"), sessionDates(panel));
             return null;
         });
     }
@@ -200,6 +202,13 @@ public class StudentDetailPanelTest {
         panel.getRoot().applyCss();
         panel.getRoot().layout();
         return panel;
+    }
+
+    /** Returns each session row's date, the second label of the "week | date | status" row. */
+    private static List<String> sessionDates(StudentDetailPanel panel) {
+        return ((Pane) panel.getRoot().lookup("#sessionRows")).getChildren().stream()
+                .map(row -> ((Label) ((Pane) row).getChildren().get(1)).getText())
+                .toList();
     }
 
     private static String text(StudentDetailPanel panel, String id) {
