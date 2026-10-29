@@ -1135,8 +1135,9 @@ Prepare the data from [Creating groups, adding and editing students](#creating-g
    Expected: command completion changes the command text; it does not add a student.
 2. Replace the draft with `list grp/T`, select T09 with Up/Down and accept with Tab.
    Expected: the selected group replaces the value fragment. Enter executes the completed command.
-3. Type `mark 1 w/5 s/p` and accept `present` with Tab. Press Escape to dismiss any remaining suggestions.
-   Expected: attendance changes only after Enter. Shift+Tab moves focus backwards instead of inserting a suggestion.
+3. Type `mark 1 w/5 s/a` and accept `absent` with Tab. Expected: John's mark stays present until
+   Enter is pressed; pressing Enter changes it to absent. Type `mark 1 w/5 s/p` without pressing Enter,
+   then press Shift+Tab: focus moves backwards without accepting a suggestion or changing attendance.
 4. Type `comment 1 c`. Expected: append and replace prefixes are offered. After accepting `c/`,
    `c-/` is not offered for the same command. Clear the draft without executing it.
 5. Run `help`. Expected: the Help window links to Roster's online User Guide. Minimize it and run `help`
@@ -1235,8 +1236,9 @@ Use the disposable roster from [Recording attendance](#recording-attendance), ke
 4. Recovery: close Roster, restore the known-good backup as `data/addressbook.json`, and relaunch.
    Expected: the original groups, students, sessions and attendance are restored. Do not edit JSON while
    Roster is running, because a later save can replace external edits.
-5. Valid manual edit: from the known-good backup, change a student's `name` in the top-level `persons`
-   list to `John Lim` while Roster is closed, then relaunch. Expected: the edited name loads and the other
+5. Valid manual edit: close Roster and copy the known-good backup to `data/addressbook.json`, leaving
+   the backup unchanged. In that working file, change a student's `name` in the top-level `persons`
+   list to `John Lim`, then relaunch. Expected: the edited name loads and the other
    students, groups and sessions remain. Undo history can be discarded if it no longer matches the edited roster.
    Close Roster and restore the original backup before the next case.
 6. Invalid group case: change one student's `group` in the top-level `persons` list from `T09` to `t09`,
@@ -1261,6 +1263,9 @@ add n/Johnny Lim e/johnny@example.com m/A0000001X grp/T10
    Expected: both commands report errors, preserving the T09 view and active group.
 3. Run `find n/John m/A0000001X grp/T09`.
    Expected: no matches because every supplied filter must match.
+4. Run `find n/Johm grp/T09`. Expected: no displayed students, with John Tan and `A0000002X` suggested
+   in the feedback. Johnny Lim is excluded because he belongs to T10. Run `find m/A0000002X`:
+   John appears, demonstrating that a suggestion is a hint rather than a displayed search result.
 
 ### Attendance CSV export
 
