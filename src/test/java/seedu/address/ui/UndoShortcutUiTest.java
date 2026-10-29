@@ -12,7 +12,6 @@ import java.util.Locale;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
-import javafx.event.ActionEvent;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 import javafx.scene.control.TextArea;
@@ -24,7 +23,6 @@ import javafx.scene.input.MouseEvent;
 import javafx.stage.Popup;
 import javafx.stage.Stage;
 import javafx.stage.Window;
-import seedu.address.logic.LogicManager;
 import seedu.address.model.AddressBook;
 import seedu.address.model.ModelManager;
 import seedu.address.model.person.Person;
@@ -92,13 +90,13 @@ public class UndoShortcutUiTest {
 
     private void assertCompletionUndoPreservesRoster(boolean useMouse) throws Exception {
         Person original = new PersonBuilder().withName("Alex Tan").build();
-        ModelManager model = new ModelManager(new AddressBookBuilder().withPerson(original).build(), new UserPrefs());
-        Stage stage = createWindow(model);
-        try {
+        AddressBook book = new AddressBookBuilder().withPerson(original).build();
+        try (MainWindowTestFixture fixture = MainWindowTestFixture.create(book, temporaryFolder)) {
             onFxThread(() -> {
-                TextField input = (TextField) stage.getScene().lookup("#commandTextField");
-                input.setText("edit 1 n/Alex Lim");
-                input.fireEvent(new ActionEvent());
+                Stage stage = fixture.stage();
+                ModelManager model = fixture.model();
+                enterCommand(stage, "edit 1 n/Alex Lim");
+                TextField input = getCommandInput(stage);
                 input.requestFocus();
                 input.appendText("ad");
                 assertTrue(input.isFocused());
@@ -133,8 +131,6 @@ public class UndoShortcutUiTest {
                 assertEquals("Alex Lim", model.getAddressBook().getPersonList().getFirst().getName().fullName);
                 return null;
             });
-        } finally {
-            close(stage);
         }
     }
 
