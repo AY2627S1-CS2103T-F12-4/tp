@@ -585,10 +585,15 @@ Examples:
 * Each `undo` reverses one successful data-changing command.
 * Commands that leave the data unchanged, such as editing a student to their existing name or marking the same status again, do not add an undo step or discard redo history.
 * Multiple `undo` commands reverse earlier changes one at a time.
+* History retains at most **15 changes in total**, shared between undo and redo. When a new change exceeds
+  this limit, the oldest change can no longer be undone. This does not delete any current students or attendance.
+* You can move back and forth through retained changes repeatedly; undo and redo do not use up extra history slots.
 * `list`, `find`, `export`, `help`, `exit`, invalid commands, and failed commands do not affect the undo history.
 * If there are no changes to undo, Roster displays an error without changing any data.
 * Undo and redo history are saved with the roster and remain available after closing and reopening Roster.
-* Files created by older versions load normally, with no earlier history.
+* Older files without saved history load normally and start a new history. Older files with more than 15 changes
+  keep a window of up to 15 changes containing the saved current state. The current roster is not changed;
+  changes outside that window are discarded. The smaller history is written on the next successful save.
 * If the roster data is edited outside Roster and no longer matches its saved history, the history is discarded.
 * Saved history includes earlier versions of deleted students and cleared data. Keep the data file private.
 * After an undo, a new command that changes data discards the states that were undone.
@@ -608,6 +613,7 @@ Format: `redo`
 Example: `edit 1 n/Alex Tan`, `undo`, then `redo` reapplies the name change.
 
 * Each `redo` reapplies one change; multiple redo commands reapply changes in their original order.
+* Redo shares the same 15-change history limit as undo; it does not keep a separate set of 15 changes.
 * A new successful data-changing command after undo discards the remaining redo history.
 * Read-only commands, invalid commands and failed commands preserve redo history.
 * If there is nothing to redo, Roster displays an error without changing data.
