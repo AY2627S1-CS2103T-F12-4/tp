@@ -21,14 +21,14 @@ public class TagTest {
     }
 
     @Test
-    public void equals_ignoresLetterCase() {
+    public void equals_comparesExactSpelling() {
         Tag tag = new Tag("exchange");
 
         assertTrue(tag.equals(new Tag("exchange")));
-        assertTrue(tag.equals(new Tag("Exchange")));
-        assertTrue(tag.equals(new Tag("EXCHANGE")));
-        assertEquals(tag.hashCode(), new Tag("EXCHANGE").hashCode());
+        assertEquals(tag.hashCode(), new Tag("exchange").hashCode());
 
+        // A change of case is a real change, so an edit that only recases a tag is saved
+        assertFalse(tag.equals(new Tag("Exchange")));
         assertFalse(tag.equals(new Tag("exchanges")));
         assertFalse(tag.equals(null));
         assertFalse(tag.equals("exchange"));
