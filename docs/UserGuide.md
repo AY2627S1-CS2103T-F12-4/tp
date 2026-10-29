@@ -565,6 +565,7 @@ Examples:
 * `deletesession grp/T09 w/5` followed by `undo` restores that session and its attendance records.
 
 * Each `undo` reverses one successful data-changing command.
+* Commands that leave the data unchanged, such as editing a student to their existing name or marking the same status again, do not add an undo step or discard redo history.
 * Multiple `undo` commands reverse earlier changes one at a time.
 * `list`, `find`, `export`, `help`, `exit`, invalid commands, and failed commands do not affect the undo history.
 * If there are no changes to undo, Roster displays an error without changing any data.
@@ -572,7 +573,7 @@ Examples:
 * Files created by older versions load normally, with no earlier history.
 * If the roster data is edited outside Roster and no longer matches its saved history, the history is discarded.
 * Saved history includes earlier versions of deleted students and cleared data. Keep the data file private.
-* After an undo, a new undoable command discards the states that were undone.
+* After an undo, a new command that changes data discards the states that were undone.
 * Press `Ctrl+Z` to undo without typing the command. On macOS, use `Command+Z`.
 * When the command box has an undoable text edit, the keyboard shortcut edits the command text instead of
   changing Roster data.
