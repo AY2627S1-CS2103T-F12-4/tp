@@ -397,6 +397,18 @@ roster in the same JSON file. Each snapshot uses the existing roster conversion 
 copies this history at startup. Old files without history start at a new history boundary. Invalid histories, or
 histories whose selected snapshot differs from the current roster, are discarded while retaining the current roster.
 
+`VersionedAddressBook.MAX_HISTORY_COMMANDS` limits the combined undo/redo history to 15 changes, represented by
+at most 16 snapshots including the history boundary. After a commit discards any redo branch and appends its
+snapshot, an overflowing history drops its oldest snapshot and command, adjusts the pointer, and clears the
+new boundary's command description. Undo and redo only move the pointer; they do not add snapshots.
+
+Restoring older unlimited histories selects the latest window of at most 16 snapshots that contains the saved
+current state. If that state is earlier than the last 16 snapshots, the window starts at the current state and
+retains its next 15 redo steps. The current roster is preserved, command descriptions stay aligned, and snapshots
+outside the window are released. Loading does not rewrite the file; the next successful save persists the bounded
+history. Save-failure rollback restores the pre-command bounded history, including a boundary tentatively dropped
+by a commit that could not be saved.
+
 `LogicManager` captures the full pre-command roster and history, executes the command, commits data-changing
 commands, and then saves the roster and history together. An unsuccessful save restores the complete pre-command
 snapshot, including any redo states removed by a tentative commit. Read-only commands bypass this process.

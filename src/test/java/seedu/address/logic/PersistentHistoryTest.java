@@ -14,12 +14,16 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import seedu.address.logic.commands.exceptions.CommandException;
 import seedu.address.logic.parser.FieldCompletion;
 import seedu.address.logic.parser.exceptions.ParseException;
 import seedu.address.model.ModelManager;
 import seedu.address.model.ReadOnlyAddressBook;
 import seedu.address.model.UserPrefs;
+import seedu.address.model.VersionedAddressBook;
 import seedu.address.model.person.Group;
 import seedu.address.storage.JsonAddressBookStorage;
 import seedu.address.storage.JsonUserPrefsStorage;
@@ -168,6 +172,89 @@ public class PersistentHistoryTest {
             assertFalse(model.canUndoAddressBook());
             assertFalse(model.canRedoAddressBook());
         }
+    }
+
+    @Test
+    public void historyLimit_growingRoster_keepsFifteenChangesAcrossUndoRedoAndRestart() throws Exception {
+        logic.execute("init grp/T09");
+        for (int student = 1; student <= 40; student++) {
+            logic.execute("add n/Student " + (char) ('A' + student % 26)
+                    + " e/student" + student + "@example.com m/" + String.format("A%07dA", student) + " grp/T09");
+            assertTrue(((VersionedAddressBook) model.getAddressBook()).getHistoryStates().size() <= 16);
+        }
+        assertEquals(40, model.getAddressBook().getPersonList().size());
+        JsonNode saved = new ObjectMapper().readTree(Files.readString(storage.getAddressBookFilePath()));
+        assertEquals(16, saved.path("historyStates").size());
+        assertEquals(16, saved.path("historyCommands").size());
+        assertTrue(saved.path("historyCommands").get(0).isNull());
+        restart();
+        for (int step = 0; step < 15; step++) {
+            assertEquals("Undid the most recent add command.", logic.execute("undo").getFeedbackToUser());
+        }
+        assertEquals(25, model.getAddressBook().getPersonList().size());
+        assertThrows(CommandException.class, () -> logic.execute("undo"));
+        restart();
+        for (int step = 0; step < 5; step++) {
+            logic.execute("redo");
+        }
+        restart();
+        assertEquals(30, model.getAddressBook().getPersonList().size());
+        for (int step = 0; step < 10; step++) {
+            assertEquals("Redid the most recent add command.", logic.execute("redo").getFeedbackToUser());
+        }
+        assertEquals(40, model.getAddressBook().getPersonList().size());
+        assertThrows(CommandException.class, () -> logic.execute("redo"));
+        saved = new ObjectMapper().readTree(Files.readString(storage.getAddressBookFilePath()));
+        assertEquals(16, saved.path("historyStates").size());
+    }
+
+    @Test
+    public void historyLimit_repeatedFixedSizeChanges_stopGrowingSavedHistory() throws Exception {
+        logic.execute("init grp/T09");
+        logic.execute("add n/Alex Tan e/alex@example.com m/A0123456X grp/T09");
+        long sizeAtLimit = 0;
+        for (int change = 1; change <= 80; change++) {
+            logic.execute("comment 1 c-/Revision " + String.format("%03d", change));
+            if (change == 20) {
+                sizeAtLimit = Files.size(storage.getAddressBookFilePath());
+            }
+        }
+        assertTrue(sizeAtLimit > 0);
+        assertEquals(sizeAtLimit, Files.size(storage.getAddressBookFilePath()));
+        restart();
+        assertEquals("Revision 080", model.getAddressBook().getPersonList().getFirst().getComment().value);
+        for (int step = 0; step < 15; step++) {
+            logic.execute("undo");
+        }
+        assertEquals("Revision 065", model.getAddressBook().getPersonList().getFirst().getComment().value);
+        assertFalse(model.canUndoAddressBook());
+    }
+
+    @Test
+    public void failedSave_atHistoryLimit_restoresOldestUndoStepAndSavedFile() throws Exception {
+        for (int group = 0; group < 15; group++) {
+            logic.execute(String.format("init grp/T%02d", group));
+        }
+        VersionedAddressBook before = new VersionedAddressBook(model.getAddressBook());
+        String saved = Files.readString(storage.getAddressBookFilePath());
+        Logic failingLogic = createLogic(new JsonAddressBookStorage(storage.getAddressBookFilePath()) {
+            @Override
+            public void saveAddressBook(ReadOnlyAddressBook addressBook) throws IOException {
+                throw new IOException("Simulated save failure at the history limit");
+            }
+        });
+        assertThrows(CommandException.class, () -> failingLogic.execute("init grp/T99"));
+        VersionedAddressBook restored = (VersionedAddressBook) model.getAddressBook();
+        assertEquals(before, restored);
+        assertEquals(before.getHistoryStates(), restored.getHistoryStates());
+        assertEquals(before.getHistoryCommands(), restored.getHistoryCommands());
+        assertEquals(before.getHistoryPointer(), restored.getHistoryPointer());
+        assertEquals(saved, Files.readString(storage.getAddressBookFilePath()));
+        for (int step = 0; step < 15; step++) {
+            logic.execute("undo");
+        }
+        assertTrue(model.getGroupList().isEmpty());
+        assertFalse(model.canUndoAddressBook());
     }
 
     @Test
