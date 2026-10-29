@@ -66,6 +66,14 @@ public final class FieldCompletion {
         while (end < text.length() && text.charAt(end) != ' ') {
             end++;
         }
+        int valuePrefixStart = findValuePrefixStart(fields, caret, prefixes);
+        if (valuePrefixStart >= 0) {
+            start = valuePrefixStart;
+            end = caret;
+            while (end < text.length() && text.charAt(end) > ' ') {
+                end++;
+            }
+        }
         String token = text.substring(start, end);
         int slash = token.indexOf('/');
         Stream<String> candidates;
@@ -85,6 +93,9 @@ public final class FieldCompletion {
                 return List.of();
             }
             start += slash + 1;
+            while (start < caret && text.charAt(start) <= ' ') {
+                start++;
+            }
             candidates = switch (prefix) {
                 case "grp/" -> command.equals("init") ? Stream.empty() : groups.stream().sorted();
                 case "s/" -> Stream.of("present", "absent");
@@ -98,6 +109,27 @@ public final class FieldCompletion {
         return candidates.distinct().filter(value -> value.toLowerCase(Locale.ROOT).startsWith(fragment))
                 .filter(value -> !value.equals(current))
                 .map(value -> new Suggestion(replaceStart, replaceEnd, value)).toList();
+    }
+
+    /** Finds a value field whose leading whitespace separates its prefix from the current token. */
+    private static int findValuePrefixStart(String fields, int caret, List<String> prefixes) {
+        for (String prefix : List.of("grp/", "s/")) {
+            if (!prefixes.contains(prefix)) {
+                continue;
+            }
+            int prefixStart = fields.lastIndexOf(" " + prefix, caret - prefix.length() - 1);
+            if (prefixStart < 0) {
+                continue;
+            }
+            int valueStart = prefixStart + prefix.length() + 1;
+            while (valueStart < caret && fields.charAt(valueStart) <= ' ') {
+                valueStart++;
+            }
+            if (fields.substring(valueStart, caret).chars().noneMatch(character -> character <= ' ')) {
+                return prefixStart + 1;
+            }
+        }
+        return -1;
     }
 
     /** Hides quoted CSV path contents so prefix-like directory names are not treated as fields. */
