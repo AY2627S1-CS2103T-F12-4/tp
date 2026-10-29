@@ -116,6 +116,27 @@ public class LogicManagerTest {
     }
 
     @Test
+    public void execute_addAndFindBracketedName_findsByFullAndPartName() throws Exception {
+        logic.execute("init grp/T09");
+        logic.execute("add n/Tan Ah Kow (Mike) e/mike@example.com m/A0123456X grp/T09");
+        logic.execute("add n/Tan Ah Kow e/ahkow@example.com m/A0123457X grp/T09");
+
+        // The full displayed name, brackets included, finds only the student who has it
+        logic.execute("find n/Tan Ah Kow (Mike)");
+        assertEquals(List.of("Tan Ah Kow (Mike)"), displayedNames());
+
+        logic.execute("find n/(mike)");
+        assertEquals(List.of("Tan Ah Kow (Mike)"), displayedNames());
+
+        logic.execute("find n/Tan Ah Kow");
+        assertEquals(List.of("Tan Ah Kow (Mike)", "Tan Ah Kow"), displayedNames());
+    }
+
+    private List<String> displayedNames() {
+        return logic.getFilteredPersonList().stream().map(person -> person.getName().fullName).toList();
+    }
+
+    @Test
     public void execute_invalidCommandFormat_throwsParseException() {
         String invalidCommand = "uicfhmowqewca";
         assertParseException(invalidCommand, MESSAGE_UNKNOWN_COMMAND);

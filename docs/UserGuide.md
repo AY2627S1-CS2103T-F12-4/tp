@@ -98,7 +98,7 @@ Roster does not yet support returning a recorded status to unmarked. You can, ho
 Parameter | Accepted value
 ----------|---------------
 `grp/GROUP` | One or two letters followed by two digits, e.g. `T09` or `TG01`. Surrounding spaces are removed and letters are converted to uppercase.
-`n/NAME` | 1–70 characters. Letters and their accents, spaces, hyphens, apostrophes, full stops and the relationship abbreviations `s/o`, `d/o`, `a/l`, `a/p` (in any letter case). Must begin with a letter and end with a letter, accent or full stop. Examples: `J. Tan`, `Ravi s/o Kumar`. Surrounding spaces are removed, repeated spaces become one space, and letter case is preserved.
+`n/NAME` | 1–70 characters. Letters and their accents, spaces, hyphens, apostrophes, full stops and the relationship abbreviations `s/o`, `d/o`, `a/l`, `a/p` (in any letter case). Must begin with a letter and end with a letter, accent or full stop. A later part of the name, such as a preferred name, may be in brackets after a space, e.g. `Tan Ah Kow (Mike)`. Examples: `J. Tan`, `Ravi s/o Kumar`, `Tan Ah Kow (Mike)`. Surrounding spaces are removed, repeated spaces become one space, and letter case is preserved.
 `m/MATRIC` | `A`, followed by seven digits and one letter, e.g. `A0287654J`. Surrounding spaces are removed and letters are converted to uppercase.
 `e/EMAIL` | A valid email address such as `alex.tan@example.com`. The local part accepts letters, digits and `+_.-`, including adjacent special characters such as `alice__tan` or `alice_+tan`. It must start and end with a letter or digit and cannot contain consecutive periods. Surrounding spaces are removed and the address is converted to lowercase.
 `c/COMMENT` | Text to add to a student's existing comment. 1–500 characters once surrounding spaces are removed and repeated spaces become one space.
@@ -283,6 +283,8 @@ Examples:
 * Invalid values, unsupported parameters, and duplicate information are rejected without changing the student.
 
 On success, Roster displays `Edited student:` followed by the updated student details.
+If a group change removes attendance records, the confirmation also names the old and new groups,
+reports how many records were cleared, and reminds you to use `undo` to restore them.
 
 
 ### Listing students: `list`
@@ -352,8 +354,9 @@ Format: `find [n/KEYWORD] [m/MATRIC] [grp/GROUP]`
   and in the same order: `john tan` matches `John Tan` and `John Tanner`, but not `John Lim` or `Tan John`.
   Accents and punctuation remain significant.
 * A name query must contain 1–100 characters after whitespace normalization:
-  letters and their accents, spaces, hyphens, apostrophes, full stops,
+  letters and their accents, spaces, hyphens, apostrophes, full stops, brackets,
   or complete `s/o`, `d/o`, `a/l`, `a/p` abbreviations, with at least one letter.
+  For example, `find n/Tan Ah Kow (Mike)` finds the student by their full name.
 * Surrounding whitespace is ignored, and repeated whitespace is treated as one space. Copied commands
   may use Unicode spaces; line breaks within search arguments are also treated as spaces.
 * `m/MATRIC` matches the complete matriculation number. Letter case is ignored; partial numbers are rejected.
