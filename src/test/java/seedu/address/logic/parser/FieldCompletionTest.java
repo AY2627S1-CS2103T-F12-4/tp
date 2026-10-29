@@ -44,6 +44,22 @@ public class FieldCompletionTest {
     }
 
     @Test
+    public void suggest_commandWithTextAfterCaret_keepsThatTextInsteadOfReplacingIt() {
+        String text = "comis";
+        Suggestion selected = FieldCompletion.suggest(text, 3, groups).getFirst();
+        assertEquals("commentis", selected.apply(text));
+        assertEquals(0, selected.start());
+        assertEquals(3, selected.end());
+
+        String sentence = "comis great";
+        assertEquals("commentis great",
+                FieldCompletion.suggest(sentence, 3, groups).getFirst().apply(sentence));
+
+        // Applying this would change nothing, so it is not offered
+        assertTrue(FieldCompletion.suggest("commentis", "comment".length(), groups).isEmpty());
+    }
+
+    @Test
     public void suggest_values_matchesCaseInsensitivelyAndReadsCurrentGroups() {
         assertEquals(List.of("T09", "T10", "TG01"), values("list grp/t"));
         assertEquals(List.of("present", "absent"), values("mark 1 s/"));

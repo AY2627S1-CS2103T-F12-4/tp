@@ -154,6 +154,8 @@ Suggestions are suppressed inside quoted export paths so that directory names ar
 * Press Up/Down to select a suggestion and Tab to insert it, or click a suggestion.
 * Press Escape to dismiss suggestions. Enter always executes the current command.
 * Completion replaces the field fragment at the cursor and preserves other fields.
+* Completing the command word replaces only what you typed before the cursor, so any text
+  after it is kept.
 * Group suggestions reflect the currently registered groups, including empty groups.
 * `init grp/` accepts a new group code without suggesting existing groups.
 * You can continue typing any value normally; existing validation rules still apply.
