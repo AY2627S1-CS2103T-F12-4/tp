@@ -1,14 +1,12 @@
 package seedu.address.logic.parser;
 
 import static seedu.address.logic.Messages.MESSAGE_INVALID_COMMAND_FORMAT;
-import static seedu.address.logic.parser.CliSyntax.PREFIX_COMMENT;
 import static seedu.address.logic.parser.CommandParserTestUtil.assertParseFailure;
 import static seedu.address.logic.parser.CommandParserTestUtil.assertParseSuccess;
 import static seedu.address.testutil.TypicalIndexes.INDEX_FIRST_PERSON;
 
 import org.junit.jupiter.api.Test;
 
-import seedu.address.logic.Messages;
 import seedu.address.logic.commands.CommentCommand;
 import seedu.address.model.person.Comment;
 
@@ -61,7 +59,23 @@ public class CommentCommandParserTest {
     @Test
     public void parse_bothPrefixes_throwsParseException() {
         assertParseFailure(parser, "1 c/attentive c-/starts strong",
-                CommentCommandParser.MESSAGE_BOTH_PREFIXES);
+                CommentCommandParser.MESSAGE_MULTIPLE_PREFIXES);
+    }
+
+    @Test
+    public void parse_prefixInsideComment_explainsHowToWriteIt() {
+        // the user means one comment, but the space before c/ or c-/ starts another prefix
+        assertParseFailure(parser, "1 c/ask about c/c++", CommentCommandParser.MESSAGE_MULTIPLE_PREFIXES);
+        assertParseFailure(parser, "1 c/ask about c-/x", CommentCommandParser.MESSAGE_MULTIPLE_PREFIXES);
+        assertParseFailure(parser, "1 c-/ask about c-/x", CommentCommandParser.MESSAGE_MULTIPLE_PREFIXES);
+    }
+
+    @Test
+    public void parse_prefixWithoutSpaceBefore_isPartOfComment() {
+        assertParseSuccess(parser, "1 c/ask about (c/c++)",
+                new CommentCommand(INDEX_FIRST_PERSON, new Comment("ask about (c/c++)"), false));
+        assertParseSuccess(parser, "1 c/c/c++ is hard",
+                new CommentCommand(INDEX_FIRST_PERSON, new Comment("c/c++ is hard"), false));
     }
 
     @Test
@@ -73,7 +87,7 @@ public class CommentCommandParserTest {
     @Test
     public void parse_repeatedPrefix_throwsParseException() {
         assertParseFailure(parser, "1 c/attentive c/asks questions",
-                Messages.getErrorMessageForDuplicatePrefixes(PREFIX_COMMENT));
+                CommentCommandParser.MESSAGE_MULTIPLE_PREFIXES);
     }
 
     @Test
