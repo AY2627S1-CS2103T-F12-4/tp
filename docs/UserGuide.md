@@ -125,11 +125,12 @@ search or switch tutorial groups. Each row shows the student's name, matriculati
 attendance. Scroll vertically to reach additional students or the rest of a tall attendance row.
 
 Click a student row to open their details on the right, or focus the student list, select a row with
-the arrow keys and press Enter. The panel shows their email, tags, comments, and attendance by session.
+the arrow keys and press Enter. The panel opens over the right of the roster, so the command box and the
+result of your last command stay visible while it is open. It shows the student's email, tags, comments, and attendance by session.
 The attendance percentage counts only marked sessions; unmarked sessions are shown separately.
 Scroll inside the panel to read later sessions. Click another row to switch students.
 
-Close the panel with its × button or Escape to see the full roster and command box again. If command
+Close the panel with its × button or Escape to see the full roster again. If command
 completion suggestions are open, Escape dismisses those first. Opening or closing details does not
 change the roster, active group, or displayed row numbers. Successful commands refresh an open panel;
 it closes if its student is no longer displayed. After undoing a matriculation-number edit, reopen the

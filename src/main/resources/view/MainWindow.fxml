@@ -33,9 +33,8 @@
           </Menu>
         </MenuBar>
 
-        <StackPane fx:id="pageArea" VBox.vgrow="ALWAYS">
         <!-- Kept compact so the student list, the main view, has room for several rows at the minimum size -->
-        <VBox spacing="8" styleClass="main-content">
+        <VBox spacing="8" styleClass="main-content" VBox.vgrow="ALWAYS">
           <padding>
             <Insets top="10" right="12" bottom="10" left="12" />
           </padding>
@@ -51,16 +50,18 @@
 
           <StackPane fx:id="resultDisplayPlaceholder" minHeight="80" prefHeight="80" maxHeight="110" />
 
-          <VBox fx:id="personList" spacing="6" styleClass="roster-panel" VBox.vgrow="ALWAYS">
-            <padding>
-              <Insets top="8" right="10" bottom="8" left="10" />
-            </padding>
-            <StackPane fx:id="groupListPanelPlaceholder" minHeight="44" prefHeight="44" maxHeight="44" />
-            <StackPane fx:id="personListPanelPlaceholder" VBox.vgrow="ALWAYS" />
-          </VBox>
+          <!-- The detail panel opens over the roster only, so the command box and result stay visible -->
+          <StackPane fx:id="rosterArea" VBox.vgrow="ALWAYS">
+            <VBox fx:id="personList" spacing="6" styleClass="roster-panel">
+              <padding>
+                <Insets top="8" right="10" bottom="8" left="10" />
+              </padding>
+              <StackPane fx:id="groupListPanelPlaceholder" minHeight="44" prefHeight="44" maxHeight="44" />
+              <StackPane fx:id="personListPanelPlaceholder" VBox.vgrow="ALWAYS" />
+            </VBox>
+            <StackPane fx:id="studentDetailPlaceholder" alignment="CENTER_RIGHT" pickOnBounds="false" />
+          </StackPane>
         </VBox>
-          <StackPane fx:id="studentDetailPlaceholder" alignment="CENTER_RIGHT" pickOnBounds="false" />
-        </StackPane>
 
         <StackPane fx:id="statusbarPlaceholder" VBox.vgrow="NEVER" />
       </VBox>
