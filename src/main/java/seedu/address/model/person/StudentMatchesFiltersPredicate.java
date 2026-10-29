@@ -84,6 +84,11 @@ public class StudentMatchesFiltersPredicate implements Predicate<Person> {
     }
 
     @Override
+    public int hashCode() {
+        return Objects.hash(namePredicate, matric, group);
+    }
+
+    @Override
     public String toString() {
         return describeFilters();
     }

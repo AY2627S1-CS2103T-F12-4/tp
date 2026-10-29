@@ -1,5 +1,7 @@
 package seedu.address.storage;
 
+import static java.util.Objects.requireNonNull;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -33,6 +35,7 @@ class JsonAdaptedSession {
      * Converts a source {@code Session} into its JSON-friendly representation.
      */
     public JsonAdaptedSession(Session source) {
+        requireNonNull(source);
         group = source.getGroup().toString();
         week = source.getWeek().toString();
         date = source.getDate().toString();
@@ -58,20 +61,25 @@ class JsonAdaptedSession {
             throw new IllegalValueException(Group.MESSAGE_CONSTRAINTS);
         }
 
-        int weekNumber;
-        try {
-            weekNumber = Integer.parseInt(week);
-        } catch (NumberFormatException | NullPointerException e) {
-            throw new IllegalValueException(Week.MESSAGE_CONSTRAINTS);
-        }
-        if (!Week.isValidWeek(weekNumber)) {
-            throw new IllegalValueException(Week.MESSAGE_CONSTRAINTS);
-        }
-
+        Week parsedWeek = toModelWeek();
         if (!SessionDate.isValidSessionDate(date)) {
             throw new IllegalValueException(SessionDate.MESSAGE_CONSTRAINTS);
         }
 
-        return new Session(new Group(group), new Week(weekNumber), new SessionDate(date));
+        return new Session(new Group(group), parsedWeek, new SessionDate(date));
+    }
+
+    /** Converts the stored week, retaining the cause when its numeric representation is invalid. */
+    private Week toModelWeek() throws IllegalValueException {
+        int weekNumber;
+        try {
+            weekNumber = Integer.parseInt(week);
+        } catch (NumberFormatException e) {
+            throw new IllegalValueException(Week.MESSAGE_CONSTRAINTS, e);
+        }
+        if (!Week.isValidWeek(weekNumber)) {
+            throw new IllegalValueException(Week.MESSAGE_CONSTRAINTS);
+        }
+        return new Week(weekNumber);
     }
 }
