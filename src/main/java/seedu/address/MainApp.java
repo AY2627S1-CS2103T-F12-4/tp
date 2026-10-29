@@ -48,9 +48,9 @@ public class MainApp extends Application {
         logger.info("=============================[ Initializing Roster ]===========================");
         super.init();
 
-        JsonUserPrefsStorage userPrefsStorage = new JsonUserPrefsStorage(USER_PREFS_FILE_PATH);
+        JsonUserPrefsStorage userPrefsStorage = new JsonUserPrefsStorage(getUserPrefsFilePath());
         UserPrefs userPrefs = initPrefs(userPrefsStorage);
-        JsonAddressBookStorage addressBookStorage = new JsonAddressBookStorage(ADDRESS_BOOK_FILE_PATH);
+        JsonAddressBookStorage addressBookStorage = new JsonAddressBookStorage(getAddressBookFilePath());
         storage = new StorageManager(addressBookStorage, userPrefsStorage);
 
         model = initModelManager(storage, userPrefs);
@@ -58,6 +58,22 @@ public class MainApp extends Application {
         logic = new LogicManager(model, storage);
 
         ui = new UiManager(logic, storage.getAddressBookFilePath());
+    }
+
+    /**
+     * Returns where the preferences file is kept, relative to the folder Roster is launched from.
+     * Tests override this so that starting Roster does not write into the project folder.
+     */
+    protected Path getUserPrefsFilePath() {
+        return USER_PREFS_FILE_PATH;
+    }
+
+    /**
+     * Returns where the data file is kept, relative to the folder Roster is launched from.
+     * Tests override this so that starting Roster does not write into the project folder.
+     */
+    protected Path getAddressBookFilePath() {
+        return ADDRESS_BOOK_FILE_PATH;
     }
 
     /**
