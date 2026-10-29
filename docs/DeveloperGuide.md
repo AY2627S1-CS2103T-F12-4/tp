@@ -412,9 +412,6 @@ by a commit that could not be saved.
 `LogicManager` captures the full pre-command roster and history, executes the command, commits data-changing
 commands, and then saves the roster and history together. An unsuccessful save restores the complete pre-command
 snapshot, including any redo states removed by a tentative commit. Read-only commands bypass this process.
-If a command with the `COMMIT` history action leaves the roster unchanged, it skips both committing and saving,
-preserving the existing undo and redo states. Undo and redo still save their selected history position even if
-two stored snapshots contain the same roster data.
 `JsonAddressBookStorage` writes a temporary file in the same directory and replaces the destination atomically
 when supported, falling back to replacement when atomic moves are unavailable. This avoids separately saving
 roster data and history. History retains previous student data even after deletion or clear.
@@ -472,11 +469,10 @@ complete roster, including groups, sessions, students, and attendance records.
 
 ![UndoRedoState5](images/UndoRedoState5.png)
 
-The following activity diagram summarizes command execution, including skipped saves for read-only and unchanged
-commands, committing history before saving, and restoring the roster, history and view when saving fails.
-The diagnostic messages shown are described in the [Logging guide](Logging.md).
+The following activity diagram summarizes what happens when a user executes a new command, including the
+rollback when the data file cannot be saved:
 
-<img src="images/CommitActivityDiagram.png" width="650" alt="Activity diagram for command execution, history and saving" />
+<img src="images/CommitActivityDiagram.png" width="300" alt="Activity diagram for saving and committing a command" />
 
 #### Design considerations:
 
