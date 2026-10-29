@@ -49,8 +49,17 @@ public class CsvAttendanceExporter {
             // Publish only the completed sibling file, without REPLACE_EXISTING.
             Files.move(temporary, target);
             return new ExportSummary(students.size(), rows);
-        } finally {
+        } catch (IOException | RuntimeException | Error failure) {
+            cleanupAfterFailure(temporary, failure);
+            throw failure;
+        }
+    }
+
+    private static void cleanupAfterFailure(Path temporary, Throwable failure) {
+        try {
             Files.deleteIfExists(temporary);
+        } catch (IOException | RuntimeException cleanupFailure) {
+            failure.addSuppressed(cleanupFailure);
         }
     }
 

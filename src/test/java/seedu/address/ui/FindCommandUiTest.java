@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static seedu.address.testutil.FxTestUtil.onFxThread;
+import static seedu.address.ui.MainWindowTestFixture.enterCommand;
 
 import java.nio.file.Path;
 import java.util.Comparator;
@@ -12,27 +13,19 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
-import javafx.event.ActionEvent;
 import javafx.scene.Node;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
-import javafx.scene.control.TextField;
 import javafx.scene.layout.FlowPane;
 import javafx.stage.Stage;
-import seedu.address.logic.LogicManager;
 import seedu.address.model.AddressBook;
-import seedu.address.model.ModelManager;
-import seedu.address.model.UserPrefs;
 import seedu.address.model.attendance.Status;
 import seedu.address.model.person.Group;
 import seedu.address.model.person.Person;
 import seedu.address.model.session.Session;
 import seedu.address.model.session.SessionDate;
 import seedu.address.model.session.Week;
-import seedu.address.storage.JsonAddressBookStorage;
-import seedu.address.storage.JsonUserPrefsStorage;
-import seedu.address.storage.StorageManager;
 import seedu.address.testutil.AddressBookBuilder;
 import seedu.address.testutil.PersonBuilder;
 
@@ -40,55 +33,50 @@ public class FindCommandUiTest {
     @TempDir
     public Path temporaryFolder;
 
+    private final Session firstSession = new Session(new Group("T09"), new Week(1), new SessionDate("2026-08-11"));
+    private final Session secondSession = new Session(new Group("T10"), new Week(1), new SessionDate("2026-08-12"));
+    private final Person firstJohn = new PersonBuilder().withName("John Tan").withMatric("A0000002X")
+            .withGroup("T09").withEmail("john.t09@example.com").withAttendance(firstSession, Status.PRESENT).build();
+    private final Person secondJohn = new PersonBuilder().withName("John Tan").withMatric("A0000001X")
+            .withGroup("T10").withEmail("john.t10@example.com").withAttendance(secondSession, Status.ABSENT).build();
+    private final Person alice = new PersonBuilder().withName("Alice Tan").withMatric("A0000003X")
+            .withEmail("alice@example.com").build();
+
     @Test
-    public void find_throughCommandBox_displaysGlobalCardsAndKeepsIndexesAfterDelete() throws Exception {
-        Session firstSession = new Session(new Group("T09"), new Week(1), new SessionDate("2026-08-11"));
-        Session secondSession = new Session(new Group("T10"), new Week(1), new SessionDate("2026-08-12"));
-        Person firstJohn = new PersonBuilder().withName("John Tan").withMatric("A0000002X")
-                .withGroup("T09").withEmail("john.t09@example.com")
-                .withAttendance(firstSession, Status.PRESENT).build();
-        Person secondJohn = new PersonBuilder().withName("John Tan").withMatric("A0000001X")
-                .withGroup("T10").withEmail("john.t10@example.com")
-                .withAttendance(secondSession, Status.ABSENT).build();
-        Person alice = new PersonBuilder().withName("Alice Tan").withMatric("A0000003X")
-                .withEmail("alice@example.com").build();
-        AddressBook book = new AddressBookBuilder().withPerson(firstJohn).withPerson(alice)
-                .withPerson(secondJohn).build();
-        book.addSession(firstSession);
-        book.addSession(secondSession);
-        ModelManager model = new ModelManager(book, new UserPrefs());
-        JsonAddressBookStorage addressBookStorage =
-                new JsonAddressBookStorage(temporaryFolder.resolve("roster.json"));
-        addressBookStorage.saveAddressBook(book);
-        StorageManager storage = new StorageManager(addressBookStorage,
-                new JsonUserPrefsStorage(temporaryFolder.resolve("preferences.json")));
-        Stage stage = onFxThread(() -> {
-            MainWindow window = new MainWindow(new Stage(), new LogicManager(model, storage),
-                    addressBookStorage.getAddressBookFilePath());
-            window.fillInnerParts();
-            window.show();
-            return window.getPrimaryStage();
-        });
-        try {
+    public void find_invalidQueries_preservesGroupViewAndRecords() throws Exception {
+        AddressBook book = createRoster();
+        try (MainWindowTestFixture fixture = MainWindowTestFixture.create(book, temporaryFolder)) {
             onFxThread(() -> {
+                Stage stage = fixture.stage();
                 enterCommand(stage, "list grp/T09");
                 assertEquals("T09", groups(stage).getSelectionModel().getSelectedItem());
                 for (String command : List.of("find n/", "find n/John n/Tan", "find n/John e/invalid")) {
                     enterCommand(stage, command);
                     assertEquals("T09", groups(stage).getSelectionModel().getSelectedItem());
-                    assertEquals(List.of(firstJohn, alice), model.getFilteredPersonList());
-                    assertEquals(book, model.getAddressBook());
+                    assertEquals(List.of(firstJohn, alice), fixture.model().getFilteredPersonList());
+                    assertEquals(book, fixture.model().getAddressBook());
                 }
+                assertEquals(book, fixture.storage().readAddressBook().orElseThrow());
+                return null;
+            });
+        }
+    }
 
+    @Test
+    public void find_filters_displaysGlobalCardsAndClearsGroupSelection() throws Exception {
+        AddressBook book = createRoster();
+        try (MainWindowTestFixture fixture = MainWindowTestFixture.create(book, temporaryFolder)) {
+            onFxThread(() -> {
+                Stage stage = fixture.stage();
+                enterCommand(stage, "list grp/T09");
                 enterCommand(stage, "find n/jOhN");
                 assertNull(groups(stage).getSelectionModel().getSelectedItem());
                 assertEquals("All groups", ((Label) stage.getScene().lookup("#groupScope")).getText());
                 assertEquals(List.of(
                         List.of("1. ", "John Tan", "A0000001X", "T10", "W1: \u2717"),
                         List.of("2. ", "John Tan", "A0000002X", "T09", "W1: \u2713")), visibleRows(stage));
-                assertEquals(book, model.getAddressBook());
-                assertEquals(book, addressBookStorage.readAddressBook().orElseThrow());
-
+                assertEquals(book, fixture.model().getAddressBook());
+                assertEquals(book, fixture.storage().readAddressBook().orElseThrow());
                 enterCommand(stage, "find n/John grp/T10");
                 assertNull(groups(stage).getSelectionModel().getSelectedItem());
                 assertEquals(List.of(List.of("1. ", "John Tan", "A0000001X", "T10", "W1: \u2717")),
@@ -96,8 +84,26 @@ public class FindCommandUiTest {
                 enterCommand(stage, "find m/a0000002x");
                 assertEquals(List.of(List.of("1. ", "John Tan", "A0000002X", "T09", "W1: \u2713")),
                         visibleRows(stage));
-                enterCommand(stage, "find n/John");
+                enterCommand(stage, "list grp/T09");
+                enterCommand(stage, "find n/Nobody");
+                assertNull(groups(stage).getSelectionModel().getSelectedItem());
+                assertTrue(visibleRows(stage).isEmpty());
+                assertTrue(fixture.model().getFilteredPersonList().isEmpty());
+                enterCommand(stage, "find n/Alice");
+                assertEquals(List.of(List.of("1. ", "Alice Tan", "A0000003X", "T09", "W1: \u2014")),
+                        visibleRows(stage));
+                assertNull(groups(stage).getSelectionModel().getSelectedItem());
+                return null;
+            });
+        }
+    }
 
+    @Test
+    public void find_markAndDelete_useDisplayedIndexes() throws Exception {
+        try (MainWindowTestFixture fixture = MainWindowTestFixture.create(createRoster(), temporaryFolder)) {
+            onFxThread(() -> {
+                Stage stage = fixture.stage();
+                enterCommand(stage, "find n/John");
                 enterCommand(stage, "mark 1 w/1 s/present");
                 assertEquals(List.of(
                         List.of("1. ", "John Tan", "A0000001X", "T10", "W1: \u2713"),
@@ -105,32 +111,19 @@ public class FindCommandUiTest {
                 enterCommand(stage, "delete 1");
                 assertEquals(List.of(List.of("1. ", "John Tan", "A0000002X", "T09", "W1: \u2713")),
                         visibleRows(stage));
-                assertEquals(List.of(firstJohn, alice), model.getAddressBook().getPersonList());
-                assertTrue(model.hasGroup(new Group("T10")));
-
-                enterCommand(stage, "list grp/T09");
-                enterCommand(stage, "find n/Nobody");
-                assertNull(groups(stage).getSelectionModel().getSelectedItem());
-                assertTrue(visibleRows(stage).isEmpty());
-                assertTrue(model.getFilteredPersonList().isEmpty());
-                enterCommand(stage, "find n/Alice");
-                assertEquals(List.of(List.of("1. ", "Alice Tan", "A0000003X", "T09", "W1: \u2014")),
-                        visibleRows(stage));
-                assertNull(groups(stage).getSelectionModel().getSelectedItem());
-                return null;
-            });
-        } finally {
-            onFxThread(() -> {
-                stage.close();
+                assertEquals(List.of(firstJohn, alice), fixture.model().getAddressBook().getPersonList());
+                assertTrue(fixture.model().hasGroup(new Group("T10")));
                 return null;
             });
         }
     }
 
-    private static void enterCommand(Stage stage, String command) {
-        TextField input = (TextField) stage.getScene().lookup("#commandTextField");
-        input.setText(command);
-        input.fireEvent(new ActionEvent());
+    private AddressBook createRoster() {
+        AddressBook book = new AddressBookBuilder().withPerson(firstJohn).withPerson(alice)
+                .withPerson(secondJohn).build();
+        book.addSession(firstSession);
+        book.addSession(secondSession);
+        return book;
     }
 
     private static ListView<?> groups(Stage stage) {
