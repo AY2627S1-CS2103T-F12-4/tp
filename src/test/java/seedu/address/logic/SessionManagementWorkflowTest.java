@@ -148,7 +148,8 @@ public class SessionManagementWorkflowTest {
         logic.execute("find n/Sarah");
         AddressBook beforeInvalidCommands = new AddressBook(model.getAddressBook());
         for (String input : List.of("editsession grp/T09 w/1 d/2026-02-29", "deletesession grp/T09 w/1 w/2",
-                "deletesession grp/T09 w/1 d/2026-08-13", "editsession grp/T09 w/1 d/2026-08-13 x/value")) {
+                "deletesession grp/T09 w/1 d/2026-08-13", "editsession grp/T09 w/1 d/2026-08-13 x/value",
+                "editsession grp/T09 w/1 d/2026-08-13 extra", "deletesession grp/T09 w/1 extra")) {
             assertThrows(ParseException.class, () -> logic.execute(input));
             assertEquals(beforeInvalidCommands, model.getAddressBook());
             assertEquals(List.of(student(0)), model.getFilteredPersonList());

@@ -24,8 +24,8 @@ public class DeleteSessionCommandParserTest {
     }
 
     @Test
-    public void parse_missingFieldsOrPreamble_failure() {
-        for (String args : List.of("", " grp/T09", " w/5", " all grp/T09 w/5")) {
+    public void parse_missingFields_failure() {
+        for (String args : List.of("", " grp/T09", " w/5")) {
             assertParseFailure(parser, args, String.format(MESSAGE_INVALID_COMMAND_FORMAT,
                     DeleteSessionCommand.MESSAGE_USAGE));
         }
@@ -40,11 +40,32 @@ public class DeleteSessionCommandParserTest {
     }
 
     @Test
-    public void parse_invalidValuesOrExtraParameters_failure() {
+    public void parse_invalidValues_failure() {
         assertParseFailure(parser, " grp/T9 w/5", Group.MESSAGE_CONSTRAINTS);
         assertParseFailure(parser, " grp/ w/5", Group.MESSAGE_CONSTRAINTS);
-        for (String week : List.of("", "0", "14", "05", "five", "5 d/2026-09-16", "5 x/value")) {
+        for (String week : List.of("", "0", "14", "05", "five")) {
             assertParseFailure(parser, " grp/T09 w/" + week, Week.MESSAGE_CONSTRAINTS);
         }
+    }
+
+    @Test
+    public void parse_unsupportedPrefix_namesThePrefixAndShowsUsage() {
+        for (String prefix : List.of("d/", "x/", "s/")) {
+            for (String args : List.of(" " + prefix + "value grp/T09 w/5",
+                    " grp/T09 " + prefix + "value w/5", " grp/T09 w/5 " + prefix + "value")) {
+                assertParseFailure(parser, args, "Unsupported parameter '" + prefix + "'. Remove it.\n"
+                        + DeleteSessionCommand.MESSAGE_USAGE);
+            }
+        }
+    }
+
+    @Test
+    public void parse_extraText_namesTheTextAndItsLocation() {
+        assertParseFailure(parser, " all grp/T09 w/5",
+                "Unexpected text 'all' before the parameters. Remove it.\n" + DeleteSessionCommand.MESSAGE_USAGE);
+        assertParseFailure(parser, " grp/T09 extra w/5",
+                "Unexpected text 'extra' after grp/. Remove it.\n" + DeleteSessionCommand.MESSAGE_USAGE);
+        assertParseFailure(parser, " grp/T09 w/5 extra words",
+                "Unexpected text 'extra words' after w/. Remove it.\n" + DeleteSessionCommand.MESSAGE_USAGE);
     }
 }

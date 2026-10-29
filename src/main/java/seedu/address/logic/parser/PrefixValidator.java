@@ -2,6 +2,7 @@ package seedu.address.logic.parser;
 
 import static seedu.address.commons.util.CollectionUtil.requireAllNonNull;
 
+import java.util.Optional;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -20,11 +21,21 @@ final class PrefixValidator {
     static void verifySupportedPrefixes(String args, Set<String> supportedPrefixes, String message)
             throws ParseException {
         requireAllNonNull(args, supportedPrefixes, message);
-        Matcher matcher = PREFIX_PATTERN.matcher(args.replaceAll(Name.RELATIONSHIP_CONNECTOR_REGEX, ""));
+        if (findUnsupportedPrefix(args.replaceAll(Name.RELATIONSHIP_CONNECTOR_REGEX, ""), supportedPrefixes)
+                .isPresent()) {
+            throw new ParseException(message);
+        }
+    }
+
+    /** Finds the first unexpected prefix without treating any field values as names. */
+    static Optional<String> findUnsupportedPrefix(String args, Set<String> supportedPrefixes) {
+        requireAllNonNull(args, supportedPrefixes);
+        Matcher matcher = PREFIX_PATTERN.matcher(args);
         while (matcher.find()) {
             if (!supportedPrefixes.contains(matcher.group())) {
-                throw new ParseException(message);
+                return Optional.of(matcher.group());
             }
         }
+        return Optional.empty();
     }
 }
