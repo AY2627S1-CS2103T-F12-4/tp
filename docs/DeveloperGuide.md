@@ -344,7 +344,7 @@ number of attempts. The highlight is cleared by the next command, including one 
 
 `comment INDEX c/COMMENT` appends to a student's `Comment`, joining notes with `; `, while `c-/COMMENT` replaces it
 and an empty `c-/` clears it. Only `c-/` discards existing text, so a note is never lost by accident. A comment is
-limited to 200 characters, and an append that would exceed the limit is rejected without changing the comment.
+limited to 500 characters, and an append that would exceed the limit is rejected without changing the comment.
 
 ### Field completion
 
@@ -830,7 +830,7 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 
       Use case ends.
 
-* 2c. The comment would become longer than 200 characters.
+* 2c. The comment would become longer than 500 characters.
 
     * 2c1. Roster shows an error message and leaves the comment unchanged.
 
@@ -879,7 +879,7 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 * **Attendance percentage**: The number of sessions a student was marked present for, divided by the number of sessions the student has been marked for. Unmarked sessions are excluded.
 * **Active group**: The tutorial group whose students are displayed after `list grp/GROUP` or a click in the group panel. `list` and `find` clear it.
 * **Attendance strip**: The row on a student's entry that shows one cell per session of their tutorial group, in teaching-week order, such as `W5: ✓`. A green `✓` means present, a red `✗` absent and a grey `—` unmarked.
-* **Comment**: A short note, of up to 200 characters, that a TA keeps about a student.
+* **Comment**: A short note, of up to 500 characters, that a TA keeps about a student.
 * **Displayed list**: The students currently shown in the student list. Every `INDEX`, and `all` in `mark all` and `delete all`, refers to this list.
 * **Course coordinator**: The staff member in charge of a module, who collects attendance records from the TAs.
 * **Index**: The one-based position of a student in the currently displayed list. It is not a property of the student: the same student's index changes when the list is filtered.
@@ -1041,7 +1041,7 @@ Prepare the data from [Recording attendance](#recording-attendance), then run `l
    Expected: John's comment reads `attentive; asks good questions`.
 2. Run `comment 1 c-/needs help`. Expected: the comment is replaced by `needs help`.
 3. Run `comment 1 c-/`. Expected: the comment is cleared and John's detail panel shows **No comment yet**.
-4. Try `comment 1`, `comment 1 c/a c-/b` and a `c/` note that would make the comment longer than 200 characters.
+4. Try `comment 1`, `comment 1 c/a c-/b` and a `c/` note that would make the comment longer than 500 characters.
    Expected: an error each time, with the comment unchanged.
 
 ### Saving and recovering data

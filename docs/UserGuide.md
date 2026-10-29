@@ -101,7 +101,7 @@ Parameter | Accepted value
 `n/NAME` | 1–70 characters. Letters and their accents, spaces, hyphens, apostrophes, full stops and the relationship abbreviations `s/o`, `d/o`, `a/l`, `a/p` (in any letter case). Must begin with a letter and end with a letter, accent or full stop. Examples: `J. Tan`, `Ravi s/o Kumar`. Surrounding spaces are removed, repeated spaces become one space, and letter case is preserved.
 `m/MATRIC` | `A`, followed by seven digits and one letter, e.g. `A0287654J`. Surrounding spaces are removed and letters are converted to uppercase.
 `e/EMAIL` | A valid email address such as `alex.tan@example.com`. Surrounding spaces are removed and the address is converted to lowercase.
-`c/COMMENT` | Text to add to a student's existing comment. 1–200 characters once surrounding spaces are removed and repeated spaces become one space.
+`c/COMMENT` | Text to add to a student's existing comment. 1–500 characters once surrounding spaces are removed and repeated spaces become one space.
 `c-/COMMENT` | Text to replace a student's comment with. Same rules as `c/`, except that `c-/` on its own clears the comment.
 `t/TAG` | Letters and digits, optionally joined by single hyphens, e.g. `exchange` or `needs-follow-up`. No spaces or other characters, and a hyphen cannot start or end a tag. Repeat `t/` to give a student multiple tags. Tags that differ only in letter case, such as `exchange` and `Exchange`, count as one tag; the spelling given first is kept.
 `w/WEEK` | A whole number from `1` to `13`, without a leading zero.
@@ -429,7 +429,7 @@ Examples:
 * `INDEX` refers to the currently displayed student list.
 * `c/` only ever adds. Repeated notes are joined with `; ` in the order they were added, so a comment reads as a short history.
 * `c-/` is the only form that discards an existing note, so a comment is never lost without you having typed it.
-* A comment is limited to 200 characters. Adding to a comment fails if the combined text would be longer, and the existing comment is left unchanged.
+* A comment is limited to 500 characters. Adding to a comment fails if the combined text would be longer, and the existing comment is left unchanged.
 * Clearing a student who has no comment reports that there was nothing to clear.
 * Giving both `c/` and `c-/` in one command is rejected, as is giving neither.
 * The displayed list and its indexes stay unchanged after a successful comment.

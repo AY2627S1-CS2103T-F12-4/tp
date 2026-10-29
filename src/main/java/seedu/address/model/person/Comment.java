@@ -12,7 +12,7 @@ public class Comment {
     /** The absent comment, so that a Student never holds a null one. */
     public static final Comment EMPTY = new Comment();
 
-    public static final int MAX_LENGTH = 200;
+    public static final int MAX_LENGTH = 500;
 
     public static final String SEPARATOR = "; ";
 
