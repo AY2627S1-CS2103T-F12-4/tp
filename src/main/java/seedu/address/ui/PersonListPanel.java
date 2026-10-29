@@ -57,6 +57,8 @@ public class PersonListPanel extends UiPart<Region> {
     @FXML
     private Label studentCount;
     @FXML
+    private HBox studentColumns;
+    @FXML
     private Label emptyGroupSessions;
 
     /**
@@ -71,6 +73,8 @@ public class PersonListPanel extends UiPart<Region> {
                 ? "All groups" : "Tutorial group " + activeGroup.get(), activeGroup));
         studentCount.textProperty().bind(Bindings.createStringBinding(() -> personList.size()
                 + (personList.size() == 1 ? " student" : " students"), personList));
+        studentColumns.visibleProperty().bind(Bindings.isNotEmpty(personList));
+        studentColumns.managedProperty().bind(studentColumns.visibleProperty());
         emptyGroupSessions.textProperty().bind(Bindings.createStringBinding(() ->
                 formatEmptyGroupSessions(activeGroup.get()), activeGroup, sessions));
         personListView.setItems(personList);

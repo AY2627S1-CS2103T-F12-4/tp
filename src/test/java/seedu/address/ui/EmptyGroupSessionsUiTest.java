@@ -45,6 +45,7 @@ public class EmptyGroupSessionsUiTest {
                 String savedBefore = Files.readString(fixture.storage().getAddressBookFilePath());
                 enterCommand(stage, "list grp/T11");
                 assertEquals("Sessions in T11\nWeek 1: 2026-10-20\nWeek 2: 2026-10-27", summary(stage).getText());
+                assertStudentColumnsVisible(stage, false);
                 assertEquals(beforeListing, fixture.model().getAddressBook());
                 assertEquals(savedBefore, Files.readString(fixture.storage().getAddressBookFilePath()));
 
@@ -61,8 +62,10 @@ public class EmptyGroupSessionsUiTest {
 
                 enterCommand(stage, "list grp/T12");
                 assertTrue(summary(stage).getText().startsWith("No sessions in T12 yet."));
+                assertStudentColumnsVisible(stage, false);
                 enterCommand(stage, "list");
                 assertEquals("No students to display.", summary(stage).getText());
+                assertStudentColumnsVisible(stage, false);
                 enterCommand(stage, "list grp/T11");
                 enterCommand(stage, "deletesession grp/T11 w/1");
                 assertTrue(summary(stage).getText().startsWith("No sessions in T11 yet."));
@@ -70,9 +73,16 @@ public class EmptyGroupSessionsUiTest {
                 assertEquals("Sessions in T11\nWeek 3: 2026-11-03", summary(stage).getText());
                 enterCommand(stage, "add n/Alice Tan e/alice@example.com m/A0000001X grp/T11");
                 assertEquals(1, fixture.model().getFilteredPersonList().size());
+                assertStudentColumnsVisible(stage, true);
+                enterCommand(stage, "list grp/T12");
+                assertStudentColumnsVisible(stage, false);
+                enterCommand(stage, "list");
+                assertStudentColumnsVisible(stage, true);
+                enterCommand(stage, "list grp/T11");
                 enterCommand(stage, "delete 1");
                 enterCommand(stage, "list grp/T11");
                 assertEquals("Sessions in T11\nWeek 3: 2026-11-03", summary(stage).getText());
+                assertStudentColumnsVisible(stage, false);
                 return null;
             });
         }
@@ -120,6 +130,13 @@ public class EmptyGroupSessionsUiTest {
                 });
             }
         }
+    }
+
+    private static void assertStudentColumnsVisible(Stage stage, boolean expected) {
+        var columns = stage.getScene().lookup("#studentColumns");
+        assertNotNull(columns);
+        assertEquals(expected, columns.isVisible());
+        assertEquals(expected, columns.isManaged(), "Hidden student headings must not leave an empty row");
     }
 
     private static Label summary(Stage stage) {

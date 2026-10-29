@@ -17,7 +17,7 @@
     <Label text="&#10007; Absent" styleClass="legend-absent" />
     <Label text="&#8212; Unmarked" styleClass="legend-unmarked" />
   </HBox>
-  <HBox alignment="CENTER_LEFT" styleClass="table-header">
+  <HBox fx:id="studentColumns" alignment="CENTER_LEFT" styleClass="table-header">
     <Label text="#" minWidth="30" prefWidth="30" maxWidth="30" />
     <Label text="STUDENT" minWidth="220" prefWidth="220" maxWidth="220" />
     <Label text="GROUP" minWidth="60" prefWidth="60" maxWidth="60" />
