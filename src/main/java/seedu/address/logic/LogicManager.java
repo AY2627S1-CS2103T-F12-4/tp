@@ -2,6 +2,7 @@ package seedu.address.logic;
 
 import java.io.IOException;
 import java.nio.file.AccessDeniedException;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javafx.beans.property.ReadOnlyBooleanProperty;
@@ -58,6 +59,7 @@ public class LogicManager implements Logic {
         CommandResult commandResult = command.execute(model);
 
         if (!command.requiresSave()) {
+            logger.fine("Command does not require a roster save: " + command.getUndoDescription());
             return commandResult;
         }
 
@@ -65,18 +67,22 @@ public class LogicManager implements Logic {
             // A successful no-op must not add an undo step or discard the available redo states.
             // Undo and redo still save their history position, including legacy duplicate snapshots.
             if (stateBeforeCommand.equals(model.getAddressBook())) {
+                logger.fine("Command made no roster changes; preserving undo/redo history: "
+                        + command.getUndoDescription());
                 return commandResult;
             }
             model.commitAddressBook(command.getUndoDescription());
+            logger.fine("Committed undo history in memory for command: " + command.getUndoDescription());
         }
 
         try {
             storage.saveAddressBook(model.getAddressBook());
+            logger.fine("Saved roster and history for command: " + command.getUndoDescription());
         } catch (AccessDeniedException e) {
-            rollBackCommand(command, stateBeforeCommand, viewBeforeCommand);
+            rollBackCommand(command, stateBeforeCommand, viewBeforeCommand, e);
             throw new CommandException(String.format(FILE_OPS_PERMISSION_ERROR_FORMAT, e.getMessage()), e);
         } catch (IOException ioe) {
-            rollBackCommand(command, stateBeforeCommand, viewBeforeCommand);
+            rollBackCommand(command, stateBeforeCommand, viewBeforeCommand, ioe);
             throw new CommandException(String.format(FILE_OPS_ERROR_FORMAT, ioe.getMessage()), ioe);
         }
 
@@ -84,9 +90,9 @@ public class LogicManager implements Logic {
     }
 
     private void rollBackCommand(Command command, VersionedAddressBook stateBeforeCommand,
-            StudentListViewState viewBeforeCommand) {
-        logger.warning("Saving failed, so the changes made by " + command.getUndoDescription()
-                + " are being rolled back");
+            StudentListViewState viewBeforeCommand, IOException cause) {
+        logger.log(Level.WARNING, "Saving failed, so the changes made by " + command.getUndoDescription()
+                + " are being rolled back, including undo/redo history and the student-list view", cause);
         model.restoreAddressBookHistory(stateBeforeCommand);
         model.restoreStudentListViewState(viewBeforeCommand);
     }
