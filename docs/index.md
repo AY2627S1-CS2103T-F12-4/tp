@@ -6,7 +6,7 @@ title: Roster
 [![CI Status](https://github.com/AY2627S1-CS2103T-F12-4/tp/actions/workflows/gradle.yml/badge.svg)](https://github.com/AY2627S1-CS2103T-F12-4/tp/actions/workflows/gradle.yml)
 [![codecov](https://codecov.io/gh/AY2627S1-CS2103T-F12-4/tp/branch/master/graph/badge.svg)](https://codecov.io/gh/AY2627S1-CS2103T-F12-4/tp)
 
-![Roster user interface](images/Ui.png?v=1.5)
+![Roster user interface](images/Ui.png?v=1.5-final)
 
 **Roster is a desktop application that helps NUS teaching assistants manage students across multiple tutorial groups.**
 

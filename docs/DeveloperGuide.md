@@ -99,7 +99,8 @@ The UI consists of a `MainWindow` and its parts, such as `CommandBox`, `ResultDi
   `CommandResult` also identifies the updated student when their number changes. If the student is no
   longer displayed, the panel closes. Escape closes it unless completion suggestions are open.
   `AttendanceSummary` counts sessions of the student's own group and excludes unmarked sessions from
-  the attendance percentage.
+  the attendance percentage. Session dates use the English format `EEE d MMM uuuu`, including the year
+  (for example, `Tue 11 Aug 2026`).
 * `CommandBox` suggests command words, prefixes and values using `FieldCompletion`. Its border and
   `ResultDisplay`'s banner receive consistent success/error state from `MainWindow`, including commands
   invoked through navigation and undo shortcuts. Changing the input clears its previous highlight.
@@ -140,6 +141,10 @@ How the `Logic` component works:
    roster data unchanged also skips committing and saving, preserving any redo branch.
 1. If saving fails, `LogicManager` restores the previous roster, history and student-list view, then
    throws a `CommandException`. The UI shows an error instead of the earlier success result.
+
+`LogicManager` records these save-lifecycle steps at `FINE` and logs a failed save with its cause at
+`WARNING`. See the [logging guide](Logging.html) for enabling detailed output. A history snapshot
+committed in memory is not evidence that the subsequent save succeeded.
 
 Here are the other classes in `Logic` (omitted from the class diagram above) that are used for parsing a user command:
 
@@ -462,7 +467,7 @@ For example, the user executes `add n/David …​`, causing the modified addres
 
 ![UndoRedoState2](images/UndoRedoState2.png)
 
-<div markdown="span" class="alert alert-info">:information_source: **Note:** If a command fails its execution, it will not call `Model#commitAddressBook()`, so the address book state will not be saved into the `addressBookStateList`.
+<div markdown="span" class="alert alert-info">:information_source: **Note:** If a command fails during execution, `LogicManager` does not call `Model#commitAddressBook(String)`, so no history entry is committed. If saving fails after a commit, the earlier roster and history are restored.
 
 </div>
 
@@ -1030,13 +1035,14 @@ relative to that launch folder. Keep backups of any real data outside the test f
    Click the row or select it and press Enter to read email, tags, comments and individual sessions in
    the detail panel. Scroll within the panel to reach all 13 weeks. Verify that the × button is visible
    and closes the panel; Escape should also close it after any completion popup has been dismissed.
+   Check that each session date includes its year; editing a date to another year must update the panel.
    Run `comment`, `mark`, `editsession`, `undo` and `redo` while details are open and check that they
    refresh. Filtering out or deleting the student must close the panel.
 4. Add a student at the beginning, middle and end of a long roster, and after an empty search. At 1000
    by 700, a normal student's complete highlighted row must be visible, including all 13 attendance cells.
 5. Make an undoable edit, run an invalid command, then invoke the undo shortcut from outside the command
    input. Expect restored data and success styling. Invoke undo after history is exhausted: expect error
-   styling. These checks also apply when the compatible visual theme is integrated.
+   styling.
 
 ### Editing and deleting tutorial sessions
 

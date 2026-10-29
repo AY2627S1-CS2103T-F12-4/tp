@@ -21,7 +21,7 @@ Roster is a **desktop application for NUS teaching assistants to manage students
 
 1. Open a terminal, `cd` to the folder containing the JAR file, and run `java -jar "roster.jar"`.<br>
    Use the terminal command even if double-clicking the JAR does not open it. A GUI similar to the one below should appear in a few seconds. Roster includes sample students in T09 on its first launch; the screenshot shows an example after attendance has been recorded.<br>
-   ![Roster user interface](images/Ui.png?v=1.5)
+   ![Roster user interface](images/Ui.png?v=1.5-final)
 
 1. Type a command in the command box and press Enter to execute it. For example, type **`help`** and press Enter to open the help window.
 
@@ -136,6 +136,7 @@ Click a student row to open their details on the right, or focus the student lis
 the arrow keys and press Enter. The panel opens over the right of the roster, so the command box and the
 result of your last command stay visible while it is open. It shows the student's email, tags, comments, and attendance by session.
 The attendance percentage counts only marked sessions; unmarked sessions are shown separately.
+Session dates in this panel include the year, for example `Tue 11 Aug 2026`.
 Scroll inside the panel to read later sessions. Click another row to switch students.
 
 Close the panel with its × button or Escape to see the full roster again. If command
