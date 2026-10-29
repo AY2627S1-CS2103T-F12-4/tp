@@ -3,26 +3,47 @@ skin rose
 skinparam ActivityFontSize 15
 skinparam ArrowFontSize 12
 start
-:User executes command;
-:Parse and execute the command;
-
-'Since the beta syntax does not support placing the condition outside the
-'diamond we place it as the true branch instead.
-
-if () then ([command changes data])
-    if () then ([saving the data file fails])
-        :Roll back the change;
-        :Show the error;
-        stop
-    else ([saved])
-    endif
-    if () then ([command commits AddressBook])
-        :Purge redundant states;
-        :Save AddressBook to
-        addressBookStateList;
-    else ([else, e.g. undo])
-    endif
-else ([read-only, e.g. list or find])
+:Parse command;
+if (Parsing succeeds?) then (yes)
+else (no)
+    :Show input error;
+    stop
 endif
+if (Command requires saving?) then (yes)
+    :Capture roster, history
+and student-list view;
+else (no)
+endif
+:Execute command;
+if (Execution succeeds?) then (yes)
+else (no)
+    :Show command error;
+    stop
+endif
+if (Command requires saving?) then (yes)
+    if (History action is COMMIT?) then (yes)
+        if (Roster data changed?) then (yes)
+            :Discard redo branch, append snapshot
+and retain at most 15 changes;
+        else (no)
+            :Return successful result
+without committing or saving;
+            stop
+        endif
+    else (no, undo or redo)
+        :Keep restored history position
+without adding a snapshot;
+    endif
+    :Save roster and history together;
+    if (Saving succeeds?) then (yes)
+    else (no)
+        :Restore captured roster, history
+and student-list view;
+        :Show save error;
+        stop
+    endif
+else (no)
+endif
+:Return successful result;
 stop
 @enduml

@@ -32,7 +32,7 @@ We are a team based in the [School of Computing, National University of Singapor
 [[github](https://github.com/Qu-Jingran)]
 
 * Role: Developer
-* Responsibilities: Student search, CSV data features, and related testing and documentation.
+* Responsibilities: Student search, attendance CSV export, related testing, and maintenance of the User Guide and Developer Guide.
 
 ### Tan Khian Yiong Thomas
 
