@@ -87,6 +87,16 @@ public class NameContainsQueryPredicateTest {
     }
 
     @Test
+    public void test_preferredName_matchesLiteralBracketsAndPartialNames() {
+        Person student = person("Tan Ah Kow (Mike)");
+        for (String query : new String[]{"Tan Ah Kow (Mike)", "(mike)", "Mike", "Mike)", "Tan Ah Kow"}) {
+            assertTrue(new NameContainsQueryPredicate(query).test(student), query);
+        }
+        assertFalse(new NameContainsQueryPredicate("Tan Ah Kow Mike").test(student));
+        assertFalse(NameContainsQueryPredicate.isValidQuery("()"));
+    }
+
+    @Test
     public void test_nonNameFields_doNotMatch() {
         Person student = new PersonBuilder().withName("Alice").withEmail("john@example.com").withTags("John").build();
         assertFalse(new NameContainsQueryPredicate("John").test(student));

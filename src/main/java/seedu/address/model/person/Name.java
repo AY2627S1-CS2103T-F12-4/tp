@@ -12,12 +12,16 @@ public class Name {
 
     public static final String MESSAGE_CONSTRAINTS = "Names must be 1-70 characters, "
             + "contain letters and their accents, "
-            + "spaces, apostrophes, hyphens, full stops or s/o, d/o, a/l, a/p abbreviations, "
-            + "begin with a letter, and end with a letter, accent or full stop.";
+            + "spaces, apostrophes, hyphens, full stops or s/o, d/o, a/l, a/p abbreviations. "
+            + "Preferred names may appear in balanced, non-nested parentheses, e.g. Tan Ah Kow (Mike). "
+            + "Each name part must begin with a letter and end with a letter, accent or full stop.";
 
-    public static final String VALIDATION_REGEX = "\\p{L}(?:[\\p{L}\\p{M} .'\u2019-]*[\\p{L}\\p{M}.])?";
     // Match complete name words so that s/o is accepted without treating s/other as a name abbreviation.
     public static final String RELATIONSHIP_CONNECTOR_REGEX = "(?iU)(?<!\\S)(?:s/o|d/o|a/l|a/p)(?!\\S)";
+
+    private static final String NAME_PART_REGEX = "\\p{L}(?:[\\p{L}\\p{M} .'\u2019-]*[\\p{L}\\p{M}.])?";
+    private static final String VALIDATION_REGEX = NAME_PART_REGEX
+            + "(?: *\\( *" + NAME_PART_REGEX + " *\\)(?: *" + NAME_PART_REGEX + ")?)*";
 
     public final String fullName;
 

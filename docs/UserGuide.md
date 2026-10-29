@@ -98,7 +98,7 @@ Roster does not yet support returning a recorded status to unmarked. You can, ho
 Parameter | Accepted value
 ----------|---------------
 `grp/GROUP` | One or two letters followed by two digits, e.g. `T09` or `TG01`. Surrounding spaces are removed and letters are converted to uppercase.
-`n/NAME` | 1–70 characters. Letters and their accents, spaces, hyphens, apostrophes, full stops and the relationship abbreviations `s/o`, `d/o`, `a/l`, `a/p` (in any letter case). Must begin with a letter and end with a letter, accent or full stop. Examples: `J. Tan`, `Ravi s/o Kumar`. Surrounding spaces are removed, repeated spaces become one space, and letter case is preserved.
+`n/NAME` | 1–70 characters, including brackets. Letters and their accents, spaces, hyphens, apostrophes, full stops and the relationship abbreviations `s/o`, `d/o`, `a/l`, `a/p` (in any letter case). Preferred names may appear in balanced, non-nested parentheses, e.g. `Tan Ah Kow (Mike)`. The name must begin with a letter; each name part, including one inside parentheses, must begin with a letter and end with a letter, accent or full stop. Examples: `J. Tan`, `Ravi s/o Kumar`. Surrounding spaces are removed, repeated spaces become one space, and letter case is preserved.
 `m/MATRIC` | `A`, followed by seven digits and one letter, e.g. `A0287654J`. Surrounding spaces are removed and letters are converted to uppercase.
 `e/EMAIL` | A valid email address such as `alex.tan@example.com`. Surrounding spaces are removed and the address is converted to lowercase.
 `c/COMMENT` | Text to add to a student's existing comment. 1–200 characters once surrounding spaces are removed and repeated spaces become one space.
@@ -349,7 +349,7 @@ Format: `find [n/KEYWORD] [m/MATRIC] [grp/GROUP]`
   and in the same order: `john tan` matches `John Tan` and `John Tanner`, but not `John Lim` or `Tan John`.
   Accents and punctuation remain significant.
 * A name query must contain 1–100 characters after whitespace normalization:
-  letters and their accents, spaces, hyphens, apostrophes, full stops,
+  letters and their accents, spaces, hyphens, apostrophes, full stops, parentheses,
   or complete `s/o`, `d/o`, `a/l`, `a/p` abbreviations, with at least one letter.
 * Surrounding whitespace is ignored, and repeated whitespace is treated as one space. Copied commands
   may use Unicode spaces; line breaks within search arguments are also treated as spaces.

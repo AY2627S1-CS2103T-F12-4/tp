@@ -79,6 +79,19 @@ public class NameTest {
     }
 
     @Test
+    public void constructor_preferredName_preservesBracketsAndLengthLimit() {
+        for (String name : new String[]{"Tan Ah Kow (Mike)", "Tan (Mike) Ah Kow", "Tan (J. O'Neil)",
+            "Tan (E\u0301lodie)", "Tan (Mike) (Michael)", "A".repeat(66) + " (B)"}) {
+            assertEquals(name, new Name(name).fullName);
+        }
+        assertEquals("Tan (Mike)", new Name("  Tan   (Mike)  ").fullName);
+        for (String name : new String[]{"Tan (Mike", "Tan Mike)", "Tan ()", "Tan ( )", "Tan ((Mike))",
+            "Tan (123)", "Tan (Mike-)", "(Mike) Tan", "A".repeat(67) + " (B)"}) {
+            assertFalse(Name.isValidName(name), name);
+        }
+    }
+
+    @Test
     public void equals() {
         Name name = new Name("Valid Name");
 
