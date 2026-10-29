@@ -76,6 +76,62 @@ public class FieldCompletionTest {
     }
 
     @Test
+    public void suggest_groupValuesAfterWhitespace_supportsEveryGroupCompletionCommand() {
+        for (String command : List.of("list", "find", "add", "edit 1", "session", "editsession",
+                "deletesession", "export f/report.csv")) {
+            for (String padding : List.of(" ", "   ", "\t", " \t ")) {
+                assertEquals(List.of("T09", "T10", "TG01"), values(command + " grp/" + padding + "t"));
+                assertEquals(List.of("T09", "T10", "TG01"), values(command + " grp/" + padding));
+                assertTrue(values(command + " grp/" + padding + "T09").isEmpty());
+            }
+        }
+        assertTrue(values("init grp/ T").isEmpty());
+        assertTrue(values("list grp/ T99").isEmpty());
+        groups.add("T11");
+        assertEquals(List.of("T10", "T11"), values("list grp/ T1"));
+        groups.clear();
+        assertTrue(values("list grp/ ").isEmpty());
+    }
+
+    @Test
+    public void suggest_statusValuesAfterWhitespace_keepsCaseInsensitiveMatching() {
+        for (String padding : List.of(" ", "   ", "\t", " \t ")) {
+            assertEquals(List.of("present", "absent"), values("mark 1 w/1 s/" + padding));
+            assertEquals(List.of("present"), values("mark 1 w/1 s/" + padding + "P"));
+            assertEquals(List.of("absent"), values("mark all w/1 s/" + padding + "a"));
+            assertTrue(values("mark 1 w/1 s/" + padding + "present").isEmpty());
+        }
+    }
+
+    @Test
+    public void suggest_spacedValueAtCaret_preservesPaddingAndSurroundingArguments() {
+        String session = "session grp/  T99 w/3 d/2026-10-19";
+        Suggestion group = FieldCompletion.suggest(session, session.indexOf("T99") + 1, groups).getFirst();
+        assertEquals("session grp/  T09 w/3 d/2026-10-19", group.apply(session));
+        assertEquals(session.indexOf("T99"), group.start());
+        assertEquals(session.indexOf("T99") + 3, group.end());
+        String mark = "mark 1 s/ \taxxxx w/3";
+        Suggestion status = FieldCompletion.suggest(mark, mark.indexOf("axxxx") + 1, groups).getFirst();
+        assertEquals("mark 1 s/ \tabsent w/3", status.apply(mark));
+        assertEquals(mark.indexOf("axxxx"), status.start());
+        assertEquals(mark.indexOf("axxxx") + 5, status.end());
+        String export = "export f/\"reports/grp/ T09.csv\" grp/ t";
+        assertEquals("export f/\"reports/grp/ T09.csv\" grp/ T09",
+                FieldCompletion.suggest(export, export.length(), groups).getFirst().apply(export));
+    }
+
+    @Test
+    public void suggest_afterCompletedSpacedValues_stillOffersNewFieldsAndRespectsContext() {
+        assertEquals(List.of("w/", "d/"), values("session grp/ T09 "));
+        assertEquals(List.of("w/"), values("mark 1 s/ present "));
+        assertTrue(values("list grp/ T09 ").isEmpty());
+        assertTrue(values("export f/\"reports grp/ T").isEmpty());
+        assertTrue(values("comment 1 c/grp/ T").isEmpty());
+        assertTrue(values("mark 1 grp/ T").isEmpty());
+        assertTrue(values("list grp/\u00a0T").isEmpty());
+    }
+
+    @Test
     public void suggest_studentFields_excludesRemovedPhoneAndAddress() {
         for (String command : List.of("add ", "edit 1 ")) {
             assertEquals(List.of("n/", "m/", "grp/", "e/", "t/"), values(command));
