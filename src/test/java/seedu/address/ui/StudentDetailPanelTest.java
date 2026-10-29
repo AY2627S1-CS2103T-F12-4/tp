@@ -39,6 +39,9 @@ public class StudentDetailPanelTest {
         assertEquals(List.of("attentive", "asks good questions"),
                 StudentDetailPanel.commentNotes(new Comment("attentive; asks good questions")));
         assertEquals(List.of("attentive"), StudentDetailPanel.commentNotes(new Comment("attentive")));
+        // #191: a separator the tutor types does the same job, which the User Guide documents
+        assertEquals(List.of("Bring notes", "revise recursion"),
+                StudentDetailPanel.commentNotes(new Comment("Bring notes; revise recursion")));
     }
 
     @Test
