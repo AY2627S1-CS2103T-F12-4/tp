@@ -5,7 +5,9 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static seedu.address.testutil.Assert.assertThrows;
 
+import java.util.HashSet;
 import java.util.Locale;
+import java.util.Set;
 
 import org.junit.jupiter.api.Test;
 
@@ -73,7 +75,6 @@ public class NameContainsQueryPredicateTest {
         NameContainsQueryPredicate predicate = new NameContainsQueryPredicate(" \t John \n Tan \u00a0");
         assertEquals("John Tan", predicate.getQuery());
         assertTrue(predicate.test(person("John   Tan  ")));
-        assertTrue(predicate.isWholeWordMatch(person("John   Tan  ")));
     }
 
     @Test
@@ -98,7 +99,6 @@ public class NameContainsQueryPredicateTest {
             Locale.setDefault(Locale.forLanguageTag("tr-TR"));
             NameContainsQueryPredicate predicate = new NameContainsQueryPredicate("LIM");
             assertTrue(predicate.test(person("John Lim")));
-            assertTrue(predicate.isWholeWordMatch(person("John Lim")));
         } finally {
             Locale.setDefault(original);
         }
@@ -110,37 +110,13 @@ public class NameContainsQueryPredicateTest {
             {"ΒΑΣΙΛΗΣ", "ΑΣ"}, {"Νίκος", "ς"}, {"𐐀𐐁", "𐐨"}}) {
             assertTrue(new NameContainsQueryPredicate(example[1]).test(person(example[0])), example[1]);
         }
-        assertTrue(new NameContainsQueryPredicate("ΝΙΚΟΣ").isWholeWordMatch(person("Νικος Tan")));
-        assertFalse(new NameContainsQueryPredicate("ΟΣ").isWholeWordMatch(person("ΟΣΑ")));
-    }
-
-    @Test
-    public void isWholeWordMatch_singleWord_respectsWordBoundaries() {
-        NameContainsQueryPredicate predicate = new NameContainsQueryPredicate("john");
-        assertTrue(predicate.isWholeWordMatch(person("John")));
-        assertTrue(predicate.isWholeWordMatch(person("John Tan")));
-        assertTrue(predicate.isWholeWordMatch(person("Alex John")));
-        assertTrue(predicate.isWholeWordMatch(person("Alex John Tan")));
-        assertFalse(predicate.isWholeWordMatch(person("Johnny Lim")));
-        assertFalse(predicate.isWholeWordMatch(person("Ajohn Tan")));
-        assertFalse(predicate.isWholeWordMatch(person("Alice")));
-    }
-
-    @Test
-    public void isWholeWordMatch_phrase_respectsBothBoundaries() {
-        NameContainsQueryPredicate predicate = new NameContainsQueryPredicate("john tan");
-        assertTrue(predicate.isWholeWordMatch(person("John Tan")));
-        assertTrue(predicate.isWholeWordMatch(person("Alex John Tan Lim")));
-        assertFalse(predicate.isWholeWordMatch(person("John Tanner")));
-        assertFalse(predicate.isWholeWordMatch(person("Ajohn Tan")));
-        assertFalse(predicate.isWholeWordMatch(person("Tan John")));
+        assertTrue(new NameContainsQueryPredicate("ΝΙΚΟΣ").test(person("Νικος Tan")));
     }
 
     @Test
     public void test_nullPerson_throwsNullPointerException() {
         NameContainsQueryPredicate predicate = new NameContainsQueryPredicate("John");
         assertThrows(NullPointerException.class, () -> predicate.test(null));
-        assertThrows(NullPointerException.class, () -> predicate.isWholeWordMatch(null));
     }
 
     @Test
@@ -151,6 +127,17 @@ public class NameContainsQueryPredicateTest {
         assertFalse(predicate.equals(new NameContainsQueryPredicate("Tan John")));
         assertFalse(predicate.equals("John Tan"));
         assertFalse(predicate.equals(null));
+    }
+
+    @Test
+    public void hashCode_equalNormalizedQueries_supportHashSetLookup() {
+        NameContainsQueryPredicate predicate = new NameContainsQueryPredicate("John Tan");
+        NameContainsQueryPredicate equal = new NameContainsQueryPredicate(" John   Tan ");
+        Set<NameContainsQueryPredicate> predicates = new HashSet<>();
+        predicates.add(predicate);
+        assertEquals(predicate.hashCode(), equal.hashCode());
+        assertTrue(predicates.contains(equal));
+        assertFalse(predicates.contains(new NameContainsQueryPredicate("Tan John")));
     }
 
     @Test

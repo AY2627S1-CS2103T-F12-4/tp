@@ -5,6 +5,8 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static seedu.address.testutil.FxTestUtil.onFxThread;
 import static seedu.address.testutil.FxTestUtil.waitForRenderingCycles;
+import static seedu.address.ui.MainWindowTestFixture.enterCommand;
+import static seedu.address.ui.MainWindowTestFixture.getCommandInput;
 
 import java.awt.image.BufferedImage;
 import java.nio.file.Files;
@@ -17,32 +19,24 @@ import javax.imageio.ImageIO;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
-import javafx.event.ActionEvent;
 import javafx.geometry.Bounds;
 import javafx.scene.Node;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 import javafx.scene.control.TextArea;
-import javafx.scene.control.TextField;
 import javafx.scene.image.WritableImage;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
-import seedu.address.logic.LogicManager;
 import seedu.address.model.AddressBook;
-import seedu.address.model.ModelManager;
-import seedu.address.model.UserPrefs;
 import seedu.address.model.attendance.Status;
 import seedu.address.model.person.Group;
 import seedu.address.model.session.Session;
 import seedu.address.model.session.SessionDate;
 import seedu.address.model.session.Week;
-import seedu.address.storage.JsonAddressBookStorage;
-import seedu.address.storage.JsonUserPrefsStorage;
-import seedu.address.storage.StorageManager;
 import seedu.address.testutil.PersonBuilder;
 
 public class UiComponentsIntegrationTest {
@@ -51,14 +45,13 @@ public class UiComponentsIntegrationTest {
 
     @Test
     public void feedback_commandsAndUndoShortcuts_updateBothBannerAndInputStatus() throws Exception {
-        WindowFixture fixture = createWindow(false);
-        try {
+        try (MainWindowTestFixture fixture = createWindow(false)) {
             onFxThread(() -> {
                 Stage stage = fixture.stage();
-                enter(stage, "edit 1 n/Alex Lim");
+                enterCommand(stage, "edit 1 n/Alex Lim");
                 assertFeedback(stage, false);
-                enter(stage, "unknown");
-                enter(stage, "unknown");
+                enterCommand(stage, "unknown");
+                enterCommand(stage, "unknown");
                 assertFeedback(stage, true);
                 TextArea result = (TextArea) stage.getScene().lookup("#resultDisplay");
                 result.requestFocus();
@@ -68,53 +61,47 @@ public class UiComponentsIntegrationTest {
                         .getName().fullName);
                 result.fireEvent(shortcutZ());
                 assertFeedback(stage, true);
-                input(stage).setText("list");
+                getCommandInput(stage).setText("list");
                 assertFalse(stage.getScene().lookup("#commandBox").getStyleClass().contains("error"));
-                enter(stage, "list");
+                enterCommand(stage, "list");
                 assertFeedback(stage, false);
                 return null;
             });
             saveScreenshotAfterRendering(fixture.stage(), "feedback-success.png");
             onFxThread(() -> {
-                enter(fixture.stage(), "unknown");
+                enterCommand(fixture.stage(), "unknown");
                 return null;
             });
             saveScreenshotAfterRendering(fixture.stage(), "feedback-error.png");
-        } finally {
-            close(fixture);
         }
     }
 
     @Test
     public void filteringCommentsAndUndo_refreshStudentCountAndPreserveMetadata() throws Exception {
-        WindowFixture fixture = createWindow(false);
-        try {
+        try (MainWindowTestFixture fixture = createWindow(false)) {
             onFxThread(() -> {
                 Stage stage = fixture.stage();
                 assertEquals("3 students", label(stage, "studentCount").getText());
-                enter(stage, "find n/Alex");
+                enterCommand(stage, "find n/Alex");
                 assertEquals("1 student", label(stage, "studentCount").getText());
-                enter(stage, "comment 1 c-/Updated note");
-                enter(stage, "comment 1 c-/");
-                enter(stage, "undo");
-                enter(stage, "find n/Nobody");
+                enterCommand(stage, "comment 1 c-/Updated note");
+                enterCommand(stage, "comment 1 c-/");
+                enterCommand(stage, "undo");
+                enterCommand(stage, "find n/Nobody");
                 assertEquals("0 students", label(stage, "studentCount").getText());
-                enter(stage, "list");
-                enter(stage, "clear");
+                enterCommand(stage, "list");
+                enterCommand(stage, "clear");
                 assertEquals("0 students", label(stage, "studentCount").getText());
-                enter(stage, "undo");
+                enterCommand(stage, "undo");
                 assertEquals("3 students", label(stage, "studentCount").getText());
                 return null;
             });
-        } finally {
-            close(fixture);
         }
     }
 
     @Test
     public void layout_minimumAndLargerWindows_keepLongTextAndAllWeeksInsideCards() throws Exception {
-        WindowFixture fixture = createWindow(true);
-        try {
+        try (MainWindowTestFixture fixture = createWindow(true)) {
             for (int[] size : List.of(new int[]{740, 600}, new int[]{1000, 700}, new int[]{1400, 900})) {
                 onFxThread(() -> {
                     fixture.stage().setWidth(size[0]);
@@ -147,15 +134,12 @@ public class UiComponentsIntegrationTest {
                     return null;
                 });
             }
-        } finally {
-            close(fixture);
         }
     }
 
     @Test
     public void horizontalGroupNavigation_manyGroups_keepsSelectionAndDraftInput() throws Exception {
-        WindowFixture fixture = createWindow(false);
-        try {
+        try (MainWindowTestFixture fixture = createWindow(false)) {
             onFxThread(() -> {
                 for (int i = 1; i <= 20; i++) {
                     Group group = new Group(String.format("T%02d", i));
@@ -170,7 +154,7 @@ public class UiComponentsIntegrationTest {
             waitForRenderingCycles(3);
             onFxThread(() -> {
                 Stage stage = fixture.stage();
-                input(stage).setText("unfinished command");
+                getCommandInput(stage).setText("unfinished command");
                 ListView<?> groups = (ListView<?>) stage.getScene().lookup("#groupListView");
                 groups.getSelectionModel().selectFirst();
                 groups.fireEvent(key(KeyCode.DOWN));
@@ -187,7 +171,7 @@ public class UiComponentsIntegrationTest {
                 groups.fireEvent(new KeyEvent(KeyEvent.KEY_PRESSED, "", "", KeyCode.ENTER,
                         false, false, false, false));
                 assertEquals(new Group("T20"), fixture.model().getActiveGroup().orElseThrow());
-                assertEquals("unfinished command", input(stage).getText());
+                assertEquals("unfinished command", getCommandInput(stage).getText());
                 assertEquals("0 students", label(stage, "studentCount").getText());
                 stage.getScene().getRoot().applyCss();
                 stage.getScene().getRoot().layout();
@@ -199,67 +183,53 @@ public class UiComponentsIntegrationTest {
                 saveScreenshot(stage, "many-groups.png");
                 return null;
             });
-        } finally {
-            close(fixture);
         }
     }
 
-    private WindowFixture createWindow(boolean longText) throws Exception {
-        WindowFixture fixture = onFxThread(() -> {
-            AddressBook book = new AddressBook();
-            Group firstGroup = new Group("T09");
-            Group secondGroup = new Group("T10");
-            book.addGroup(firstGroup);
-            book.addGroup(secondGroup);
-            for (int week = 1; week <= 13; week++) {
-                book.addSession(new Session(firstGroup, new Week(week),
-                        new SessionDate(LocalDate.of(2026, 8, 11).plusWeeks(week - 1).toString())));
-            }
-            PersonBuilder first = new PersonBuilder().withName(longText ? "Alexandra ".repeat(7).strip() : "Alex Tan")
-                    .withMatric("A0000001X").withEmail(longText ? "verylongemail".repeat(5) + "@example.com"
-                            : "alex@example.com").withGroup("T09")
-                    .withComment(longText ? "Needs worksheet and attendance follow up. ".repeat(6).substring(0, 200)
-                            : "Needs worksheet")
-                    .withTags("classrep", longText ? "x".repeat(100) : "exchange");
-            first.withAttendance(book.getSessionList().getFirst(), Status.PRESENT);
-            book.addPerson(first.build());
-            book.addPerson(new PersonBuilder().withName("Bernice Tan").withMatric("A0000002X")
-                    .withEmail("bernice@example.com").withGroup("T09").build());
-            book.addPerson(new PersonBuilder().withName("Chris Tan").withMatric("A0000003X")
-                    .withEmail("chris@example.com").withGroup("T10").build());
-            ModelManager model = new ModelManager(book, new UserPrefs());
-            JsonAddressBookStorage storage = new JsonAddressBookStorage(temporaryFolder.resolve("roster.json"));
-            LogicManager logic = new LogicManager(model, new StorageManager(storage,
-                    new JsonUserPrefsStorage(temporaryFolder.resolve("preferences.json"))));
-            MainWindow window = new MainWindow(new Stage(), logic, storage.getAddressBookFilePath());
-            window.fillInnerParts();
-            window.show();
-            Stage stage = window.getPrimaryStage();
-            stage.setWidth(1000);
-            stage.setHeight(700);
-            return new WindowFixture(stage, model);
+    private MainWindowTestFixture createWindow(boolean hasLongText) throws Exception {
+        MainWindowTestFixture fixture = MainWindowTestFixture.create(createRoster(hasLongText), temporaryFolder);
+        onFxThread(() -> {
+            fixture.stage().setWidth(1000);
+            fixture.stage().setHeight(700);
+            return null;
         });
         waitForRenderingCycles(3);
         return fixture;
     }
 
-    private static void assertFeedback(Stage stage, boolean error) {
-        assertEquals(error ? "Command not run" : "Command completed", label(stage, "resultTitle").getText());
-        assertEquals(error ? "!" : "\u2713", label(stage, "resultIcon").getText());
-        assertEquals(error, stage.getScene().lookup("#commandBox").getStyleClass().contains("error"));
-        assertEquals(!error, stage.getScene().lookup("#commandBox").getStyleClass().contains("success"));
-        assertEquals(error, input(stage).getStyleClass().contains("error"));
+    private AddressBook createRoster(boolean hasLongText) {
+        AddressBook book = new AddressBook();
+        Group firstGroup = new Group("T09");
+        Group secondGroup = new Group("T10");
+        book.addGroup(firstGroup);
+        book.addGroup(secondGroup);
+        for (int week = 1; week <= 13; week++) {
+            book.addSession(new Session(firstGroup, new Week(week),
+                    new SessionDate(LocalDate.of(2026, 8, 11).plusWeeks(week - 1).toString())));
+        }
+        PersonBuilder first = new PersonBuilder().withName(hasLongText ? "Alexandra ".repeat(7).strip() : "Alex Tan")
+                .withMatric("A0000001X").withEmail(hasLongText ? "verylongemail".repeat(5) + "@example.com"
+                        : "alex@example.com").withGroup("T09")
+                .withComment(hasLongText ? "Needs worksheet and attendance follow up. ".repeat(6).substring(0, 200)
+                        : "Needs worksheet")
+                .withTags("classrep", hasLongText ? "x".repeat(100) : "exchange");
+        first.withAttendance(book.getSessionList().getFirst(), Status.PRESENT);
+        book.addPerson(first.build());
+        book.addPerson(new PersonBuilder().withName("Bernice Tan").withMatric("A0000002X")
+                .withEmail("bernice@example.com").withGroup("T09").build());
+        book.addPerson(new PersonBuilder().withName("Chris Tan").withMatric("A0000003X")
+                .withEmail("chris@example.com").withGroup("T10").build());
+        return book;
+    }
+
+    private static void assertFeedback(Stage stage, boolean isError) {
+        assertEquals(isError ? "Command not run" : "Command completed", label(stage, "resultTitle").getText());
+        assertEquals(isError ? "!" : "\u2713", label(stage, "resultIcon").getText());
+        assertEquals(isError, stage.getScene().lookup("#commandBox").getStyleClass().contains("error"));
+        assertEquals(!isError, stage.getScene().lookup("#commandBox").getStyleClass().contains("success"));
+        assertEquals(isError, getCommandInput(stage).getStyleClass().contains("error"));
         assertEquals(1, stage.getScene().lookup("#placeHolder").getStyleClass().stream()
-                .filter(value -> value.equals(error ? "result-error" : "result-success")).count());
-    }
-
-    private static void enter(Stage stage, String text) {
-        input(stage).setText(text);
-        input(stage).fireEvent(new ActionEvent());
-    }
-
-    private static TextField input(Stage stage) {
-        return (TextField) stage.getScene().lookup("#commandTextField");
+                .filter(value -> value.equals(isError ? "result-error" : "result-success")).count());
     }
 
     private static Label label(Stage stage, String id) {
@@ -283,8 +253,8 @@ public class UiComponentsIntegrationTest {
     }
 
     private static KeyEvent shortcutZ() {
-        boolean mac = System.getProperty("os.name").toLowerCase(Locale.ROOT).startsWith("mac");
-        return new KeyEvent(KeyEvent.KEY_PRESSED, "", "", KeyCode.Z, false, !mac, false, mac);
+        boolean isMac = System.getProperty("os.name").toLowerCase(Locale.ROOT).startsWith("mac");
+        return new KeyEvent(KeyEvent.KEY_PRESSED, "", "", KeyCode.Z, false, !isMac, false, isMac);
     }
 
     private static KeyEvent key(KeyCode code) {
@@ -330,12 +300,4 @@ public class UiComponentsIntegrationTest {
         ImageIO.write(image, "png", folder.resolve(name).toFile());
     }
 
-    private static void close(WindowFixture fixture) throws Exception {
-        onFxThread(() -> {
-            fixture.stage().close();
-            return null;
-        });
-    }
-
-    private record WindowFixture(Stage stage, ModelManager model) {}
 }

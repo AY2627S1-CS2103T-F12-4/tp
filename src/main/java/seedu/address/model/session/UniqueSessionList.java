@@ -5,9 +5,13 @@ import static seedu.address.commons.util.AppUtil.checkArgument;
 import static seedu.address.commons.util.CollectionUtil.requireAllNonNull;
 
 import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -108,12 +112,13 @@ public class UniqueSessionList implements Iterable<Session> {
         return internalList.toString();
     }
 
+    /** Checks group/week identities without comparing every pair or including session dates. */
     private boolean sessionsAreUnique(List<Session> sessions) {
-        for (int i = 0; i < sessions.size() - 1; i++) {
-            for (int j = i + 1; j < sessions.size(); j++) {
-                if (sessions.get(i).isSameSession(sessions.get(j))) {
-                    return false;
-                }
+        Map<Group, Set<Week>> weeksByGroup = new HashMap<>();
+        for (Session session : sessions) {
+            Set<Week> groupWeeks = weeksByGroup.computeIfAbsent(session.getGroup(), group -> new HashSet<>());
+            if (!groupWeeks.add(session.getWeek())) {
+                return false;
             }
         }
         return true;
