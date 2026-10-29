@@ -118,6 +118,10 @@ public class CommandBox extends UiPart<Region> {
                 completionSkin.ensureVisible(index);
                 break;
             case TAB:
+                if (event.isShiftDown()) {
+                    completionPopup.hide();
+                    return;
+                }
                 acceptCompletion();
                 break;
             case ESCAPE:

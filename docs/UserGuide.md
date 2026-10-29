@@ -154,6 +154,7 @@ the other is not suggested. Phone (`p/`) and address (`a/`) fields are no longer
 Suggestions are suppressed inside quoted export paths so that directory names are preserved.
 
 * Press Up/Down to select a suggestion and Tab to insert it, or click a suggestion.
+* Shift+Tab dismisses suggestions and moves focus backwards without changing the command text.
 * Press Escape to dismiss suggestions. Enter always executes the current command.
 * Completion replaces the field fragment at the cursor and preserves other fields.
 * Completing the command word replaces only what you typed before the cursor, so any text
