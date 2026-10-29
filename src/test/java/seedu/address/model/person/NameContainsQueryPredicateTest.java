@@ -78,6 +78,19 @@ public class NameContainsQueryPredicateTest {
     }
 
     @Test
+    public void test_canonicallyEquivalentAccents_matchInEitherRepresentation() {
+        for (String query : new String[]{"Jos\u00e9 Tan", "Jose\u0301 Tan", "JOSE\u0301"}) {
+            assertTrue(new NameContainsQueryPredicate(query).test(person("Jos\u00e9 Tan")), query);
+            assertTrue(new NameContainsQueryPredicate(query).test(person("Jose\u0301 Tan")), query);
+        }
+        assertTrue(new NameContainsQueryPredicate("\uac00").test(person("\u1100\u1161 Tan")));
+        assertTrue(new NameContainsQueryPredicate("\u1100\u1161").test(person("\uac00 Tan")));
+        assertFalse(new NameContainsQueryPredicate("Jos\u00e9").test(person("Jose Tan")));
+        assertFalse(new NameContainsQueryPredicate("Jose").test(person("Jos\u00e9 Tan")));
+        assertFalse(new NameContainsQueryPredicate("Alice").test(person("\uff21lice")));
+    }
+
+    @Test
     public void test_accentsAndPunctuation_remainSignificant() {
         Person elodie = person("Elodie");
         assertFalse(new NameContainsQueryPredicate("\u00c9lodie").test(elodie));
