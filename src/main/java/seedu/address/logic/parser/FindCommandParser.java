@@ -1,5 +1,6 @@
 package seedu.address.logic.parser;
 
+import static seedu.address.commons.util.StringUtil.normalizeWhitespace;
 import static seedu.address.logic.Messages.MESSAGE_INVALID_COMMAND_FORMAT;
 import static seedu.address.logic.parser.CliSyntax.PREFIX_GROUP;
 import static seedu.address.logic.parser.CliSyntax.PREFIX_MATRIC;
@@ -32,7 +33,7 @@ public class FindCommandParser implements Parser<FindCommand> {
      */
     public FindCommand parse(String args) throws ParseException {
         // The tokenizer recognizes prefixes preceded by a space.
-        String normalizedArgs = " " + args.replaceAll("(?U)\\s+", " ").strip();
+        String normalizedArgs = " " + normalizeWhitespace(args);
         Matcher prefixMatcher = PREFIX_PATTERN.matcher(
                 normalizedArgs.replaceAll(Name.RELATIONSHIP_CONNECTOR_REGEX, ""));
         while (prefixMatcher.find()) {
