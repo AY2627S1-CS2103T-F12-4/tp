@@ -60,6 +60,11 @@ public class LogicManager implements Logic {
         }
 
         if (command.getHistoryAction() == HistoryAction.COMMIT) {
+            // A successful no-op must not add an undo step or discard the available redo states.
+            // Undo and redo still save their history position, including legacy duplicate snapshots.
+            if (stateBeforeCommand.equals(model.getAddressBook())) {
+                return commandResult;
+            }
             model.commitAddressBook(command.getUndoDescription());
         }
 

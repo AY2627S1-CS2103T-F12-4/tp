@@ -9,6 +9,9 @@ import java.util.List;
  * An {@link AddressBook} that keeps snapshots of successfully committed states.
  */
 public class VersionedAddressBook extends AddressBook {
+    public static final int MAX_HISTORY_COMMANDS = 15;
+    private static final int MAX_HISTORY_STATES = MAX_HISTORY_COMMANDS + 1;
+
     private final List<AddressBook> addressBookStateList = new ArrayList<>();
     private final List<String> commandDescriptionList = new ArrayList<>();
     private int currentStatePointer;
@@ -44,7 +47,10 @@ public class VersionedAddressBook extends AddressBook {
         return currentStatePointer;
     }
 
-    /** Restores validated history without replacing the observable roster lists. */
+    /**
+     * Restores validated history without replacing the observable roster lists.
+     * Keeps the latest bounded window containing the current state, even for older unlimited histories.
+     */
     public void restoreHistory(List<AddressBook> states, List<String> commands, int pointer) {
         requireNonNull(states);
         requireNonNull(commands);
@@ -53,13 +59,16 @@ public class VersionedAddressBook extends AddressBook {
                 || commands.subList(1, commands.size()).stream().anyMatch(name -> name == null || name.isBlank())) {
             throw new IllegalArgumentException("Invalid undo/redo history");
         }
-        List<AddressBook> copies = states.stream().map(AddressBook::new).toList();
+        int firstState = Math.min(pointer, Math.max(0, states.size() - MAX_HISTORY_STATES));
+        int endState = Math.min(states.size(), firstState + MAX_HISTORY_STATES);
+        List<AddressBook> copies = states.subList(firstState, endState).stream().map(AddressBook::new).toList();
         addressBookStateList.clear();
         addressBookStateList.addAll(copies);
         commandDescriptionList.clear();
-        commandDescriptionList.addAll(commands);
-        currentStatePointer = pointer;
-        resetData(addressBookStateList.get(pointer));
+        commandDescriptionList.addAll(commands.subList(firstState, endState));
+        commandDescriptionList.set(0, null);
+        currentStatePointer = pointer - firstState;
+        resetData(addressBookStateList.get(currentStatePointer));
         assertValidHistory();
     }
 
@@ -81,6 +90,12 @@ public class VersionedAddressBook extends AddressBook {
         addressBookStateList.add(new AddressBook(this));
         commandDescriptionList.add(commandDescription);
         currentStatePointer++;
+        if (addressBookStateList.size() > MAX_HISTORY_STATES) {
+            addressBookStateList.removeFirst();
+            commandDescriptionList.removeFirst();
+            commandDescriptionList.set(0, null);
+            currentStatePointer--;
+        }
         assertValidHistory();
     }
 

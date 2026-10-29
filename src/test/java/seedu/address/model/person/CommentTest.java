@@ -48,6 +48,8 @@ public class CommentTest {
 
         // at the limit
         assertTrue(Comment.isValidComment("a".repeat(Comment.MAX_LENGTH)));
+        // #154: a running history of short notes needs more room than the original 200 characters
+        assertTrue(Comment.isValidComment("a".repeat(300)));
 
         // whitespace that collapses back under the limit is accepted
         assertTrue(Comment.isValidComment("  attentive  "));

@@ -33,6 +33,7 @@ import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import seedu.address.model.AddressBook;
 import seedu.address.model.attendance.Status;
+import seedu.address.model.person.Comment;
 import seedu.address.model.person.Group;
 import seedu.address.model.session.Session;
 import seedu.address.model.session.SessionDate;
@@ -186,6 +187,12 @@ public class UiComponentsIntegrationTest {
         }
     }
 
+    /** Returns the longest comment the model allows, for stressing the layout. */
+    private static String longestComment() {
+        String note = "Needs worksheet and attendance follow up. ";
+        return note.repeat(Comment.MAX_LENGTH / note.length() + 1).substring(0, Comment.MAX_LENGTH);
+    }
+
     private MainWindowTestFixture createWindow(boolean hasLongText) throws Exception {
         MainWindowTestFixture fixture = MainWindowTestFixture.create(createRoster(hasLongText), temporaryFolder);
         onFxThread(() -> {
@@ -210,8 +217,7 @@ public class UiComponentsIntegrationTest {
         PersonBuilder first = new PersonBuilder().withName(hasLongText ? "Alexandra ".repeat(7).strip() : "Alex Tan")
                 .withMatric("A0000001X").withEmail(hasLongText ? "verylongemail".repeat(5) + "@example.com"
                         : "alex@example.com").withGroup("T09")
-                .withComment(hasLongText ? "Needs worksheet and attendance follow up. ".repeat(6).substring(0, 200)
-                        : "Needs worksheet")
+                .withComment(hasLongText ? longestComment() : "Needs worksheet")
                 .withTags("classrep", hasLongText ? "x".repeat(100) : "exchange");
         first.withAttendance(book.getSessionList().getFirst(), Status.PRESENT);
         book.addPerson(first.build());

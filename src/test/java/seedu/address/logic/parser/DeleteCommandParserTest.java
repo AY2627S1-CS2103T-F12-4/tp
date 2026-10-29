@@ -35,11 +35,13 @@ public class DeleteCommandParserTest {
     public void parse_all_returnsDeleteAllCommand() {
         assertParseSuccess(parser, "all", new DeleteAllCommand());
         assertParseSuccess(parser, "  all  ", new DeleteAllCommand());
+        assertParseSuccess(parser, "ALL", new DeleteAllCommand());
+        assertParseSuccess(parser, "All", new DeleteAllCommand());
     }
 
     @Test
     public void parse_allWithOtherText_throwsParseException() {
-        for (String args : new String[]{"all 3", "all all", "ALL", "3 all"}) {
+        for (String args : new String[]{"all 3", "all all", "3 all"}) {
             assertParseFailure(parser, args,
                     String.format(MESSAGE_INVALID_COMMAND_FORMAT, DeleteCommand.MESSAGE_USAGE));
         }

@@ -21,22 +21,22 @@ public class SampleDataUtil {
         return new Person[] {
             new Person(new Name("Alex Yeoh"), new Email("alexyeoh@example.com"),
                                 new Matric("A0287401J"), new Group("T09"),
-                getTagSet("friends")),
+                getTagSet("classrep")),
             new Person(new Name("Bernice Yu"), new Email("berniceyu@example.com"),
                                 new Matric("A0287402K"), new Group("T09"),
-                getTagSet("colleagues", "friends")),
+                getTagSet("exchange")),
             new Person(new Name("Charlotte Oliveiro"), new Email("charlotte@example.com"),
                                 new Matric("A0287403L"), new Group("T09"),
-                getTagSet("neighbours")),
+                getTagSet()),
             new Person(new Name("David Li"), new Email("lidavid@example.com"),
                                 new Matric("A0287404M"), new Group("T09"),
-                getTagSet("family")),
+                getTagSet("repeat")),
             new Person(new Name("Irfan Ibrahim"), new Email("irfan@example.com"),
                                 new Matric("A0287405N"), new Group("T09"),
-                getTagSet("classmates")),
+                getTagSet("exchange", "lateenrol")),
             new Person(new Name("Roy Balakrishnan"), new Email("royb@example.com"),
                                 new Matric("A0287406P"), new Group("T09"),
-                getTagSet("colleagues"))
+                getTagSet())
         };
     }
 

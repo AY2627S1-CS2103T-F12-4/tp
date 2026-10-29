@@ -99,6 +99,44 @@ public class LogicManagerTest {
     }
 
     @Test
+    public void execute_adjacentEmailPunctuation_supportsAddEditDuplicatesAndReload() throws Exception {
+        logic.execute("init grp/T09");
+        logic.execute("add n/Alice Tan e/alice__tan@example.com m/A0000001X grp/T09");
+        logic.execute("edit 1 e/ALICE_+TAN@example.com");
+        assertEquals("alice_+tan@example.com", model.getAddressBook().getPersonList().getFirst().getEmail().value);
+
+        assertCommandException("add n/Bob Tan e/alice_+tan@example.com m/A0000002X grp/T09",
+                String.format(AddCommand.MESSAGE_DUPLICATE_EMAIL, "alice_+tan@example.com"));
+        JsonAddressBookStorage saved = new JsonAddressBookStorage(temporaryFolder.resolve("addressBook.json"));
+        assertEquals(model.getAddressBook(), saved.readAddressBook().orElseThrow());
+        logic.execute("undo");
+        assertEquals("alice__tan@example.com", model.getAddressBook().getPersonList().getFirst().getEmail().value);
+        logic.execute("redo");
+        assertEquals("alice_+tan@example.com", model.getAddressBook().getPersonList().getFirst().getEmail().value);
+    }
+
+    @Test
+    public void execute_addAndFindBracketedName_findsByFullAndPartName() throws Exception {
+        logic.execute("init grp/T09");
+        logic.execute("add n/Tan Ah Kow (Mike) e/mike@example.com m/A0123456X grp/T09");
+        logic.execute("add n/Tan Ah Kow e/ahkow@example.com m/A0123457X grp/T09");
+
+        // The full displayed name, brackets included, finds only the student who has it
+        logic.execute("find n/Tan Ah Kow (Mike)");
+        assertEquals(List.of("Tan Ah Kow (Mike)"), displayedNames());
+
+        logic.execute("find n/(mike)");
+        assertEquals(List.of("Tan Ah Kow (Mike)"), displayedNames());
+
+        logic.execute("find n/Tan Ah Kow");
+        assertEquals(List.of("Tan Ah Kow (Mike)", "Tan Ah Kow"), displayedNames());
+    }
+
+    private List<String> displayedNames() {
+        return logic.getFilteredPersonList().stream().map(person -> person.getName().fullName).toList();
+    }
+
+    @Test
     public void execute_invalidCommandFormat_throwsParseException() {
         String invalidCommand = "uicfhmowqewca";
         assertParseException(invalidCommand, MESSAGE_UNKNOWN_COMMAND);
@@ -183,6 +221,21 @@ public class LogicManagerTest {
         assertEquals("Undid the most recent add command.", logic.execute("undo").getFeedbackToUser());
         assertTrue(model.getAddressBook().getPersonList().isEmpty());
         assertTrue(model.hasGroup(new Group("T09")));
+    }
+
+    @Test
+    public void execute_undoAndRedoAllCommands_nameCommandAsTyped() throws Exception {
+        logic.execute("init grp/T09");
+        logic.execute("add n/Alex Tan e/alex@example.com m/A0123456X grp/T09");
+        logic.execute("session grp/T09 w/1 d/2026-08-11");
+
+        logic.execute("mark all w/1 s/present");
+        assertEquals("Undid the most recent mark all command.", logic.execute("undo").getFeedbackToUser());
+        assertEquals("Redid the most recent mark all command.", logic.execute("redo").getFeedbackToUser());
+
+        logic.execute("delete all");
+        assertEquals("Undid the most recent delete all command.", logic.execute("undo").getFeedbackToUser());
+        assertEquals("Redid the most recent delete all command.", logic.execute("redo").getFeedbackToUser());
     }
 
     @Test

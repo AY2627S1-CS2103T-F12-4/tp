@@ -16,6 +16,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressBar;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.Pane;
 import seedu.address.model.attendance.Status;
 import seedu.address.model.person.Comment;
@@ -123,6 +124,50 @@ public class StudentDetailPanelTest {
             assertEquals("Row 4 in this list", text(panel, "rowNumber"));
             assertEquals(List.of("No comment yet"), childTexts(panel, "commentBox"));
             assertEquals(second, panel.shownStudent().orElseThrow());
+            return null;
+        });
+    }
+
+    @Test
+    public void show_sameStudentAndSessions_preservesScrollAndUpdatesRowNumber() throws Exception {
+        onFxThread(() -> {
+            Person student = new PersonBuilder().withMatric("A0345678C").withGroup("T09").build();
+            StudentDetailPanel panel = realised(new StudentDetailPanel(() -> { }));
+            panel.show(student, 3, List.of(WEEK_1));
+            ScrollPane scroll = (ScrollPane) panel.getRoot().lookup("#detailScroll");
+            scroll.setVvalue(0.75);
+
+            panel.show(new PersonBuilder(student).build(), 1, List.of(WEEK_1));
+
+            assertEquals(0.75, scroll.getVvalue(), 0.0001);
+            assertEquals("Row 1 in this list", text(panel, "rowNumber"));
+
+            panel.show(student, 1, List.of(WEEK_1, WEEK_2));
+            assertEquals("2", text(panel, "unmarkedCount"));
+            Person marked = new PersonBuilder(student).withAttendance(WEEK_1, Status.PRESENT).build();
+            panel.show(marked, 1, List.of(WEEK_1, WEEK_2));
+            assertEquals("1", text(panel, "presentCount"));
+            assertEquals("1", text(panel, "unmarkedCount"));
+            return null;
+        });
+    }
+
+    @Test
+    public void show_differentStudentOrReopenedPanel_startsAtTop() throws Exception {
+        onFxThread(() -> {
+            Person first = new PersonBuilder().withMatric("A0345678C").build();
+            Person second = new PersonBuilder().withMatric("A0456789D").build();
+            StudentDetailPanel panel = realised(new StudentDetailPanel(() -> { }));
+            panel.show(first, 1, List.of(WEEK_1));
+            ScrollPane scroll = (ScrollPane) panel.getRoot().lookup("#detailScroll");
+            scroll.setVvalue(0.75);
+            panel.show(second, 2, List.of(WEEK_1));
+            assertEquals(0, scroll.getVvalue(), 0.0001);
+
+            scroll.setVvalue(0.75);
+            panel.hide();
+            panel.show(second, 2, List.of(WEEK_1));
+            assertEquals(0, scroll.getVvalue(), 0.0001);
             return null;
         });
     }

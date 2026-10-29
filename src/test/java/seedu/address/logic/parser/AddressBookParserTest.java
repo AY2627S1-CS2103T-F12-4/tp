@@ -56,7 +56,15 @@ public class AddressBookParserTest {
     @Test
     public void parseCommand_clear() throws Exception {
         assertTrue(parser.parseCommand(ClearCommand.COMMAND_WORD) instanceof ClearCommand);
-        assertTrue(parser.parseCommand(ClearCommand.COMMAND_WORD + " 3") instanceof ClearCommand);
+        assertTrue(parser.parseCommand("  clear \t ") instanceof ClearCommand);
+    }
+
+    @Test
+    public void parseCommand_clearWithArguments_throwsParseException() {
+        String expectedMessage = String.format(MESSAGE_INVALID_COMMAND_FORMAT, ClearCommand.MESSAGE_USAGE);
+        for (String arguments : List.of("grp/T91", "all", "3", "unexpected text")) {
+            assertThrows(ParseException.class, expectedMessage, () -> parser.parseCommand("clear " + arguments));
+        }
     }
 
     @Test
@@ -134,10 +142,38 @@ public class AddressBookParserTest {
     }
 
     @Test
+    public void parseCommand_horizontalWhitespace_matchesSpaceDelimitedCommands() throws Exception {
+        for (String whitespace : List.of("\t", "\u00a0", "\u2003", "\u202f", "\u3000")) {
+            for (String command : List.of("init grp/T11", "session grp/T09 w/2 d/2026-10-27",
+                    "edit 1 n/Alicia Tan", "mark 1 w/1 s/present", "list grp/T09")) {
+                assertEquals(parser.parseCommand(command),
+                        parser.parseCommand(whitespace + command.replace(" ", whitespace) + whitespace));
+            }
+            String duplicateGroupMessage = Messages.getErrorMessageForDuplicatePrefixes(CliSyntax.PREFIX_GROUP);
+            assertThrows(ParseException.class, duplicateGroupMessage, () ->
+                    parser.parseCommand("init" + whitespace + "grp/T09" + whitespace + "grp/T10"));
+            assertThrows(ParseException.class, EditCommand.MESSAGE_UNKNOWN_PARAMETER, () ->
+                    parser.parseCommand("edit 1 n/Alicia" + whitespace + "x/value"));
+        }
+    }
+
+    @Test
+    public void parseCommand_horizontalWhitespaceAroundValues_usesExistingFieldRules() throws Exception {
+        assertEquals(new InitCommand(new Group("T11")), parser.parseCommand("init\u00a0grp/\u00a0T11\u00a0"));
+        String comment = "Bring\u00a0notes\tplease";
+        assertEquals(new CommentCommand(INDEX_FIRST_PERSON, new Comment(comment), false),
+                parser.parseCommand("comment\t1\u00a0c/" + comment));
+    }
+
+    @Test
     public void parseCommand_nonSearchWithLineBreaks_throwsParseException() {
         String expectedMessage = String.format(MESSAGE_INVALID_COMMAND_FORMAT, HelpCommand.MESSAGE_USAGE);
-        for (String command : List.of("clear", "exit", "help", "add", "list", "unknownCommand")) {
-            assertThrows(ParseException.class, expectedMessage, () -> parser.parseCommand(command + "\nother input"));
+        for (String command : List.of("clear", "exit", "help", "add", "list", "init", "session", "edit", "mark",
+                "unknownCommand")) {
+            for (String lineBreak : List.of("\n", "\r\n", "\u0085", "\u2028", "\u2029")) {
+                assertThrows(ParseException.class, expectedMessage, () ->
+                        parser.parseCommand(command + lineBreak + "other input"));
+            }
         }
     }
 

@@ -49,6 +49,18 @@ public class NameTest {
         assertFalse(Name.isValidName("A".repeat(71)));
         assertFalse(Name.isValidName("\ud801\udc00".repeat(71)));
 
+        // brackets that do not enclose a later part of the name
+        assertFalse(Name.isValidName("(Mike) Tan")); // brackets at the start
+        assertFalse(Name.isValidName("Tan (Mike")); // unclosed
+        assertFalse(Name.isValidName("Tan Mike)")); // unopened
+        assertFalse(Name.isValidName("Tan ()")); // empty
+        assertFalse(Name.isValidName("Tan ( Mike)")); // space inside the bracket
+        assertFalse(Name.isValidName("Tan (Mike )"));
+        assertFalse(Name.isValidName("Tan(Mike)")); // no space before the bracket
+        assertFalse(Name.isValidName("Tan (Mike)Lee")); // no space after the bracket
+        assertFalse(Name.isValidName("Tan ((Mike))")); // nested
+        assertFalse(Name.isValidName("Tan (Mike 2)")); // contents break the usual rules
+
         // valid name
         assertTrue(Name.isValidName("peter jack")); // alphabets only
         assertTrue(Name.isValidName("A")); // single-letter name
@@ -68,6 +80,12 @@ public class NameTest {
         assertTrue(Name.isValidName("\ud801\udc00".repeat(70)));
         assertTrue(Name.isValidName("Capital Tan")); // with capital letters
         assertTrue(Name.isValidName("David Roger Jackson Ray Junior")); // long names
+        assertTrue(Name.isValidName("Tan Ah Kow (Mike)")); // preferred name in brackets
+        assertTrue(Name.isValidName("Tan (Mike) Ah Kow")); // brackets in the middle
+        assertTrue(Name.isValidName("Tan Ah Kow (Mike Tan)")); // several words in brackets
+        assertTrue(Name.isValidName("Tan (A)")); // single letter in brackets
+        assertTrue(Name.isValidName("Tan (J.)")); // full stop in brackets
+        assertTrue(Name.isValidName("Wong (Mike) (Mikey)")); // more than one bracketed part
     }
 
     @Test

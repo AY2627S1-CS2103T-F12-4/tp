@@ -12,6 +12,7 @@ import javafx.scene.control.ListView;
 import javafx.scene.control.TextField;
 import javafx.scene.control.skin.ListViewSkin;
 import javafx.scene.input.KeyEvent;
+import javafx.scene.input.MouseButton;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Region;
 import javafx.stage.Popup;
@@ -58,6 +59,9 @@ public class CommandBox extends UiPart<Region> {
         suggestions.setPrefWidth(260);
         suggestions.setFocusTraversable(false);
         suggestions.setOnMouseClicked(event -> {
+            if (event.getButton() != MouseButton.PRIMARY) {
+                return;
+            }
             Node target = (Node) event.getTarget();
             while (target != null && !(target instanceof ListCell<?>)) {
                 target = target.getParent();

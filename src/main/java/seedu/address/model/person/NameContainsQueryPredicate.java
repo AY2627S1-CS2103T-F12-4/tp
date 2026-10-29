@@ -4,17 +4,19 @@ import static java.util.Objects.requireNonNull;
 import static seedu.address.commons.util.AppUtil.checkArgument;
 import static seedu.address.commons.util.StringUtil.normalizeWhitespace;
 
+import java.text.Normalizer;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
 
 import seedu.address.commons.util.ToStringBuilder;
 
 /**
- * Tests whether a person's name contains a complete search phrase, ignoring case.
+ * Tests whether a person's name contains a complete search phrase, ignoring case and
+ * canonical Unicode representation differences while preserving significant accents.
  */
 public class NameContainsQueryPredicate implements Predicate<Person> {
     public static final String MESSAGE_CONSTRAINTS = "Invalid search keyword. Use 1-100 characters containing "
-            + "letters, spaces, hyphens, apostrophes, full stops or s/o, d/o, a/l, a/p abbreviations, "
+            + "letters, spaces, hyphens, apostrophes, full stops, brackets or s/o, d/o, a/l, a/p abbreviations, "
             + "with at least one letter.";
 
     private final String query;
@@ -28,7 +30,7 @@ public class NameContainsQueryPredicate implements Predicate<Person> {
         this.query = normalizeWhitespace(query);
         checkArgument(isValidQuery(this.query), MESSAGE_CONSTRAINTS);
         int flags = Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE;
-        substringPattern = Pattern.compile(Pattern.quote(this.query), flags);
+        substringPattern = Pattern.compile(Pattern.quote(Normalizer.normalize(this.query, Normalizer.Form.NFC)), flags);
     }
 
     /**
@@ -39,7 +41,8 @@ public class NameContainsQueryPredicate implements Predicate<Person> {
         String normalized = normalizeWhitespace(query);
         return normalized.codePointCount(0, normalized.length()) <= 100
                 && normalized.replaceAll(Name.RELATIONSHIP_CONNECTOR_REGEX, "relative")
-                        .matches("[\\p{L}\\p{M} .'\u2019-]+")
+                        // Brackets may appear in names, e.g. Tan Ah Kow (Mike), so a full name can be searched for
+                        .matches("[\\p{L}\\p{M} .'\u2019()-]+")
                 && normalized.matches(".*\\p{L}.*");
     }
 
@@ -57,7 +60,7 @@ public class NameContainsQueryPredicate implements Predicate<Person> {
 
     private String normalizeName(Person person) {
         requireNonNull(person);
-        return normalizeWhitespace(person.getName().fullName);
+        return Normalizer.normalize(normalizeWhitespace(person.getName().fullName), Normalizer.Form.NFC);
     }
 
     @Override

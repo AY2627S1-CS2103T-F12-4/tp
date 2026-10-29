@@ -48,6 +48,33 @@ public class StudentNameWorkflowTest {
     }
 
     @Test
+    public void execute_findEquivalentUnicodeNames_matchesFiltersAndPreservesStoredSpelling() throws Exception {
+        ModelManager model = new ModelManager();
+        JsonAddressBookStorage rosterFile = new JsonAddressBookStorage(temporaryFolder.resolve("roster.json"));
+        LogicManager logic = new LogicManager(model, new StorageManager(rosterFile,
+                new JsonUserPrefsStorage(temporaryFolder.resolve("preferences.json"))));
+        logic.execute("init grp/T81");
+        logic.execute("init grp/T82");
+        logic.execute("add n/Jos\u00e9 Tan e/jose81@example.com m/A0888001A grp/T81");
+        logic.execute("add n/Jose\u0301 Tan e/jose82@example.com m/A0888002A grp/T82");
+
+        for (String query : List.of("Jos\u00e9 Tan", "Jose\u0301 Tan")) {
+            logic.execute("find n/" + query);
+            assertEquals(2, model.getFilteredPersonList().size());
+            logic.execute("find n/" + query + " grp/T81 m/A0888001A");
+            assertEquals(1, model.getFilteredPersonList().size());
+            assertEquals("Jos\u00e9 Tan", model.getFilteredPersonList().getFirst().getName().fullName);
+            logic.execute("find n/" + query + " grp/T82 m/A0888002A");
+            assertEquals(1, model.getFilteredPersonList().size());
+            assertEquals("Jose\u0301 Tan", model.getFilteredPersonList().getFirst().getName().fullName);
+        }
+        assertEquals("Jos\u00e9 Tan", rosterFile.readAddressBook().orElseThrow()
+                .getPersonList().get(0).getName().fullName);
+        assertEquals("Jose\u0301 Tan", rosterFile.readAddressBook().orElseThrow()
+                .getPersonList().get(1).getName().fullName);
+    }
+
+    @Test
     public void execute_prefixLikeTypos_stillRejectsUnknownArguments() throws Exception {
         ModelManager model = new ModelManager();
         LogicManager logic = new LogicManager(model, new StorageManager(

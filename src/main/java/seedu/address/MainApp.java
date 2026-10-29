@@ -45,12 +45,12 @@ public class MainApp extends Application {
 
     @Override
     public void init() throws Exception {
-        logger.info("=============================[ Initializing AddressBook ]===========================");
+        logger.info("=============================[ Initializing Roster ]===========================");
         super.init();
 
-        JsonUserPrefsStorage userPrefsStorage = new JsonUserPrefsStorage(USER_PREFS_FILE_PATH);
+        JsonUserPrefsStorage userPrefsStorage = new JsonUserPrefsStorage(getUserPrefsFilePath());
         UserPrefs userPrefs = initPrefs(userPrefsStorage);
-        JsonAddressBookStorage addressBookStorage = new JsonAddressBookStorage(ADDRESS_BOOK_FILE_PATH);
+        JsonAddressBookStorage addressBookStorage = new JsonAddressBookStorage(getAddressBookFilePath());
         storage = new StorageManager(addressBookStorage, userPrefsStorage);
 
         model = initModelManager(storage, userPrefs);
@@ -58,6 +58,22 @@ public class MainApp extends Application {
         logic = new LogicManager(model, storage);
 
         ui = new UiManager(logic, storage.getAddressBookFilePath());
+    }
+
+    /**
+     * Returns where the preferences file is kept, relative to the folder Roster is launched from.
+     * Tests override this so that starting Roster does not write into the project folder.
+     */
+    protected Path getUserPrefsFilePath() {
+        return USER_PREFS_FILE_PATH;
+    }
+
+    /**
+     * Returns where the data file is kept, relative to the folder Roster is launched from.
+     * Tests override this so that starting Roster does not write into the project folder.
+     */
+    protected Path getAddressBookFilePath() {
+        return ADDRESS_BOOK_FILE_PATH;
     }
 
     /**
@@ -74,12 +90,12 @@ public class MainApp extends Application {
             addressBookOptional = storage.readAddressBook();
             if (addressBookOptional.isEmpty()) {
                 logger.info("Creating a new data file " + storage.getAddressBookFilePath()
-                        + " populated with a sample AddressBook.");
+                        + " populated with a sample roster.");
             }
             initialData = addressBookOptional.orElseGet(SampleDataUtil::getSampleAddressBook);
         } catch (DataLoadingException e) {
             logger.warning("Data file at " + storage.getAddressBookFilePath() + " could not be loaded."
-                    + " Will be starting with an empty AddressBook.");
+                    + " Will be starting with an empty roster.");
             initialData = new AddressBook();
         }
 
@@ -120,13 +136,13 @@ public class MainApp extends Application {
 
     @Override
     public void start(Stage primaryStage) {
-        logger.info("Starting AddressBook " + MainApp.VERSION);
+        logger.info("Starting Roster " + MainApp.VERSION);
         ui.start(primaryStage);
     }
 
     @Override
     public void stop() {
-        logger.info("============================ [ Stopping AddressBook ] =============================");
+        logger.info("============================ [ Stopping Roster ] =============================");
         try {
             storage.saveUserPrefs(model.getUserPrefs());
         } catch (IOException e) {

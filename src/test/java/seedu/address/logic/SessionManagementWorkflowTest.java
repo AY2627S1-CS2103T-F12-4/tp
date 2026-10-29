@@ -78,6 +78,21 @@ public class SessionManagementWorkflowTest {
     }
 
     @Test
+    public void changeStudentGroup_reportsClearedAttendanceAndUndoRestoresIt() throws Exception {
+        logic.execute("find n/Sarah");
+        String feedback = logic.execute("edit 1 grp/T10").getFeedbackToUser();
+        assertTrue(feedback.endsWith("Moved from T09 to T10; cleared 2 attendance records. Use undo to restore."));
+        assertTrue(student(0).getAttendances().isEmpty());
+        assertEquals(T10, student(0).getGroup());
+        assertEquals(initialState.getPersonList().get(1), student(1));
+        assertSavedState();
+
+        logic.execute("undo");
+        assertEquals(initialState, model.getAddressBook());
+        assertSavedState();
+    }
+
+    @Test
     public void edit_filteredView_updatesHiddenAttendanceAndRoundTripsToJsonAndCsv() throws Exception {
         logic.execute("find n/Sarah");
         assertEquals(String.format(EditSessionCommand.MESSAGE_SUCCESS, T09, new Week(1), WEEK_ONE.getDate(),
@@ -148,7 +163,8 @@ public class SessionManagementWorkflowTest {
         logic.execute("find n/Sarah");
         AddressBook beforeInvalidCommands = new AddressBook(model.getAddressBook());
         for (String input : List.of("editsession grp/T09 w/1 d/2026-02-29", "deletesession grp/T09 w/1 w/2",
-                "deletesession grp/T09 w/1 d/2026-08-13", "editsession grp/T09 w/1 d/2026-08-13 x/value")) {
+                "deletesession grp/T09 w/1 d/2026-08-13", "editsession grp/T09 w/1 d/2026-08-13 x/value",
+                "editsession grp/T09 w/1 d/2026-08-13 extra", "deletesession grp/T09 w/1 extra")) {
             assertThrows(ParseException.class, () -> logic.execute(input));
             assertEquals(beforeInvalidCommands, model.getAddressBook());
             assertEquals(List.of(student(0)), model.getFilteredPersonList());

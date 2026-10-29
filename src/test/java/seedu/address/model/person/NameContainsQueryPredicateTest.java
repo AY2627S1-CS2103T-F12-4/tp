@@ -36,7 +36,8 @@ public class NameContainsQueryPredicateTest {
     @Test
     public void isValidQuery_supportedCharacters_returnsTrue() {
         for (String query : new String[]{"A", "Anne-Marie", "O'Neil", "O\u2019Neil", "J. Tan",
-            "\u00c9lodie", "E\u0301lodie", "a".repeat(100), "\ud801\udc00".repeat(100)}) {
+            "\u00c9lodie", "E\u0301lodie", "a".repeat(100), "\ud801\udc00".repeat(100),
+            "Tan Ah Kow (Mike)", "(Mike)", "(Mike"}) {
             assertTrue(NameContainsQueryPredicate.isValidQuery(query), query);
         }
     }
@@ -44,7 +45,7 @@ public class NameContainsQueryPredicateTest {
     @Test
     public void isValidQuery_unsupportedCharactersOrLength_returnsFalse() {
         for (String query : new String[]{"", " ", "123", "John2", ".'-", "\u0301", "John@Tan",
-            "John/Tan", "John_Tan", "John\u0000Tan", "a".repeat(101), "\ud801\udc00".repeat(101)}) {
+            "John/Tan", "John_Tan", "John\u0000Tan", "a".repeat(101), "\ud801\udc00".repeat(101), "()"}) {
             assertFalse(NameContainsQueryPredicate.isValidQuery(query), query);
         }
     }
@@ -75,6 +76,19 @@ public class NameContainsQueryPredicateTest {
         NameContainsQueryPredicate predicate = new NameContainsQueryPredicate(" \t John \n Tan \u00a0");
         assertEquals("John Tan", predicate.getQuery());
         assertTrue(predicate.test(person("John   Tan  ")));
+    }
+
+    @Test
+    public void test_canonicallyEquivalentAccents_matchInEitherRepresentation() {
+        for (String query : new String[]{"Jos\u00e9 Tan", "Jose\u0301 Tan", "JOSE\u0301"}) {
+            assertTrue(new NameContainsQueryPredicate(query).test(person("Jos\u00e9 Tan")), query);
+            assertTrue(new NameContainsQueryPredicate(query).test(person("Jose\u0301 Tan")), query);
+        }
+        assertTrue(new NameContainsQueryPredicate("\uac00").test(person("\u1100\u1161 Tan")));
+        assertTrue(new NameContainsQueryPredicate("\u1100\u1161").test(person("\uac00 Tan")));
+        assertFalse(new NameContainsQueryPredicate("Jos\u00e9").test(person("Jose Tan")));
+        assertFalse(new NameContainsQueryPredicate("Jose").test(person("Jos\u00e9 Tan")));
+        assertFalse(new NameContainsQueryPredicate("Alice").test(person("\uff21lice")));
     }
 
     @Test

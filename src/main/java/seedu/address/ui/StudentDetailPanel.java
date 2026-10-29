@@ -48,6 +48,7 @@ public class StudentDetailPanel extends UiPart<Region> {
 
     /** The student on show, or null while the panel is hidden. */
     private Person shown;
+    private List<Session> shownSessions = List.of();
 
     @FXML
     private VBox detailPane;
@@ -107,12 +108,17 @@ public class StudentDetailPanel extends UiPart<Region> {
      */
     public void show(Person person, int displayedIndex, List<Session> sessions) {
         requireAllNonNull(person, sessions);
+        rowNumber.setText("Row " + displayedIndex + " in this list");
+        // Read-only commands may change the row number without changing the panel's contents.
+        if (person.equals(shown) && sessions.equals(shownSessions)) {
+            return;
+        }
         shown = person;
+        shownSessions = List.copyOf(sessions);
         avatar.setText(initialsOf(person.getName().fullName));
         studentName.setText(person.getName().fullName);
         studentMatric.setText(person.getMatric().value);
         studentGroup.setText(person.getGroup().value);
-        rowNumber.setText("Row " + displayedIndex + " in this list");
         detailEmail.setText(person.getEmail().value);
         detailMatric.setText(person.getMatric().value);
         detailGroup.setText(person.getGroup().value);
@@ -129,6 +135,7 @@ public class StudentDetailPanel extends UiPart<Region> {
     /** Hides the panel, leaving the list beneath it untouched. */
     public void hide() {
         shown = null;
+        shownSessions = List.of();
         getRoot().setVisible(false);
         getRoot().setManaged(false);
     }

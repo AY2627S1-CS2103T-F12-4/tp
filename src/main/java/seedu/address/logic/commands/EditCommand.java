@@ -38,8 +38,8 @@ public class EditCommand extends Command {
 
     public static final String COMMAND_WORD = "edit";
 
-    public static final String MESSAGE_USAGE = COMMAND_WORD + ": Edits the details of the person identified "
-            + "by the index number used in the displayed person list. "
+    public static final String MESSAGE_USAGE = COMMAND_WORD + ": Edits the details of the student identified "
+            + "by the index number used in the displayed student list. "
             + "Existing values will be overwritten by the input values.\n"
             + "Parameters: INDEX (must be a positive integer) "
             + "[" + PREFIX_NAME + "NAME] "
@@ -51,8 +51,9 @@ public class EditCommand extends Command {
             + PREFIX_EMAIL + "johndoe@example.com";
 
     public static final String MESSAGE_EDIT_PERSON_SUCCESS = "Edited student: %1$s";
+    public static final String MESSAGE_ATTENDANCE_CLEARED =
+            "Moved from %1$s to %2$s; cleared %3$d attendance %4$s. Use undo to restore.";
     public static final String MESSAGE_NOT_EDITED = "At least one field to edit must be provided.";
-    public static final String MESSAGE_DUPLICATE_PERSON = "This student already exists in Roster.";
     public static final String MESSAGE_UNKNOWN_PARAMETER =
             "Unexpected input. Use only: n/, e/, m/, grp/ and t/.";
 
@@ -92,7 +93,8 @@ public class EditCommand extends Command {
         }
 
         if (!personToEdit.isSamePerson(editedPerson) && model.hasPerson(editedPerson)) {
-            throw new CommandException(MESSAGE_DUPLICATE_PERSON);
+            // Name the clashing matriculation number, as add does, so the user knows what to change
+            throw new CommandException(String.format(AddCommand.MESSAGE_DUPLICATE_PERSON, editedPerson.getMatric()));
         }
 
         boolean isEmailTaken = model.getAddressBook().getPersonList().stream()
@@ -103,16 +105,18 @@ public class EditCommand extends Command {
         }
 
         model.setPerson(personToEdit, editedPerson);
+        String feedback = String.format(MESSAGE_EDIT_PERSON_SUCCESS, Messages.format(editedPerson));
         int clearedRecordCount = personToEdit.getAttendances().size() - editedPerson.getAttendances().size();
         if (clearedRecordCount > 0) {
             logger.info("Cleared " + clearedRecordCount + " attendance record(s) of " + editedPerson.getMatric()
                     + " after moving them from " + personToEdit.getGroup() + " to " + editedPerson.getGroup());
+            feedback += "\n" + String.format(MESSAGE_ATTENDANCE_CLEARED, personToEdit.getGroup(),
+                    editedPerson.getGroup(), clearedRecordCount, clearedRecordCount == 1 ? "record" : "records");
         }
         model.updateFilteredPersonList(PREDICATE_SHOW_ALL_PERSONS);
         // The displayed list is ordered by matriculation number, so an edit can move the student.
         // Reporting them lets the roster point at them again instead of losing the highlight.
-        return new CommandResult(String.format(MESSAGE_EDIT_PERSON_SUCCESS,
-                Messages.format(editedPerson)), editedPerson);
+        return new CommandResult(feedback, editedPerson);
     }
 
     @Override

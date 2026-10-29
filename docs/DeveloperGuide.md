@@ -344,7 +344,7 @@ number of attempts. The highlight is cleared by the next command, including one 
 
 `comment INDEX c/COMMENT` appends to a student's `Comment`, joining notes with `; `, while `c-/COMMENT` replaces it
 and an empty `c-/` clears it. Only `c-/` discards existing text, so a note is never lost by accident. A comment is
-limited to 200 characters, and an append that would exceed the limit is rejected without changing the comment.
+limited to 500 characters, and an append that would exceed the limit is rejected without changing the comment.
 
 ### Field completion
 
@@ -396,6 +396,18 @@ one state without creating another commit. `RedoCommandParser` rejects arguments
 roster in the same JSON file. Each snapshot uses the existing roster conversion and validation. `ModelManager`
 copies this history at startup. Old files without history start at a new history boundary. Invalid histories, or
 histories whose selected snapshot differs from the current roster, are discarded while retaining the current roster.
+
+`VersionedAddressBook.MAX_HISTORY_COMMANDS` limits the combined undo/redo history to 15 changes, represented by
+at most 16 snapshots including the history boundary. After a commit discards any redo branch and appends its
+snapshot, an overflowing history drops its oldest snapshot and command, adjusts the pointer, and clears the
+new boundary's command description. Undo and redo only move the pointer; they do not add snapshots.
+
+Restoring older unlimited histories selects the latest window of at most 16 snapshots that contains the saved
+current state. If that state is earlier than the last 16 snapshots, the window starts at the current state and
+retains its next 15 redo steps. The current roster is preserved, command descriptions stay aligned, and snapshots
+outside the window are released. Loading does not rewrite the file; the next successful save persists the bounded
+history. Save-failure rollback restores the pre-command bounded history, including a boundary tentatively dropped
+by a commit that could not be saved.
 
 `LogicManager` captures the full pre-command roster and history, executes the command, commits data-changing
 commands, and then saves the roster and history together. An unsuccessful save restores the complete pre-command
@@ -830,7 +842,7 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 
       Use case ends.
 
-* 2c. The comment would become longer than 200 characters.
+* 2c. The comment would become longer than 500 characters.
 
     * 2c1. Roster shows an error message and leaves the comment unchanged.
 
@@ -879,7 +891,7 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 * **Attendance percentage**: The number of sessions a student was marked present for, divided by the number of sessions the student has been marked for. Unmarked sessions are excluded.
 * **Active group**: The tutorial group whose students are displayed after `list grp/GROUP` or a click in the group panel. `list` and `find` clear it.
 * **Attendance strip**: The row on a student's entry that shows one cell per session of their tutorial group, in teaching-week order, such as `W5: ✓`. A green `✓` means present, a red `✗` absent and a grey `—` unmarked.
-* **Comment**: A short note, of up to 200 characters, that a TA keeps about a student.
+* **Comment**: A short note, of up to 500 characters, that a TA keeps about a student.
 * **Displayed list**: The students currently shown in the student list. Every `INDEX`, and `all` in `mark all` and `delete all`, refers to this list.
 * **Course coordinator**: The staff member in charge of a module, who collects attendance records from the TAs.
 * **Index**: The one-based position of a student in the currently displayed list. It is not a property of the student: the same student's index changes when the list is filtered.
@@ -1041,7 +1053,7 @@ Prepare the data from [Recording attendance](#recording-attendance), then run `l
    Expected: John's comment reads `attentive; asks good questions`.
 2. Run `comment 1 c-/needs help`. Expected: the comment is replaced by `needs help`.
 3. Run `comment 1 c-/`. Expected: the comment is cleared and John's detail panel shows **No comment yet**.
-4. Try `comment 1`, `comment 1 c/a c-/b` and a `c/` note that would make the comment longer than 200 characters.
+4. Try `comment 1`, `comment 1 c/a c-/b` and a `c/` note that would make the comment longer than 500 characters.
    Expected: an error each time, with the comment unchanged.
 
 ### Saving and recovering data

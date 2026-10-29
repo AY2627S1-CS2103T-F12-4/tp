@@ -66,13 +66,27 @@ public class EditCommandTest {
         EditCommand editCommand = new EditCommand(INDEX_FIRST_PERSON,
                 new EditPersonDescriptorBuilder().withGroup("T10").build());
 
-        String expectedMessage = String.format(EditCommand.MESSAGE_EDIT_PERSON_SUCCESS, Messages.format(editedAlice));
+        String expectedMessage = String.format(EditCommand.MESSAGE_EDIT_PERSON_SUCCESS, Messages.format(editedAlice))
+                + "\nMoved from T09 to T10; cleared 1 attendance record. Use undo to restore.";
 
         Model expectedModel = new ModelManager(new AddressBook(model.getAddressBook()), new UserPrefs());
         expectedModel.setPerson(alicePresent, editedAlice);
 
         assertCommandSuccess(editCommand, model, new CommandResult(expectedMessage, editedAlice),
                 expectedModel);
+    }
+
+    @Test
+    public void execute_groupChangedWithoutAttendance_ordinarySuccess() {
+        Person alice = model.getFilteredPersonList().get(INDEX_FIRST_PERSON.getZeroBased());
+        Person editedAlice = new PersonBuilder(alice).withGroup("T10").build();
+        EditCommand editCommand = new EditCommand(INDEX_FIRST_PERSON,
+                new EditPersonDescriptorBuilder().withGroup("T10").build());
+        String expectedMessage = String.format(EditCommand.MESSAGE_EDIT_PERSON_SUCCESS, Messages.format(editedAlice));
+        Model expectedModel = new ModelManager(new AddressBook(model.getAddressBook()), new UserPrefs());
+        expectedModel.setPerson(alice, editedAlice);
+
+        assertCommandSuccess(editCommand, model, new CommandResult(expectedMessage, editedAlice), expectedModel);
     }
 
     @Test
@@ -149,7 +163,8 @@ public class EditCommandTest {
         EditPersonDescriptor descriptor = new EditPersonDescriptorBuilder(firstPerson).build();
         EditCommand editCommand = new EditCommand(INDEX_SECOND_PERSON, descriptor);
 
-        assertCommandFailure(editCommand, model, EditCommand.MESSAGE_DUPLICATE_PERSON);
+        assertCommandFailure(editCommand, model,
+                String.format(AddCommand.MESSAGE_DUPLICATE_PERSON, firstPerson.getMatric()));
     }
 
     @Test
@@ -169,7 +184,8 @@ public class EditCommandTest {
         EditCommand editCommand = new EditCommand(INDEX_FIRST_PERSON,
                 new EditPersonDescriptorBuilder(personInList).build());
 
-        assertCommandFailure(editCommand, model, EditCommand.MESSAGE_DUPLICATE_PERSON);
+        assertCommandFailure(editCommand, model,
+                String.format(AddCommand.MESSAGE_DUPLICATE_PERSON, personInList.getMatric()));
     }
 
     @Test

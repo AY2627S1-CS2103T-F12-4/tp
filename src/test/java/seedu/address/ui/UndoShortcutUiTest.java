@@ -3,6 +3,8 @@ package seedu.address.ui;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static seedu.address.testutil.FxTestUtil.onFxThread;
+import static seedu.address.ui.MainWindowTestFixture.enterCommand;
+import static seedu.address.ui.MainWindowTestFixture.getCommandInput;
 
 import java.nio.file.Path;
 import java.util.Locale;
@@ -25,11 +27,7 @@ import javafx.stage.Window;
 import seedu.address.logic.LogicManager;
 import seedu.address.model.AddressBook;
 import seedu.address.model.ModelManager;
-import seedu.address.model.UserPrefs;
 import seedu.address.model.person.Person;
-import seedu.address.storage.JsonAddressBookStorage;
-import seedu.address.storage.JsonUserPrefsStorage;
-import seedu.address.storage.StorageManager;
 import seedu.address.testutil.AddressBookBuilder;
 import seedu.address.testutil.PersonBuilder;
 
@@ -41,17 +39,14 @@ public class UndoShortcutUiTest {
     public void shortcut_fromOutsideCommandBox_undoesRosterChange() throws Exception {
         Person original = new PersonBuilder().withName("Alex Tan").build();
         AddressBook book = new AddressBookBuilder().withPerson(original).build();
-        ModelManager model = new ModelManager(book, new UserPrefs());
-        Stage stage = createWindow(model);
-
-        try {
+        try (MainWindowTestFixture fixture = MainWindowTestFixture.create(book, temporaryFolder)) {
             onFxThread(() -> {
-                TextField input = (TextField) stage.getScene().lookup("#commandTextField");
-                input.setText("edit 1 n/Alex Lim");
-                input.fireEvent(new ActionEvent());
+                Stage stage = fixture.stage();
+                ModelManager model = fixture.model();
+                enterCommand(stage, "edit 1 n/Alex Lim");
                 assertEquals("Alex Lim", model.getAddressBook().getPersonList().getFirst().getName().fullName);
 
-                TextArea result = (TextArea) stage.getScene().lookup("#resultDisplay");
+                TextArea result = getResultDisplay(stage);
                 result.requestFocus();
                 result.fireEvent(platformShortcutZ());
 
@@ -59,8 +54,6 @@ public class UndoShortcutUiTest {
                 assertEquals("Undid the most recent edit command.", result.getText());
                 return null;
             });
-        } finally {
-            close(stage);
         }
     }
 
@@ -68,14 +61,12 @@ public class UndoShortcutUiTest {
     public void shortcut_withUndoableCommandBoxText_doesNotUndoRosterChange() throws Exception {
         Person original = new PersonBuilder().withName("Alex Tan").build();
         AddressBook book = new AddressBookBuilder().withPerson(original).build();
-        ModelManager model = new ModelManager(book, new UserPrefs());
-        Stage stage = createWindow(model);
-
-        try {
+        try (MainWindowTestFixture fixture = MainWindowTestFixture.create(book, temporaryFolder)) {
             onFxThread(() -> {
-                TextField input = (TextField) stage.getScene().lookup("#commandTextField");
-                input.setText("edit 1 n/Alex Lim");
-                input.fireEvent(new ActionEvent());
+                Stage stage = fixture.stage();
+                ModelManager model = fixture.model();
+                enterCommand(stage, "edit 1 n/Alex Lim");
+                TextField input = getCommandInput(stage);
                 input.requestFocus();
                 input.appendText("draft command");
                 assertTrue(input.isFocused());
@@ -86,8 +77,6 @@ public class UndoShortcutUiTest {
                 assertEquals("", input.getText());
                 return null;
             });
-        } finally {
-            close(stage);
         }
     }
 
@@ -151,45 +140,24 @@ public class UndoShortcutUiTest {
 
     @Test
     public void shortcut_withoutHistory_showsErrorAndPreservesRoster() throws Exception {
-        ModelManager model = new ModelManager();
-        Stage stage = createWindow(model);
-        try {
+        try (MainWindowTestFixture fixture = MainWindowTestFixture.create(new AddressBook(), temporaryFolder)) {
             onFxThread(() -> {
-                TextArea result = (TextArea) stage.getScene().lookup("#resultDisplay");
+                TextArea result = getResultDisplay(fixture.stage());
                 result.requestFocus();
                 result.fireEvent(platformShortcutZ());
                 assertEquals("There are no changes to undo.", result.getText());
-                assertEquals(new AddressBook(), model.getAddressBook());
+                assertEquals(new AddressBook(), fixture.model().getAddressBook());
                 return null;
             });
-        } finally {
-            close(stage);
         }
     }
 
-    private Stage createWindow(ModelManager model) throws Exception {
-        JsonAddressBookStorage addressBookStorage =
-                new JsonAddressBookStorage(temporaryFolder.resolve("roster.json"));
-        StorageManager storage = new StorageManager(addressBookStorage,
-                new JsonUserPrefsStorage(temporaryFolder.resolve("preferences.json")));
-        return onFxThread(() -> {
-            MainWindow window = new MainWindow(new Stage(), new LogicManager(model, storage),
-                    addressBookStorage.getAddressBookFilePath());
-            window.fillInnerParts();
-            window.show();
-            return window.getPrimaryStage();
-        });
+    private static TextArea getResultDisplay(Stage stage) {
+        return (TextArea) stage.getScene().lookup("#resultDisplay");
     }
 
     private static KeyEvent platformShortcutZ() {
         boolean isMac = System.getProperty("os.name").toLowerCase(Locale.ROOT).startsWith("mac");
         return new KeyEvent(KeyEvent.KEY_PRESSED, "", "", KeyCode.Z, false, !isMac, false, isMac);
-    }
-
-    private static void close(Stage stage) throws Exception {
-        onFxThread(() -> {
-            stage.close();
-            return null;
-        });
     }
 }

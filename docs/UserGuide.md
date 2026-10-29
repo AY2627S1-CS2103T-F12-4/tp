@@ -84,6 +84,8 @@ Roster does not yet support returning a recorded status to unmarked. You can, ho
 
 * A prefix marks the start of a parameter. Values containing `/` are accepted where explicitly supported, such as relationship abbreviations in names and CSV file paths.
 
+* Commands such as `init`, `session`, `edit` and `mark` accept spaces, tabs or copied horizontal whitespace such as non-breaking spaces between fields and around parameter values. Whitespace inside values follows that field's rules. Commands must stay on one line, except for `find`, which also accepts line breaks.
+
 * Unless a command states otherwise, each parameter may appear only once.
 
 * `INDEX` must be a positive integer and always refers to the currently displayed list.
@@ -98,12 +100,12 @@ Roster does not yet support returning a recorded status to unmarked. You can, ho
 Parameter | Accepted value
 ----------|---------------
 `grp/GROUP` | One or two letters followed by two digits, e.g. `T09` or `TG01`. Surrounding spaces are removed and letters are converted to uppercase.
-`n/NAME` | 1–70 characters. Letters and their accents, spaces, hyphens, apostrophes, full stops and the relationship abbreviations `s/o`, `d/o`, `a/l`, `a/p` (in any letter case). Must begin with a letter and end with a letter, accent or full stop. Examples: `J. Tan`, `Ravi s/o Kumar`. Surrounding spaces are removed, repeated spaces become one space, and letter case is preserved.
+`n/NAME` | 1–70 characters. Letters and their accents, spaces, hyphens, apostrophes, full stops and the relationship abbreviations `s/o`, `d/o`, `a/l`, `a/p` (in any letter case). Must begin with a letter and end with a letter, accent or full stop. A later part of the name, such as a preferred name, may be in brackets after a space, e.g. `Tan Ah Kow (Mike)`. Examples: `J. Tan`, `Ravi s/o Kumar`, `Tan Ah Kow (Mike)`. Surrounding spaces are removed, repeated spaces become one space, and letter case is preserved.
 `m/MATRIC` | `A`, followed by seven digits and one letter, e.g. `A0287654J`. Surrounding spaces are removed and letters are converted to uppercase.
-`e/EMAIL` | A valid email address such as `alex.tan@example.com`. Surrounding spaces are removed and the address is converted to lowercase.
-`c/COMMENT` | Text to add to a student's existing comment. 1–200 characters once surrounding spaces are removed and repeated spaces become one space.
+`e/EMAIL` | A valid email address such as `alex.tan@example.com`. The local part accepts letters, digits and `+_.-`, including adjacent special characters such as `alice__tan` or `alice_+tan`. It must start and end with a letter or digit and cannot contain consecutive periods. Surrounding spaces are removed and the address is converted to lowercase.
+`c/COMMENT` | Text to add to a student's existing comment. 1–500 characters once surrounding spaces are removed and repeated spaces become one space.
 `c-/COMMENT` | Text to replace a student's comment with. Same rules as `c/`, except that `c-/` on its own clears the comment.
-`t/TAG` | One or more letters or digits, with no spaces or other characters. Repeat `t/` to give a student multiple tags.
+`t/TAG` | Letters and digits, optionally joined by single hyphens, e.g. `exchange` or `needs-follow-up`. No spaces or other characters, and a hyphen cannot start or end a tag. Repeat `t/` to give a student multiple tags. Tags that differ only in letter case, such as `exchange` and `Exchange`, count as one tag; the spelling given first is kept.
 `w/WEEK` | A whole number from `1` to `13`, without a leading zero.
 `d/DATE` | A real calendar date in `YYYY-MM-DD` format.
 `s/STATUS` | `present` or `absent`, case-insensitive.
@@ -125,11 +127,12 @@ search or switch tutorial groups. Each row shows the student's name, matriculati
 attendance. Scroll vertically to reach additional students or the rest of a tall attendance row.
 
 Click a student row to open their details on the right, or focus the student list, select a row with
-the arrow keys and press Enter. The panel shows their email, tags, comments, and attendance by session.
+the arrow keys and press Enter. The panel opens over the right of the roster, so the command box and the
+result of your last command stay visible while it is open. It shows the student's email, tags, comments, and attendance by session.
 The attendance percentage counts only marked sessions; unmarked sessions are shown separately.
 Scroll inside the panel to read later sessions. Click another row to switch students.
 
-Close the panel with its × button or Escape to see the full roster and command box again. If command
+Close the panel with its × button or Escape to see the full roster again. If command
 completion suggestions are open, Escape dismisses those first. Opening or closing details does not
 change the roster, active group, or displayed row numbers. Successful commands refresh an open panel;
 it closes if its student is no longer displayed. After undoing a matriculation-number edit, reopen the
@@ -153,6 +156,8 @@ Suggestions are suppressed inside quoted export paths so that directory names ar
 * Press Up/Down to select a suggestion and Tab to insert it, or click a suggestion.
 * Press Escape to dismiss suggestions. Enter always executes the current command.
 * Completion replaces the field fragment at the cursor and preserves other fields.
+* Completing the command word replaces only what you typed before the cursor, so any text
+  after it is kept.
 * Group suggestions reflect the currently registered groups, including empty groups.
 * `init grp/` accepts a new group code without suggesting existing groups.
 * You can continue typing any value normally; existing validation rules still apply.
@@ -211,6 +216,7 @@ Example: `editsession grp/T09 w/5 d/2026-09-16`
 * The command applies to the specified session across its entire group, even when a search hides some students.
   Your current search or group selection stays active.
 * A missing session or an unchanged date produces an error without changing data or undo history.
+* Extra text or unsupported parameters are rejected. The error names the unexpected input and shows the command format.
 * Use `undo` to restore the previous date. Exported CSV records use the updated date.
 
 On success, Roster displays a confirmation such as
@@ -226,6 +232,8 @@ Format: `deletesession grp/GROUP w/WEEK`
 Example: `deletesession grp/T09 w/5`
 
 * Both fields are required, may appear in any order, and may each appear only once.
+* Extra text or unsupported parameters (including `d/`) are rejected. The error names the unexpected input
+  and shows the command format.
 * Deletion happens immediately without confirmation. Check the group and week before running the command.
   Use `undo` to restore the session and its attendance records.
 * This applies to the entire specified group, including students hidden by a search. Your current search
@@ -280,6 +288,8 @@ Examples:
 * Invalid values, unsupported parameters, and duplicate information are rejected without changing the student.
 
 On success, Roster displays `Edited student:` followed by the updated student details.
+If a group change removes attendance records, the confirmation also names the old and new groups,
+reports how many records were cleared, and reminds you to use `undo` to restore them.
 
 
 ### Listing students: `list`
@@ -312,6 +322,11 @@ A green `✓` means present, a red `✗` means absent, and a grey `—` means un
 A student added after a session also shows `—` until their attendance is recorded. Weeks with no session have no cell. The list scrolls when needed.
 
 The group scope is shown above the list. `find` searches across groups and clears the active group.
+For a selected group with no students, the list area shows its sessions in teaching-week order with full
+`YYYY-MM-DD` dates. For example, run `list grp/T11` after creating T11's sessions to review its timetable
+before adding students. Scroll within the summary to see later weeks. The summary updates when sessions
+change; a group without sessions shows a session-creation hint. Viewing it does not change data or undo history.
+
 Deleting a student refreshes the current results without clearing the filter. Adding a student keeps the current results if the new student belongs in them, and otherwise shows the new student's tutorial group.
 Student indices are the row numbers currently on screen, so check the displayed list before using `delete`, `edit`,
 or `mark`. A successful edit shows all students again in matriculation-number order. Editing a matriculation number
@@ -332,7 +347,7 @@ registered groups in group-code order. Scroll along the strip if there are more 
   Arrow keys alone do not change the displayed roster. Leaving the panel restores the active view's selection.
 * The panel follows typed commands: `list` selects **All students**, `list grp/GROUP` selects that group,
   and a successful `find` clears the selection, even when every student happens to match.
-* Registered empty groups remain selectable and display the usual empty-group message.
+* Registered empty groups remain selectable and display the usual empty-group message, with their session summary in the list area.
 * Navigation preserves unfinished command text and does not change student or attendance records.
 * Student indices are refreshed for the newly displayed roster. Check the displayed list before running
   `mark`, `edit` or `delete` with an index.
@@ -349,8 +364,9 @@ Format: `find [n/KEYWORD] [m/MATRIC] [grp/GROUP]`
   and in the same order: `john tan` matches `John Tan` and `John Tanner`, but not `John Lim` or `Tan John`.
   Accents and punctuation remain significant.
 * A name query must contain 1–100 characters after whitespace normalization:
-  letters and their accents, spaces, hyphens, apostrophes, full stops,
+  letters and their accents, spaces, hyphens, apostrophes, full stops, brackets,
   or complete `s/o`, `d/o`, `a/l`, `a/p` abbreviations, with at least one letter.
+  For example, `find n/Tan Ah Kow (Mike)` finds the student by their full name.
 * Surrounding whitespace is ignored, and repeated whitespace is treated as one space. Copied commands
   may use Unicode spaces; line breaks within search arguments are also treated as spaces.
 * `m/MATRIC` matches the complete matriculation number. Letter case is ignored; partial numbers are rejected.
@@ -426,7 +442,7 @@ Examples:
 * `INDEX` refers to the currently displayed student list.
 * `c/` only ever adds. Repeated notes are joined with `; ` in the order they were added, so a comment reads as a short history.
 * `c-/` is the only form that discards an existing note, so a comment is never lost without you having typed it.
-* A comment is limited to 200 characters. Adding to a comment fails if the combined text would be longer, and the existing comment is left unchanged.
+* A comment is limited to 500 characters. Adding to a comment fails if the combined text would be longer, and the existing comment is left unchanged.
 * Clearing a student who has no comment reports that there was nothing to clear.
 * Giving both `c/` and `c-/` in one command is rejected, as is giving neither.
 * The displayed list and its indexes stay unchanged after a successful comment.
@@ -438,7 +454,7 @@ Because `c/` appends, you can add to a note during the tutorial without retyping
 </div>
 
 <div markdown="span" class="alert alert-warning">:exclamation: **Caution:**
-A comment cannot contain a space followed by `c/` or `c-/`, because Roster reads those as the start of another parameter. A note such as `ask about c/c++` is rejected rather than saved incorrectly.
+A comment cannot contain a space followed by `c/` or `c-/`, because Roster reads those as the start of another parameter. A note such as `ask about c/c++` is rejected rather than saved incorrectly. Put another character right before `c/`, for example `ask about (c/c++)`.
 </div>
 
 ### Deleting all displayed students: `delete all`
@@ -452,6 +468,7 @@ Examples:
 * `list grp/T09` followed by `delete all` deletes every student in `T09`, for example at the end of a semester.
 * `find n/Tan` followed by `delete all` deletes every student in the search results.
 
+* `all` ignores letter case, so `delete ALL` works too.
 * Only the students on screen are deleted. Students in other groups, or outside the search results, are kept.
 * `delete all` while all students are displayed deletes every student. Use `clear` instead to also delete all tutorial groups and sessions.
 
@@ -497,6 +514,7 @@ Examples:
 * `list grp/T09` followed by `mark all w/5 s/present` marks every student in T09 present for week 5.
 * `mark all w/5 s/absent` while all students are displayed marks every student absent for week 5 of their own group.
 
+* `all` ignores letter case, so `mark ALL w/5 s/present` works too.
 * Each student is marked for the session of their own tutorial group, as with `mark`.
 * Every displayed student's group must have a session for that week. If any group does not, no student is marked.
 * Students who were already marked for that week have their status replaced. The confirmation says how many.
@@ -565,14 +583,20 @@ Examples:
 * `deletesession grp/T09 w/5` followed by `undo` restores that session and its attendance records.
 
 * Each `undo` reverses one successful data-changing command.
+* Commands that leave the data unchanged, such as editing a student to their existing name or marking the same status again, do not add an undo step or discard redo history.
 * Multiple `undo` commands reverse earlier changes one at a time.
+* History retains at most **15 changes in total**, shared between undo and redo. When a new change exceeds
+  this limit, the oldest change can no longer be undone. This does not delete any current students or attendance.
+* You can move back and forth through retained changes repeatedly; undo and redo do not use up extra history slots.
 * `list`, `find`, `export`, `help`, `exit`, invalid commands, and failed commands do not affect the undo history.
 * If there are no changes to undo, Roster displays an error without changing any data.
 * Undo and redo history are saved with the roster and remain available after closing and reopening Roster.
-* Files created by older versions load normally, with no earlier history.
+* Older files without saved history load normally and start a new history. Older files with more than 15 changes
+  keep a window of up to 15 changes containing the saved current state. The current roster is not changed;
+  changes outside that window are discarded. The smaller history is written on the next successful save.
 * If the roster data is edited outside Roster and no longer matches its saved history, the history is discarded.
 * Saved history includes earlier versions of deleted students and cleared data. Keep the data file private.
-* After an undo, a new undoable command discards the states that were undone.
+* After an undo, a new command that changes data discards the states that were undone.
 * Press `Ctrl+Z` to undo without typing the command. On macOS, use `Command+Z`.
 * When the command box has an undoable text edit, the keyboard shortcut edits the command text instead of
   changing Roster data.
@@ -589,6 +613,7 @@ Format: `redo`
 Example: `edit 1 n/Alex Tan`, `undo`, then `redo` reapplies the name change.
 
 * Each `redo` reapplies one change; multiple redo commands reapply changes in their original order.
+* Redo shares the same 15-change history limit as undo; it does not keep a separate set of 15 changes.
 * A new successful data-changing command after undo discards the remaining redo history.
 * Read-only commands, invalid commands and failed commands preserve redo history.
 * If there is nothing to redo, Roster displays an error without changing data.

@@ -15,8 +15,9 @@
 
   <HBox styleClass="detail-header" alignment="CENTER_LEFT">
     <Label fx:id="avatar" styleClass="detail-avatar" />
-    <VBox spacing="5" maxWidth="Infinity" HBox.hgrow="ALWAYS">
-      <Label fx:id="studentName" styleClass="detail-name" wrapText="true" />
+    <!-- The box may shrink and the name may grow taller, so a long name wraps instead of being cut short -->
+    <VBox spacing="5" minWidth="0" maxWidth="Infinity" HBox.hgrow="ALWAYS">
+      <Label fx:id="studentName" styleClass="detail-name" wrapText="true" minHeight="-Infinity" />
       <HBox spacing="10" alignment="CENTER_LEFT">
         <Label fx:id="studentMatric" styleClass="detail-matric" />
         <Label fx:id="studentGroup" styleClass="detail-group-chip" />
