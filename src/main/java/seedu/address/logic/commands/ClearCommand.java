@@ -15,6 +15,9 @@ import seedu.address.model.ReadOnlyAddressBook;
 public class ClearCommand extends Command {
 
     public static final String COMMAND_WORD = "clear";
+    public static final String MESSAGE_USAGE = COMMAND_WORD + ": Clears all students, tutorial groups and sessions.\n"
+            + "This command takes no parameters.\n"
+            + "Example: " + COMMAND_WORD;
     public static final String MESSAGE_SUCCESS = "Roster has been cleared!";
 
     private static final Logger logger = LogsCenter.getLogger(ClearCommand.class);
