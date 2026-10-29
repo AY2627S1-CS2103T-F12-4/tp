@@ -350,6 +350,7 @@ registered groups in group-code order. Scroll along the strip if there are more 
   Arrow keys alone do not change the displayed roster. Leaving the panel restores the active view's selection.
 * The panel follows typed commands: `list` selects **All students**, `list grp/GROUP` selects that group,
   and a successful `find` clears the selection, even when every student happens to match.
+  The strip scrolls just enough to reveal the active entry; an entry already in view does not move the strip.
 * Registered empty groups remain selectable and display the usual empty-group message, with their session summary in the list area.
 * Navigation preserves unfinished command text and does not change student or attendance records.
 * Student indices are refreshed for the newly displayed roster. Check the displayed list before running

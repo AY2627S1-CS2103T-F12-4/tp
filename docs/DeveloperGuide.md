@@ -80,6 +80,9 @@ The UI consists of a `MainWindow` and its parts, such as `CommandBox`, `ResultDi
 * `GroupListPanel` lists **All students** and registered groups in a horizontal strip. Choosing an entry
   runs the matching `list` command. Up/Down are retained as aliases for horizontal selection, and Enter
   opens the selected view without replacing unfinished command text.
+  After successful commands it also refreshes the active entry, including repeated `list` commands.
+  Revealing an off-screen entry waits for layout, with bounded retries while cell widths settle;
+  visible entries stay in place and a later view change cancels an outstanding scroll.
 * `PersonListPanel` binds the displayed-student count and shows one `PersonCard` per displayed student.
   Card width follows the list cell's available width; the attendance flow measures height using its
   current width, so all teaching weeks wrap instead of causing horizontal overflow or oversized rows.
@@ -947,6 +950,7 @@ relative to that launch folder. Keep backups of any real data outside the test f
 2. Add several groups and students, then use the horizontal group strip and search. Expect the student
    count to follow the displayed list. Leave a draft command in the input while navigating; it must remain
    unchanged. Use Left/Right and Up/Down to choose groups, then Enter to open them.
+   With groups T01 through T50, run `list grp/T50` and then `list`: each active entry must scroll into view.
 3. Give a student a long name, email, tag and comment, and create sessions for all 13 teaching weeks.
    At 740 by 600 and larger window sizes, attendance must wrap within the student row.
    Click the row or select it and press Enter to read email, tags, comments and individual sessions in
