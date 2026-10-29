@@ -16,6 +16,7 @@ import seedu.address.logic.commands.exceptions.CommandException;
 import seedu.address.logic.parser.AddressBookParser;
 import seedu.address.logic.parser.exceptions.ParseException;
 import seedu.address.model.Model;
+import seedu.address.model.StudentListViewState;
 import seedu.address.model.VersionedAddressBook;
 import seedu.address.model.person.Group;
 import seedu.address.model.person.Person;
@@ -53,6 +54,7 @@ public class LogicManager implements Logic {
         Command command = addressBookParser.parseCommand(commandText);
         VersionedAddressBook stateBeforeCommand = command.requiresSave()
                 ? new VersionedAddressBook(model.getAddressBook()) : null;
+        StudentListViewState viewBeforeCommand = command.requiresSave() ? model.getStudentListViewState() : null;
         CommandResult commandResult = command.execute(model);
 
         if (!command.requiresSave()) {
@@ -66,20 +68,22 @@ public class LogicManager implements Logic {
         try {
             storage.saveAddressBook(model.getAddressBook());
         } catch (AccessDeniedException e) {
-            rollBackCommand(command, stateBeforeCommand);
+            rollBackCommand(command, stateBeforeCommand, viewBeforeCommand);
             throw new CommandException(String.format(FILE_OPS_PERMISSION_ERROR_FORMAT, e.getMessage()), e);
         } catch (IOException ioe) {
-            rollBackCommand(command, stateBeforeCommand);
+            rollBackCommand(command, stateBeforeCommand, viewBeforeCommand);
             throw new CommandException(String.format(FILE_OPS_ERROR_FORMAT, ioe.getMessage()), ioe);
         }
 
         return commandResult;
     }
 
-    private void rollBackCommand(Command command, VersionedAddressBook stateBeforeCommand) {
+    private void rollBackCommand(Command command, VersionedAddressBook stateBeforeCommand,
+            StudentListViewState viewBeforeCommand) {
         logger.warning("Saving failed, so the changes made by " + command.getUndoDescription()
                 + " are being rolled back");
         model.restoreAddressBookHistory(stateBeforeCommand);
+        model.restoreStudentListViewState(viewBeforeCommand);
     }
 
     @Override

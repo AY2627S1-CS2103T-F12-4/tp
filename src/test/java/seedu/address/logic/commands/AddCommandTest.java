@@ -247,6 +247,16 @@ public class AddCommandTest {
         }
 
         @Override
+        public seedu.address.model.StudentListViewState getStudentListViewState() {
+            throw new AssertionError("This method should not be called.");
+        }
+
+        @Override
+        public void restoreStudentListViewState(seedu.address.model.StudentListViewState state) {
+            throw new AssertionError("This method should not be called.");
+        }
+
+        @Override
         public void redoAddressBook() {
             throw new AssertionError("This method should not be called.");
         }

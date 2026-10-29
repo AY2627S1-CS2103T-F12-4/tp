@@ -615,6 +615,9 @@ Clearing happens immediately without confirmation. Use `undo` to restore the cle
 
 Roster automatically saves changes to its data. You do not need to save manually.
 
+If saving fails, Roster reports the error and restores the previous data, undo/redo history and displayed group
+or search. After resolving the file problem, you can retry the command with the same displayed students.
+
 ### Editing the data file
 
 Roster data is saved as `data/addressbook.json` inside the folder from which Roster is launched. To keep it beside the JAR, open a terminal in the JAR folder and run `java -jar "roster.jar"`. Close Roster and back up the file before editing it directly.

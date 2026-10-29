@@ -138,6 +138,12 @@ public interface Model {
     /** Returns an unmodifiable view of the filtered person list */
     ObservableList<Person> getFilteredPersonList();
 
+    /** Captures the current live filter, ordering and group indicators without copying roster data. */
+    StudentListViewState getStudentListViewState();
+
+    /** Restores a captured view after the corresponding roster data has been restored. */
+    void restoreStudentListViewState(StudentListViewState state);
+
     /**
      * Updates the displayed filter, restores matric order, and clears the active group.
      * @throws NullPointerException if {@code predicate} is null.

@@ -252,6 +252,21 @@ public class ModelManager implements Model {
     }
 
     @Override
+    public StudentListViewState getStudentListViewState() {
+        return new StudentListViewState(filteredPersons.getPredicate(), displayedPersons.getComparator(),
+                getActiveGroup(), showingAllStudents.get());
+    }
+
+    @Override
+    public void restoreStudentListViewState(StudentListViewState state) {
+        requireNonNull(state);
+        filteredPersons.setPredicate(state.predicate());
+        displayedPersons.setComparator(state.comparator());
+        showingAllStudents.set(state.isShowingAllStudents());
+        activeGroup.set(state.activeGroup().orElse(null));
+    }
+
+    @Override
     public void updateFilteredPersonList(Predicate<Person> predicate) {
         updateFilteredPersonList(predicate, MATRIC_ORDER);
     }
