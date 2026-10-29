@@ -5,7 +5,9 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.junit.jupiter.api.Test;
 
@@ -25,13 +27,10 @@ public class StudentMatchesFiltersPredicateTest {
 
     @Test
     public void test_everyFilterCombination_requiresEachSuppliedField() {
-        List<Filters> combinations = List.of(new Filters(name, null, null), new Filters(null, matric, null),
-                new Filters(null, null, group), new Filters(name, matric, null), new Filters(name, null, group),
-                new Filters(null, matric, group), new Filters(name, matric, group));
         Person differentName = new PersonBuilder(student).withName("Alice Tan").build();
         Person differentMatric = new PersonBuilder(student).withMatric("A0000002X").build();
         Person differentGroup = new PersonBuilder(student).withGroup("T10").build();
-        for (Filters filters : combinations) {
+        for (Filters filters : filterCombinations()) {
             StudentMatchesFiltersPredicate predicate = new StudentMatchesFiltersPredicate(
                     filters.name(), filters.matric(), filters.group());
             assertTrue(predicate.test(student));
@@ -63,6 +62,28 @@ public class StudentMatchesFiltersPredicateTest {
         assertFalse(predicate.equals(new StudentMatchesFiltersPredicate(null, matric, group)));
         assertFalse(predicate.equals(new StudentMatchesFiltersPredicate(name, null, group)));
         assertFalse(predicate.equals(new StudentMatchesFiltersPredicate(name, matric, null)));
+    }
+
+    @Test
+    public void hashCode_equalFilterCombinations_supportHashSetLookup() {
+        for (Filters filters : filterCombinations()) {
+            StudentMatchesFiltersPredicate predicate = new StudentMatchesFiltersPredicate(
+                    filters.name(), filters.matric(), filters.group());
+            StudentMatchesFiltersPredicate equal = new StudentMatchesFiltersPredicate(
+                    filters.name() == null ? null : new NameContainsQueryPredicate("John"),
+                    filters.matric() == null ? null : new Matric(matric.value),
+                    filters.group() == null ? null : new Group(group.value));
+            Set<StudentMatchesFiltersPredicate> predicates = new HashSet<>();
+            predicates.add(predicate);
+            assertEquals(predicate.hashCode(), equal.hashCode());
+            assertTrue(predicates.contains(equal));
+        }
+    }
+
+    private List<Filters> filterCombinations() {
+        return List.of(new Filters(name, null, null), new Filters(null, matric, null), new Filters(null, null, group),
+                new Filters(name, matric, null), new Filters(name, null, group), new Filters(null, matric, group),
+                new Filters(name, matric, group));
     }
 
     private record Filters(NameContainsQueryPredicate name, Matric matric, Group group) {

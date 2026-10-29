@@ -44,6 +44,37 @@ public class UniqueSessionListTest {
     }
 
     @Test
+    public void setSessions_duplicateGroupAndWeekWithDifferentDates_preservesList() {
+        sessions.add(WEEK_SIX);
+        Session otherGroup = new Session(new Group("T10"), new Week(5), WEEK_FIVE.getDate());
+        Session duplicate = new Session(T09, new Week(5), new SessionDate("2026-09-16"));
+
+        assertThrows(DuplicateSessionException.class, () ->
+                sessions.setSessions(List.of(WEEK_FIVE, otherGroup, duplicate)));
+        assertEquals(List.of(WEEK_SIX), sessions.asUnmodifiableObservableList());
+    }
+
+    @Test
+    public void setSessions_uniqueGroupWeekPairs_sortsByGroupThenWeek() {
+        Session otherGroup = new Session(new Group("T10"), new Week(5), WEEK_FIVE.getDate());
+        Session sameDateDifferentWeek = new Session(T09, new Week(6), WEEK_FIVE.getDate());
+
+        sessions.setSessions(List.of(otherGroup, sameDateDifferentWeek, WEEK_FIVE));
+
+        assertEquals(List.of(WEEK_FIVE, sameDateDifferentWeek, otherGroup),
+                sessions.asUnmodifiableObservableList());
+    }
+
+    @Test
+    public void setSessions_emptyList_clearsExistingSessions() {
+        sessions.add(WEEK_FIVE);
+
+        sessions.setSessions(List.of());
+
+        assertTrue(sessions.asUnmodifiableObservableList().isEmpty());
+    }
+
+    @Test
     public void setSession_changesDateAndKeepsWeekOrder() {
         sessions.add(WEEK_FIVE);
         sessions.add(WEEK_SIX);

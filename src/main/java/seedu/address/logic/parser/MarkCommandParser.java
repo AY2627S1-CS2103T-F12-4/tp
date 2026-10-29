@@ -35,7 +35,8 @@ public class MarkCommandParser implements Parser<Command> {
             throw new ParseException(String.format(MESSAGE_INVALID_COMMAND_FORMAT, MarkCommand.MESSAGE_USAGE));
         }
 
-        boolean isAll = argMultimap.getPreamble().equals(KEYWORD_ALL);
+        // Letter case is ignored, as it is for statuses and group codes
+        boolean isAll = argMultimap.getPreamble().equalsIgnoreCase(KEYWORD_ALL);
         Index index = null;
         if (!isAll) {
             try {
