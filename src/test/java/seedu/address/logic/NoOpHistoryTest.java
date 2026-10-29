@@ -69,6 +69,28 @@ public class NoOpHistoryTest {
     }
 
     @Test
+    public void execute_caseOnlyTagEdit_savesAndSupportsUndoRedo() throws Exception {
+        logic.execute("edit 1 t/exchange");
+        VersionedAddressBook before = new VersionedAddressBook(model.getAddressBook());
+
+        logic.execute("edit 1 t/Exchange");
+        assertEquals("Exchange", model.getAddressBook().getPersonList().getFirst()
+                .getTags().iterator().next().tagName);
+        VersionedAddressBook after = (VersionedAddressBook) model.getAddressBook();
+        assertEquals(before.getHistoryPointer() + 1, after.getHistoryPointer());
+        assertEquals(model.getAddressBook(), storage.readAddressBook().orElseThrow());
+        assertHistoryUnchanged("edit 1 t/Exchange");
+
+        logic.execute("undo");
+        assertEquals(before, model.getAddressBook());
+        assertEquals(before, storage.readAddressBook().orElseThrow());
+        logic.execute("redo");
+        assertEquals("Exchange", model.getAddressBook().getPersonList().getFirst()
+                .getTags().iterator().next().tagName);
+        assertEquals(model.getAddressBook(), storage.readAddressBook().orElseThrow());
+    }
+
+    @Test
     public void execute_clearEmptyRoster_createsNeitherUndoStepNorFile() throws Exception {
         ModelManager emptyModel = new ModelManager();
         JsonAddressBookStorage emptyStorage = new JsonAddressBookStorage(temporaryFolder.resolve("empty.json"));
