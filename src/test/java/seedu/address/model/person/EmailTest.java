@@ -67,6 +67,24 @@ public class EmailTest {
     }
 
     @Test
+    public void isValidEmail_adjacentSpecialCharacters_acceptsExceptConsecutivePeriods() {
+        for (char first : "+_.-".toCharArray()) {
+            for (char second : "+_.-".toCharArray()) {
+                String email = "alice" + first + second + "tan@example.com";
+                if (first == '.' && second == '.') {
+                    assertFalse(Email.isValidEmail(email), email);
+                } else {
+                    assertTrue(Email.isValidEmail(email), email);
+                }
+            }
+        }
+        for (char special : "+_.-".toCharArray()) {
+            assertFalse(Email.isValidEmail(special + "alice@example.com"));
+            assertFalse(Email.isValidEmail("alice" + special + "@example.com"));
+        }
+    }
+
+    @Test
     public void equals() {
         Email email = new Email("valid@email");
 
