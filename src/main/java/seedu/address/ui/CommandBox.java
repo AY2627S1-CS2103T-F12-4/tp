@@ -146,7 +146,8 @@ public class CommandBox extends UiPart<Region> {
         Suggestion selected = suggestions.getSelectionModel().getSelectedItem();
         if (selected != null) {
             acceptingCompletion = true;
-            commandTextField.setText(selected.apply(commandTextField.getText()));
+            // Completion is a text edit, so the platform undo shortcut must be able to reverse it.
+            commandTextField.replaceText(selected.start(), selected.end(), selected.value());
             commandTextField.positionCaret(selected.start() + selected.value().length());
             acceptingCompletion = false;
             completionPopup.hide();
