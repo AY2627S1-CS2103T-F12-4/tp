@@ -99,6 +99,23 @@ public class LogicManagerTest {
     }
 
     @Test
+    public void execute_adjacentEmailPunctuation_supportsAddEditDuplicatesAndReload() throws Exception {
+        logic.execute("init grp/T09");
+        logic.execute("add n/Alice Tan e/alice__tan@example.com m/A0000001X grp/T09");
+        logic.execute("edit 1 e/ALICE_+TAN@example.com");
+        assertEquals("alice_+tan@example.com", model.getAddressBook().getPersonList().getFirst().getEmail().value);
+
+        assertCommandException("add n/Bob Tan e/alice_+tan@example.com m/A0000002X grp/T09",
+                String.format(AddCommand.MESSAGE_DUPLICATE_EMAIL, "alice_+tan@example.com"));
+        JsonAddressBookStorage saved = new JsonAddressBookStorage(temporaryFolder.resolve("addressBook.json"));
+        assertEquals(model.getAddressBook(), saved.readAddressBook().orElseThrow());
+        logic.execute("undo");
+        assertEquals("alice__tan@example.com", model.getAddressBook().getPersonList().getFirst().getEmail().value);
+        logic.execute("redo");
+        assertEquals("alice_+tan@example.com", model.getAddressBook().getPersonList().getFirst().getEmail().value);
+    }
+
+    @Test
     public void execute_invalidCommandFormat_throwsParseException() {
         String invalidCommand = "uicfhmowqewca";
         assertParseException(invalidCommand, MESSAGE_UNKNOWN_COMMAND);

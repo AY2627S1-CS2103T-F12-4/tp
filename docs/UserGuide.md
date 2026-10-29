@@ -100,7 +100,7 @@ Parameter | Accepted value
 `grp/GROUP` | One or two letters followed by two digits, e.g. `T09` or `TG01`. Surrounding spaces are removed and letters are converted to uppercase.
 `n/NAME` | 1–70 characters. Letters and their accents, spaces, hyphens, apostrophes, full stops and the relationship abbreviations `s/o`, `d/o`, `a/l`, `a/p` (in any letter case). Must begin with a letter and end with a letter, accent or full stop. Examples: `J. Tan`, `Ravi s/o Kumar`. Surrounding spaces are removed, repeated spaces become one space, and letter case is preserved.
 `m/MATRIC` | `A`, followed by seven digits and one letter, e.g. `A0287654J`. Surrounding spaces are removed and letters are converted to uppercase.
-`e/EMAIL` | A valid email address such as `alex.tan@example.com`. Surrounding spaces are removed and the address is converted to lowercase.
+`e/EMAIL` | A valid email address such as `alex.tan@example.com`. The local part accepts letters, digits and `+_.-`, including adjacent special characters such as `alice__tan` or `alice_+tan`. It must start and end with a letter or digit and cannot contain consecutive periods. Surrounding spaces are removed and the address is converted to lowercase.
 `c/COMMENT` | Text to add to a student's existing comment. 1–200 characters once surrounding spaces are removed and repeated spaces become one space.
 `c-/COMMENT` | Text to replace a student's comment with. Same rules as `c/`, except that `c-/` on its own clears the comment.
 `t/TAG` | One or more letters or digits, with no spaces or other characters. Repeat `t/` to give a student multiple tags.
