@@ -1,6 +1,7 @@
 package seedu.address.logic.commands;
 
 import static java.util.Objects.requireNonNull;
+import static seedu.address.logic.parser.CliSyntax.KEYWORD_ALL;
 
 import java.util.List;
 import java.util.logging.Logger;
@@ -37,6 +38,12 @@ public class DeleteAllCommand extends Command {
         assert studentsToDelete.stream().noneMatch(model::hasPerson) : "No deleted student should remain in Roster";
         logger.fine("Deleted " + studentsToDelete.size() + " displayed student(s)");
         return new CommandResult(String.format(MESSAGE_SUCCESS, studentsToDelete.size()));
+    }
+
+    /** Names the command as the user types it, rather than as one word. */
+    @Override
+    public String getUndoDescription() {
+        return DeleteCommand.COMMAND_WORD + " " + KEYWORD_ALL;
     }
 
     @Override
