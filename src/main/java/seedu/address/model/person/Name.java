@@ -2,6 +2,7 @@ package seedu.address.model.person;
 
 import static java.util.Objects.requireNonNull;
 import static seedu.address.commons.util.AppUtil.checkArgument;
+import static seedu.address.commons.util.StringUtil.normalizeWhitespace;
 
 /**
  * Represents a Person's name in the address book.
@@ -39,10 +40,6 @@ public class Name {
         String normalizedName = normalizeWhitespace(test);
         return normalizedName.codePointCount(0, normalizedName.length()) <= 70
                 && normalizedName.replaceAll(RELATIONSHIP_CONNECTOR_REGEX, "relative").matches(VALIDATION_REGEX);
-    }
-
-    private static String normalizeWhitespace(String name) {
-        return name.replaceAll("(?U)\\s+", " ").strip();
     }
 
     @Override

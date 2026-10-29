@@ -28,6 +28,8 @@ public class MarkCommandParserTest {
 
         assertParseSuccess(parser, "all w/5 s/present", expectedCommand);
         assertParseSuccess(parser, "  all   s/PRESENT  w/5 ", expectedCommand);
+        assertParseSuccess(parser, "ALL w/5 s/present", expectedCommand);
+        assertParseSuccess(parser, "All w/5 s/present", expectedCommand);
     }
 
     @Test
@@ -35,7 +37,6 @@ public class MarkCommandParserTest {
         // missing parameter, or other text alongside all
         assertParseFailure(parser, "all w/5", MESSAGE_INVALID_FORMAT);
         assertParseFailure(parser, "all 3 w/5 s/present", MESSAGE_INVALID_FORMAT);
-        assertParseFailure(parser, "ALL w/5 s/present", MESSAGE_INVALID_FORMAT);
 
         // invalid values
         assertParseFailure(parser, "all w/14 s/present", Week.MESSAGE_CONSTRAINTS);
