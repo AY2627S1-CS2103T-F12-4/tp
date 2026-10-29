@@ -1,9 +1,13 @@
 package seedu.address.storage;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static seedu.address.testutil.Assert.assertThrows;
 import static seedu.address.testutil.TypicalSessions.T09_WEEK_1;
 
+import java.util.List;
+
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import seedu.address.commons.exceptions.IllegalValueException;
@@ -46,6 +50,34 @@ public class JsonAdaptedSessionTest {
         JsonAdaptedSession session = new JsonAdaptedSession(VALID_GROUP, null, VALID_DATE);
         String expectedMessage = Week.MESSAGE_CONSTRAINTS;
         assertThrows(IllegalValueException.class, expectedMessage, session::toModelType);
+    }
+
+    @Test
+    public void toModelType_nonNumericOrOverflowingWeek_preservesFailureCause() {
+        for (String invalidWeek : List.of("week 1", "2147483648")) {
+            JsonAdaptedSession session = new JsonAdaptedSession(VALID_GROUP, invalidWeek, VALID_DATE);
+            IllegalValueException failure = Assertions.assertThrows(IllegalValueException.class, session::toModelType);
+
+            assertEquals(Week.MESSAGE_CONSTRAINTS, failure.getMessage());
+            assertInstanceOf(NumberFormatException.class, failure.getCause());
+        }
+    }
+
+    @Test
+    public void toModelType_existingNumericWeekFormats_remainAccepted() throws Exception {
+        for (String storedWeek : List.of("01", "+1")) {
+            JsonAdaptedSession session = new JsonAdaptedSession(VALID_GROUP, storedWeek, VALID_DATE);
+            assertEquals(T09_WEEK_1, session.toModelType());
+        }
+    }
+
+    @Test
+    public void toModelType_multipleInvalidFields_reportsGroupThenWeekBeforeDate() {
+        JsonAdaptedSession invalidGroup = new JsonAdaptedSession("T9", "week 1", "invalid date");
+        assertThrows(IllegalValueException.class, Group.MESSAGE_CONSTRAINTS, invalidGroup::toModelType);
+
+        JsonAdaptedSession invalidWeek = new JsonAdaptedSession(VALID_GROUP, "week 1", "invalid date");
+        assertThrows(IllegalValueException.class, Week.MESSAGE_CONSTRAINTS, invalidWeek::toModelType);
     }
 
     @Test

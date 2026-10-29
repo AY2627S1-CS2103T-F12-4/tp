@@ -7,27 +7,23 @@ import static seedu.address.logic.parser.CliSyntax.PREFIX_GROUP;
 import static seedu.address.logic.parser.CliSyntax.PREFIX_MATRIC;
 import static seedu.address.logic.parser.CliSyntax.PREFIX_NAME;
 import static seedu.address.logic.parser.CliSyntax.PREFIX_TAG;
+import static seedu.address.logic.parser.PrefixValidator.verifySupportedPrefixes;
 
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Optional;
 import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import seedu.address.commons.core.index.Index;
 import seedu.address.logic.commands.EditCommand;
 import seedu.address.logic.commands.EditCommand.EditPersonDescriptor;
 import seedu.address.logic.parser.exceptions.ParseException;
-import seedu.address.model.person.Name;
 import seedu.address.model.tag.Tag;
 
 /**
  * Parses input arguments and creates a new EditCommand object
  */
 public class EditCommandParser implements Parser<EditCommand> {
-    private static final Pattern PREFIX_PATTERN =
-            Pattern.compile("(?<!\\S)([\\p{L}][\\p{L}\\p{N}_-]*/)", Pattern.UNICODE_CHARACTER_CLASS);
     private static final Set<String> SUPPORTED_PREFIXES = Set.of(PREFIX_NAME.getPrefix(), PREFIX_EMAIL.getPrefix(),
             PREFIX_MATRIC.getPrefix(), PREFIX_GROUP.getPrefix(), PREFIX_TAG.getPrefix());
 
@@ -38,12 +34,7 @@ public class EditCommandParser implements Parser<EditCommand> {
      */
     public EditCommand parse(String args) throws ParseException {
         requireNonNull(args);
-        Matcher prefixMatcher = PREFIX_PATTERN.matcher(args.replaceAll(Name.RELATIONSHIP_CONNECTOR_REGEX, ""));
-        while (prefixMatcher.find()) {
-            if (!SUPPORTED_PREFIXES.contains(prefixMatcher.group())) {
-                throw new ParseException(EditCommand.MESSAGE_UNKNOWN_PARAMETER);
-            }
-        }
+        verifySupportedPrefixes(args, SUPPORTED_PREFIXES, EditCommand.MESSAGE_UNKNOWN_PARAMETER);
 
         ArgumentMultimap argMultimap = ArgumentTokenizer.tokenize(args, PREFIX_NAME, PREFIX_EMAIL,
                 PREFIX_MATRIC, PREFIX_GROUP, PREFIX_TAG);
