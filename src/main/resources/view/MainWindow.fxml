@@ -34,31 +34,28 @@
         </MenuBar>
 
         <StackPane fx:id="pageArea" VBox.vgrow="ALWAYS">
-        <VBox spacing="12" styleClass="main-content">
+        <!-- Kept compact so the student list, the main view, has room for several rows at the minimum size -->
+        <VBox spacing="8" styleClass="main-content">
           <padding>
-            <Insets top="14" right="12" bottom="10" left="12" />
+            <Insets top="10" right="12" bottom="10" left="12" />
           </padding>
 
-          <VBox spacing="2">
-            <Label text="Roster" styleClass="page-title" />
-            <Label text="Manage students and attendance with commands" styleClass="page-subtitle" />
-          </VBox>
+          <Label text="Roster" styleClass="page-title" />
 
-          <VBox spacing="8" styleClass="command-section">
+          <VBox styleClass="command-section">
             <padding>
-              <Insets top="12" right="14" bottom="12" left="14" />
+              <Insets top="8" right="10" bottom="8" left="10" />
             </padding>
-            <Label text="COMMAND" styleClass="section-eyebrow" />
             <StackPane fx:id="commandBoxPlaceholder" />
           </VBox>
 
-          <StackPane fx:id="resultDisplayPlaceholder" minHeight="70" prefHeight="70" maxHeight="110" />
+          <StackPane fx:id="resultDisplayPlaceholder" minHeight="80" prefHeight="80" maxHeight="110" />
 
-          <VBox fx:id="personList" spacing="8" styleClass="roster-panel" VBox.vgrow="ALWAYS">
+          <VBox fx:id="personList" spacing="6" styleClass="roster-panel" VBox.vgrow="ALWAYS">
             <padding>
-              <Insets top="12" right="12" bottom="12" left="12" />
+              <Insets top="8" right="10" bottom="8" left="10" />
             </padding>
-            <StackPane fx:id="groupListPanelPlaceholder" minHeight="56" prefHeight="56" maxHeight="56" />
+            <StackPane fx:id="groupListPanelPlaceholder" minHeight="44" prefHeight="44" maxHeight="44" />
             <StackPane fx:id="personListPanelPlaceholder" VBox.vgrow="ALWAYS" />
           </VBox>
         </VBox>
