@@ -12,11 +12,17 @@ import java.util.Locale;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
+import javafx.scene.control.ListCell;
+import javafx.scene.control.ListView;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
+import javafx.scene.input.MouseButton;
+import javafx.scene.input.MouseEvent;
+import javafx.stage.Popup;
 import javafx.stage.Stage;
+import javafx.stage.Window;
 import seedu.address.model.AddressBook;
 import seedu.address.model.ModelManager;
 import seedu.address.model.person.Person;
@@ -67,6 +73,62 @@ public class UndoShortcutUiTest {
 
                 assertEquals("Alex Lim", model.getAddressBook().getPersonList().getFirst().getName().fullName);
                 assertEquals("", input.getText());
+                return null;
+            });
+        }
+    }
+
+    @Test
+    public void shortcut_afterTabCompletion_undoesTextAndPreservesRoster() throws Exception {
+        assertCompletionUndoPreservesRoster(false);
+    }
+
+    @Test
+    public void shortcut_afterMouseCompletion_undoesTextAndPreservesRoster() throws Exception {
+        assertCompletionUndoPreservesRoster(true);
+    }
+
+    private void assertCompletionUndoPreservesRoster(boolean useMouse) throws Exception {
+        Person original = new PersonBuilder().withName("Alex Tan").build();
+        AddressBook book = new AddressBookBuilder().withPerson(original).build();
+        try (MainWindowTestFixture fixture = MainWindowTestFixture.create(book, temporaryFolder)) {
+            onFxThread(() -> {
+                Stage stage = fixture.stage();
+                ModelManager model = fixture.model();
+                enterCommand(stage, "edit 1 n/Alex Lim");
+                TextField input = getCommandInput(stage);
+                input.requestFocus();
+                input.appendText("ad");
+                assertTrue(input.isFocused());
+                assertTrue(input.isUndoable());
+
+                if (useMouse) {
+                    Popup popup = (Popup) Window.getWindows().stream()
+                            .filter(window -> window instanceof Popup completion
+                                    && completion.getOwnerWindow() == stage)
+                            .findFirst().orElseThrow();
+                    ListView<?> options = (ListView<?>) popup.getContent().getFirst();
+                    options.applyCss();
+                    options.layout();
+                    ListCell<?> cell = options.lookupAll(".list-cell").stream()
+                            .map(node -> (ListCell<?>) node)
+                            .filter(row -> row.getIndex() == 0 && !row.isEmpty()).findFirst().orElseThrow();
+                    cell.fireEvent(new MouseEvent(MouseEvent.MOUSE_CLICKED, 5, 5, 5, 5, MouseButton.PRIMARY, 1,
+                            false, false, false, false, false, false, false, true, false, true, null));
+                } else {
+                    input.fireEvent(new KeyEvent(KeyEvent.KEY_PRESSED, "", "", KeyCode.TAB,
+                            false, false, false, false));
+                }
+                assertEquals("add", input.getText());
+                assertTrue(input.isUndoable());
+                input.fireEvent(platformShortcutZ());
+
+                assertEquals("ad", input.getText());
+                assertEquals("Alex Lim", model.getAddressBook().getPersonList().getFirst().getName().fullName);
+                assertTrue(input.isRedoable());
+                input.redo();
+                assertEquals("add", input.getText());
+                assertEquals("Alex Lim", model.getAddressBook().getPersonList().getFirst().getName().fullName);
                 return null;
             });
         }
