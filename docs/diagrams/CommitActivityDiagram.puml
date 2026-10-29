@@ -2,27 +2,44 @@
 skin rose
 skinparam ActivityFontSize 15
 skinparam ArrowFontSize 12
+skinparam Shadowing false
+title Command execution, undo history and saving
 start
-:User executes command;
-:Parse and execute the command;
+:Parse the command;
+if (Command requires a roster save?) then (yes)
+    :Capture the roster, undo/redo history\nand student-list view;
+else (no)
+endif
+:Execute the command;
+note right
+  Parsing or execution errors return
+  before committing history or saving.
+end note
 
-'Since the beta syntax does not support placing the condition outside the
-'diamond we place it as the true branch instead.
+if (Command requires a roster save?) then (no)
+    :Log FINE: roster save not required\nReturn the command result;
+    stop
+else (yes)
+endif
 
-if () then ([command changes data])
-    if () then ([saving the data file fails])
-        :Roll back the change;
-        :Show the error;
+if (History action is COMMIT?) then (yes)
+    if (Roster is unchanged?) then (yes)
+        :Log FINE: no roster changes\nPreserve undo/redo history\nReturn the command result;
         stop
-    else ([saved])
+    else (no)
     endif
-    if () then ([command commits AddressBook])
-        :Purge redundant states;
-        :Save AddressBook to
-        addressBookStateList;
-    else ([else, e.g. undo])
-    endif
-else ([read-only, e.g. list or find])
+    :Commit the changed roster to history\nLog FINE: history committed in memory;
+else (no, e.g. undo/redo)
+    :Keep the history position selected\nby the command without a new commit;
+endif
+
+:Save the roster and history together;
+if (Saving succeeds?) then (yes)
+    :Log FINE: roster and history saved\nReturn the command result;
+else (I/O or permission error)
+    :Log WARNING with the save exception;
+    :Restore the captured roster and history\nRestore the captured student-list view;
+    :Throw a CommandException\nwith the save error;
 endif
 stop
 @enduml
