@@ -31,10 +31,16 @@ public final class FieldCompletion {
                 return List.of();
             }
             String fragment = text.substring(commandStart, caret).toLowerCase(Locale.ROOT);
-            String current = text.substring(commandStart, commandEnd);
-            int end = commandEnd;
-            return COMMANDS.stream().filter(command -> command.startsWith(fragment) && !command.equals(current))
-                    .map(command -> new Suggestion(commandStart, end, command)).toList();
+            String word = text.substring(commandStart, commandEnd).toLowerCase(Locale.ROOT);
+            int wordEnd = commandEnd;
+            return COMMANDS.stream().filter(command -> command.startsWith(fragment))
+                    // Text after the caret is only replaced when it is the rest of this same
+                    // command word. Anything else is the user's own text, and is left alone.
+                    .map(command -> new Suggestion(commandStart,
+                            command.startsWith(word) ? wordEnd : caret, command))
+                    .filter(suggestion -> !suggestion.value()
+                            .equals(text.substring(commandStart, suggestion.end())))
+                    .toList();
         }
         String command = text.substring(commandStart, commandEnd);
         String fields = command.equals("export") ? maskQuotedPath(text) : text;

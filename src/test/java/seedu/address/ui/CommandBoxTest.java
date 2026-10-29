@@ -65,6 +65,12 @@ public class CommandBoxTest {
                 press(input, KeyCode.TAB);
                 assertEquals("add", input.getText());
                 assertTrue(executed.isEmpty());
+                // Completing the command word keeps whatever follows the caret
+                input.setText("comis");
+                input.positionCaret("com".length());
+                press(input, KeyCode.TAB);
+                assertEquals("commentis", input.getText());
+                assertEquals("comment".length(), input.getCaretPosition());
                 input.setText("export f/\"reports/grp/T09 attendance.csv\" gr");
                 input.end();
                 press(input, KeyCode.TAB);
