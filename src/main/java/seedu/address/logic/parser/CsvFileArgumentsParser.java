@@ -33,7 +33,13 @@ class CsvFileArgumentsParser {
         requireNonNull(args);
         ArgumentMultimap arguments = tokenize(args);
         arguments.verifyNoDuplicatePrefixesFor(PREFIX_FILE, PREFIX_GROUP);
-        String value = arguments.getValue(PREFIX_FILE).orElse("");
+        Path path = parsePath(arguments.getValue(PREFIX_FILE).orElse(""));
+        Group group = arguments.getValue(PREFIX_GROUP).isPresent()
+                ? ParserUtil.parseGroup(arguments.getValue(PREFIX_GROUP).get()) : null;
+        return new CsvFileArguments(path, group);
+    }
+
+    private Path parsePath(String value) throws ParseException {
         // Tokenization has already verified that any quotes surround the complete path.
         if (value.startsWith("\"")) {
             value = value.substring(1, value.length() - 1);
@@ -53,50 +59,59 @@ class CsvFileArgumentsParser {
         if (!CsvFileAccess.isCsvPath(path)) {
             throw new ParseException(CsvFileAccess.MESSAGE_INVALID_PATH);
         }
-        Group group = arguments.getValue(PREFIX_GROUP).isPresent()
-                ? ParserUtil.parseGroup(arguments.getValue(PREFIX_GROUP).get()) : null;
-        return new CsvFileArguments(path, group);
+        return path;
     }
 
     private ArgumentMultimap tokenize(String args) throws ParseException {
+        List<PrefixPosition> positions = findPrefixPositions(maskQuotedValues(args));
+        if (positions.isEmpty() || !args.substring(0, positions.getFirst().start()).isBlank()) {
+            throw invalidFormat();
+        }
+        ArgumentMultimap result = new ArgumentMultimap();
+        for (int i = 0; i < positions.size(); i++) {
+            PrefixPosition position = positions.get(i);
+            int end = i + 1 < positions.size() ? positions.get(i + 1).start() : args.length();
+            result.put(position.prefix(), extractValue(args, position, end));
+        }
+        return result;
+    }
+
+    private String maskQuotedValues(String args) throws ParseException {
         StringBuilder searchable = new StringBuilder(args);
-        boolean quoted = false;
+        boolean isInsideQuotes = false;
         for (int i = 0; i < args.length(); i++) {
             if (args.charAt(i) == '"') {
-                quoted = !quoted;
+                isInsideQuotes = !isInsideQuotes;
                 searchable.setCharAt(i, ' ');
-            } else if (quoted) {
+            } else if (isInsideQuotes) {
                 searchable.setCharAt(i, ' ');
             }
         }
-        if (quoted) {
+        if (isInsideQuotes) {
             throw invalidFormat();
         }
+        return searchable.toString();
+    }
+
+    private List<PrefixPosition> findPrefixPositions(String searchable) throws ParseException {
         Matcher matcher = PREFIX_PATTERN.matcher(searchable);
-        List<Integer> starts = new ArrayList<>();
-        List<Prefix> prefixes = new ArrayList<>();
+        List<PrefixPosition> positions = new ArrayList<>();
         while (matcher.find()) {
             if (!matcher.group().equals(PREFIX_FILE.getPrefix())
                     && !matcher.group().equals(PREFIX_GROUP.getPrefix())) {
                 throw invalidFormat();
             }
-            starts.add(matcher.start());
-            prefixes.add(new Prefix(matcher.group()));
+            positions.add(new PrefixPosition(new Prefix(matcher.group()), matcher.start()));
         }
-        if (starts.isEmpty() || !args.substring(0, starts.getFirst()).isBlank()) {
+        return positions;
+    }
+
+    private String extractValue(String args, PrefixPosition position, int end) throws ParseException {
+        String value = args.substring(position.start() + position.prefix().getPrefix().length(), end).strip();
+        if (value.contains("\"") && !(position.prefix().equals(PREFIX_FILE) && value.matches("\"[^\"]*\""))) {
             throw invalidFormat();
         }
-        ArgumentMultimap result = new ArgumentMultimap();
-        for (int i = 0; i < starts.size(); i++) {
-            int end = i + 1 < starts.size() ? starts.get(i + 1) : args.length();
-            String value = args.substring(starts.get(i) + prefixes.get(i).getPrefix().length(), end).strip();
-            if (value.contains("\"") && !(prefixes.get(i).equals(PREFIX_FILE)
-                    && value.matches("\"[^\"]*\""))) {
-                throw invalidFormat();
-            }
-            result.put(prefixes.get(i), value);
-        }
-        return result;
+        return value;
     }
 
     private ParseException invalidFormat() {
@@ -104,5 +119,8 @@ class CsvFileArgumentsParser {
     }
 
     record CsvFileArguments(Path path, Group group) {
+    }
+
+    private record PrefixPosition(Prefix prefix, int start) {
     }
 }
