@@ -81,6 +81,11 @@ public class NameContainsQueryPredicate implements Predicate<Person> {
     }
 
     @Override
+    public int hashCode() {
+        return query.hashCode();
+    }
+
+    @Override
     public String toString() {
         return new ToStringBuilder(this).add("query", query).toString();
     }

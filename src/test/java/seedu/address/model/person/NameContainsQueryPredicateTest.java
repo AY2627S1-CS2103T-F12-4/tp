@@ -5,7 +5,9 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static seedu.address.testutil.Assert.assertThrows;
 
+import java.util.HashSet;
 import java.util.Locale;
+import java.util.Set;
 
 import org.junit.jupiter.api.Test;
 
@@ -151,6 +153,17 @@ public class NameContainsQueryPredicateTest {
         assertFalse(predicate.equals(new NameContainsQueryPredicate("Tan John")));
         assertFalse(predicate.equals("John Tan"));
         assertFalse(predicate.equals(null));
+    }
+
+    @Test
+    public void hashCode_equalNormalizedQueries_supportHashSetLookup() {
+        NameContainsQueryPredicate predicate = new NameContainsQueryPredicate("John Tan");
+        NameContainsQueryPredicate equal = new NameContainsQueryPredicate(" John   Tan ");
+        Set<NameContainsQueryPredicate> predicates = new HashSet<>();
+        predicates.add(predicate);
+        assertEquals(predicate.hashCode(), equal.hashCode());
+        assertTrue(predicates.contains(equal));
+        assertFalse(predicates.contains(new NameContainsQueryPredicate("Tan John")));
     }
 
     @Test
