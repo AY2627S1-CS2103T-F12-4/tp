@@ -1,5 +1,6 @@
 package seedu.address.model.tag;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static seedu.address.testutil.Assert.assertThrows;
@@ -17,6 +18,20 @@ public class TagTest {
     public void constructor_invalidTagName_throwsIllegalArgumentException() {
         String invalidTagName = "";
         assertThrows(IllegalArgumentException.class, () -> new Tag(invalidTagName));
+    }
+
+    @Test
+    public void equals_comparesExactSpelling() {
+        Tag tag = new Tag("exchange");
+
+        assertTrue(tag.equals(new Tag("exchange")));
+        assertEquals(tag.hashCode(), new Tag("exchange").hashCode());
+
+        // A change of case is a real change, so an edit that only recases a tag is saved
+        assertFalse(tag.equals(new Tag("Exchange")));
+        assertFalse(tag.equals(new Tag("exchanges")));
+        assertFalse(tag.equals(null));
+        assertFalse(tag.equals("exchange"));
     }
 
     @Test
