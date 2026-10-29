@@ -284,6 +284,18 @@
     -fx-border-width: 0;
 }
 
+.empty-group-summary,
+.empty-group-summary > .viewport {
+    -fx-background-color: #ffffff;
+    -fx-background-insets: 0;
+}
+
+.empty-group-sessions {
+    -fx-font-size: 13px;
+    -fx-text-fill: #253936;
+    -fx-padding: 10 12 10 12;
+}
+
 #cardPane {
     -fx-background-color: transparent;
 }

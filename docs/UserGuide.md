@@ -312,6 +312,11 @@ A green `✓` means present, a red `✗` means absent, and a grey `—` means un
 A student added after a session also shows `—` until their attendance is recorded. Weeks with no session have no cell. The list scrolls when needed.
 
 The group scope is shown above the list. `find` searches across groups and clears the active group.
+For a selected group with no students, the list area shows its sessions in teaching-week order with full
+`YYYY-MM-DD` dates. For example, run `list grp/T11` after creating T11's sessions to review its timetable
+before adding students. Scroll within the summary to see later weeks. The summary updates when sessions
+change; a group without sessions shows a session-creation hint. Viewing it does not change data or undo history.
+
 Deleting a student refreshes the current results without clearing the filter. Adding a student keeps the current results if the new student belongs in them, and otherwise shows the new student's tutorial group.
 Student indices are the row numbers currently on screen, so check the displayed list before using `delete`, `edit`,
 or `mark`. A successful edit shows all students again in matriculation-number order. Editing a matriculation number
@@ -332,7 +337,7 @@ registered groups in group-code order. Scroll along the strip if there are more 
   Arrow keys alone do not change the displayed roster. Leaving the panel restores the active view's selection.
 * The panel follows typed commands: `list` selects **All students**, `list grp/GROUP` selects that group,
   and a successful `find` clears the selection, even when every student happens to match.
-* Registered empty groups remain selectable and display the usual empty-group message.
+* Registered empty groups remain selectable and display the usual empty-group message, with their session summary in the list area.
 * Navigation preserves unfinished command text and does not change student or attendance records.
 * Student indices are refreshed for the newly displayed roster. Check the displayed list before running
   `mark`, `edit` or `delete` with an index.

@@ -2,6 +2,7 @@
 
 <?import javafx.scene.control.ListView?>
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.VBox?>
@@ -22,5 +23,15 @@
     <Label text="GROUP" minWidth="60" prefWidth="60" maxWidth="60" />
     <Label text="ATTENDANCE" />
   </HBox>
-  <ListView fx:id="personListView" VBox.vgrow="ALWAYS" />
+  <ListView fx:id="personListView" VBox.vgrow="ALWAYS">
+    <placeholder>
+      <ScrollPane fx:id="emptyGroupSummary" fitToWidth="true" hbarPolicy="NEVER"
+                  minHeight="0" styleClass="empty-group-summary">
+        <content>
+          <Label fx:id="emptyGroupSessions" wrapText="true" minHeight="-Infinity" maxWidth="Infinity"
+                 styleClass="empty-group-sessions" />
+        </content>
+      </ScrollPane>
+    </placeholder>
+  </ListView>
 </VBox>

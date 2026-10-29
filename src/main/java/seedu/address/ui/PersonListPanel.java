@@ -3,9 +3,11 @@ package seedu.address.ui;
 import static java.util.Objects.requireNonNull;
 import static seedu.address.commons.util.CollectionUtil.requireAllNonNull;
 
+import java.util.Comparator;
 import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.ReadOnlyObjectProperty;
@@ -54,6 +56,8 @@ public class PersonListPanel extends UiPart<Region> {
     private Label groupScope;
     @FXML
     private Label studentCount;
+    @FXML
+    private Label emptyGroupSessions;
 
     /**
      * Creates a {@code PersonListPanel} with the given {@code ObservableList}.
@@ -67,6 +71,8 @@ public class PersonListPanel extends UiPart<Region> {
                 ? "All groups" : "Tutorial group " + activeGroup.get(), activeGroup));
         studentCount.textProperty().bind(Bindings.createStringBinding(() -> personList.size()
                 + (personList.size() == 1 ? " student" : " students"), personList));
+        emptyGroupSessions.textProperty().bind(Bindings.createStringBinding(() ->
+                formatEmptyGroupSessions(activeGroup.get()), activeGroup, sessions));
         personListView.setItems(personList);
         sessions.addListener((ListChangeListener<Session>) change -> personListView.refresh());
         personListView.setCellFactory(listView -> new PersonListViewCell());
@@ -78,6 +84,19 @@ public class PersonListPanel extends UiPart<Region> {
                 event.consume();
             }
         });
+    }
+
+    /** Describes an empty group's timetable without requiring a student detail panel. */
+    private String formatEmptyGroupSessions(Group group) {
+        if (group == null) {
+            return "No students to display.";
+        }
+        String timetable = sessions.stream().filter(session -> session.getGroup().equals(group))
+                .sorted(Comparator.comparing(Session::getWeek))
+                .map(session -> "Week " + session.getWeek() + ": " + session.getDate())
+                .collect(Collectors.joining("\n"));
+        return timetable.isEmpty() ? "No sessions in " + group + " yet.\nCreate one with: session grp/"
+                + group + " w/1 d/YYYY-MM-DD" : "Sessions in " + group + "\n" + timetable;
     }
 
     /**
