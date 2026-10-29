@@ -23,6 +23,16 @@ import seedu.address.model.session.Week;
  */
 public class ModelStub implements Model {
     @Override
+    public seedu.address.model.StudentListViewState getStudentListViewState() {
+        throw new AssertionError("This method should not be called.");
+    }
+
+    @Override
+    public void restoreStudentListViewState(seedu.address.model.StudentListViewState state) {
+        throw new AssertionError("This method should not be called.");
+    }
+
+    @Override
     public void showGroup(Group group) {
         throw new AssertionError("This method should not be called.");
     }

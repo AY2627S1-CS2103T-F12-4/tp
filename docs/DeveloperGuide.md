@@ -454,7 +454,11 @@ Similarly, how an undo operation goes through the `Model` component is shown bel
 
 The user can execute `redo`, which calls `Model#redoAddressBook()` to move the history pointer one position
 right and restore that snapshot. Undo and redo both save the restored data and pointer. An unsuccessful save
-restores the full pre-command history, so the command can be retried.
+restores the full pre-command history and student-list view, so the command can be retried with the same scope.
+Before a saving command executes, `LogicManager` also captures a `StudentListViewState` containing the live
+filter predicate, comparator, active group and all-students indicator. After restoring roster data and history,
+it restores this view, including when the failed command changed the view itself. Keeping the predicate rather
+than a fixed list of matching students allows the restored search to continue responding to data changes.
 
 The user then executes `list`. Read-only and failed commands do not change `addressBookStateList`.
 
