@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static seedu.address.testutil.FxTestUtil.onFxThread;
+import static seedu.address.testutil.FxTestUtil.waitForRenderingCycles;
 
 import java.nio.file.Path;
 import java.util.List;
@@ -16,6 +17,7 @@ import javafx.scene.Node;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextField;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
@@ -106,6 +108,44 @@ public class StudentDetailUiTest {
         } finally {
             onFxThread(() -> {
                 stage.close();
+                return null;
+            });
+        }
+    }
+
+    @Test
+    public void detailPanel_listingCurrentGroup_preservesScrollAfterRendering() throws Exception {
+        Person student = new PersonBuilder().withGroup("T09").build();
+        AddressBook book = new AddressBookBuilder().withPerson(student).build();
+        for (int week = 1; week <= 13; week++) {
+            book.addSession(new Session(new Group("T09"), new Week(week),
+                    new SessionDate(java.time.LocalDate.of(2026, 8, 11).plusWeeks(week - 1).toString())));
+        }
+        try (MainWindowTestFixture fixture = MainWindowTestFixture.create(book, temporaryFolder)) {
+            Stage stage = fixture.stage();
+            onFxThread(() -> {
+                MainWindowTestFixture.enterCommand(stage, "list grp/T09");
+                clickRow(stage, 0);
+                return null;
+            });
+            waitForRenderingCycles(2);
+            onFxThread(() -> {
+                ScrollPane scroll = (ScrollPane) stage.getScene().lookup("#detailScroll");
+                assertTrue(scroll.getContent().getBoundsInLocal().getHeight()
+                        > scroll.getViewportBounds().getHeight());
+                scroll.setVvalue(0.8);
+                return null;
+            });
+            waitForRenderingCycles(2);
+            onFxThread(() -> {
+                MainWindowTestFixture.enterCommand(stage, "list grp/T09");
+                return null;
+            });
+            waitForRenderingCycles(2);
+            onFxThread(() -> {
+                assertTrue(detailShowing(stage));
+                assertEquals(student.getName().fullName, detailText(stage, "studentName"));
+                assertEquals(0.8, ((ScrollPane) stage.getScene().lookup("#detailScroll")).getVvalue(), 0.0001);
                 return null;
             });
         }
