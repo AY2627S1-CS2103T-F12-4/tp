@@ -101,9 +101,9 @@ Parameter | Accepted value
 `n/NAME` | 1–70 characters. Letters and their accents, spaces, hyphens, apostrophes, full stops and the relationship abbreviations `s/o`, `d/o`, `a/l`, `a/p` (in any letter case). Must begin with a letter and end with a letter, accent or full stop. Examples: `J. Tan`, `Ravi s/o Kumar`. Surrounding spaces are removed, repeated spaces become one space, and letter case is preserved.
 `m/MATRIC` | `A`, followed by seven digits and one letter, e.g. `A0287654J`. Surrounding spaces are removed and letters are converted to uppercase.
 `e/EMAIL` | A valid email address such as `alex.tan@example.com`. The local part accepts letters, digits and `+_.-`, including adjacent special characters such as `alice__tan` or `alice_+tan`. It must start and end with a letter or digit and cannot contain consecutive periods. Surrounding spaces are removed and the address is converted to lowercase.
-`c/COMMENT` | Text to add to a student's existing comment. 1–200 characters once surrounding spaces are removed and repeated spaces become one space.
+`c/COMMENT` | Text to add to a student's existing comment. 1–500 characters once surrounding spaces are removed and repeated spaces become one space.
 `c-/COMMENT` | Text to replace a student's comment with. Same rules as `c/`, except that `c-/` on its own clears the comment.
-`t/TAG` | One or more letters or digits, with no spaces or other characters. Repeat `t/` to give a student multiple tags.
+`t/TAG` | Letters and digits, optionally joined by single hyphens, e.g. `exchange` or `needs-follow-up`. No spaces or other characters, and a hyphen cannot start or end a tag. Repeat `t/` to give a student multiple tags. Tags that differ only in letter case, such as `exchange` and `Exchange`, count as one tag; the spelling given first is kept.
 `w/WEEK` | A whole number from `1` to `13`, without a leading zero.
 `d/DATE` | A real calendar date in `YYYY-MM-DD` format.
 `s/STATUS` | `present` or `absent`, case-insensitive.
@@ -125,11 +125,12 @@ search or switch tutorial groups. Each row shows the student's name, matriculati
 attendance. Scroll vertically to reach additional students or the rest of a tall attendance row.
 
 Click a student row to open their details on the right, or focus the student list, select a row with
-the arrow keys and press Enter. The panel shows their email, tags, comments, and attendance by session.
+the arrow keys and press Enter. The panel opens over the right of the roster, so the command box and the
+result of your last command stay visible while it is open. It shows the student's email, tags, comments, and attendance by session.
 The attendance percentage counts only marked sessions; unmarked sessions are shown separately.
 Scroll inside the panel to read later sessions. Click another row to switch students.
 
-Close the panel with its × button or Escape to see the full roster and command box again. If command
+Close the panel with its × button or Escape to see the full roster again. If command
 completion suggestions are open, Escape dismisses those first. Opening or closing details does not
 change the roster, active group, or displayed row numbers. Successful commands refresh an open panel;
 it closes if its student is no longer displayed. After undoing a matriculation-number edit, reopen the
@@ -153,6 +154,8 @@ Suggestions are suppressed inside quoted export paths so that directory names ar
 * Press Up/Down to select a suggestion and Tab to insert it, or click a suggestion.
 * Press Escape to dismiss suggestions. Enter always executes the current command.
 * Completion replaces the field fragment at the cursor and preserves other fields.
+* Completing the command word replaces only what you typed before the cursor, so any text
+  after it is kept.
 * Group suggestions reflect the currently registered groups, including empty groups.
 * `init grp/` accepts a new group code without suggesting existing groups.
 * You can continue typing any value normally; existing validation rules still apply.
@@ -426,7 +429,7 @@ Examples:
 * `INDEX` refers to the currently displayed student list.
 * `c/` only ever adds. Repeated notes are joined with `; ` in the order they were added, so a comment reads as a short history.
 * `c-/` is the only form that discards an existing note, so a comment is never lost without you having typed it.
-* A comment is limited to 200 characters. Adding to a comment fails if the combined text would be longer, and the existing comment is left unchanged.
+* A comment is limited to 500 characters. Adding to a comment fails if the combined text would be longer, and the existing comment is left unchanged.
 * Clearing a student who has no comment reports that there was nothing to clear.
 * Giving both `c/` and `c-/` in one command is rejected, as is giving neither.
 * The displayed list and its indexes stay unchanged after a successful comment.
@@ -438,7 +441,7 @@ Because `c/` appends, you can add to a note during the tutorial without retyping
 </div>
 
 <div markdown="span" class="alert alert-warning">:exclamation: **Caution:**
-A comment cannot contain a space followed by `c/` or `c-/`, because Roster reads those as the start of another parameter. A note such as `ask about c/c++` is rejected rather than saved incorrectly.
+A comment cannot contain a space followed by `c/` or `c-/`, because Roster reads those as the start of another parameter. A note such as `ask about c/c++` is rejected rather than saved incorrectly. Put another character right before `c/`, for example `ask about (c/c++)`.
 </div>
 
 ### Deleting all displayed students: `delete all`
@@ -452,6 +455,7 @@ Examples:
 * `list grp/T09` followed by `delete all` deletes every student in `T09`, for example at the end of a semester.
 * `find n/Tan` followed by `delete all` deletes every student in the search results.
 
+* `all` ignores letter case, so `delete ALL` works too.
 * Only the students on screen are deleted. Students in other groups, or outside the search results, are kept.
 * `delete all` while all students are displayed deletes every student. Use `clear` instead to also delete all tutorial groups and sessions.
 
@@ -497,6 +501,7 @@ Examples:
 * `list grp/T09` followed by `mark all w/5 s/present` marks every student in T09 present for week 5.
 * `mark all w/5 s/absent` while all students are displayed marks every student absent for week 5 of their own group.
 
+* `all` ignores letter case, so `mark ALL w/5 s/present` works too.
 * Each student is marked for the session of their own tutorial group, as with `mark`.
 * Every displayed student's group must have a session for that week. If any group does not, no student is marked.
 * Students who were already marked for that week have their status replaced. The confirmation says how many.

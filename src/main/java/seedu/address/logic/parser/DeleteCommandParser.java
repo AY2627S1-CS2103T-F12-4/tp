@@ -21,7 +21,8 @@ public class DeleteCommandParser implements Parser<Command> {
      * @throws ParseException if the user input does not conform to the expected format
      */
     public Command parse(String args) throws ParseException {
-        if (args.trim().equals(KEYWORD_ALL)) {
+        // Letter case is ignored, as it is for statuses and group codes
+        if (args.trim().equalsIgnoreCase(KEYWORD_ALL)) {
             return new DeleteAllCommand();
         }
         try {

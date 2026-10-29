@@ -2,6 +2,7 @@ package seedu.address.logic.commands;
 
 import static java.util.Objects.requireNonNull;
 import static seedu.address.commons.util.CollectionUtil.requireAllNonNull;
+import static seedu.address.logic.parser.CliSyntax.KEYWORD_ALL;
 
 import java.util.Comparator;
 import java.util.List;
@@ -82,6 +83,12 @@ public class MarkAllCommand extends Command {
                 ? String.format(MESSAGE_SUCCESS, studentsToMark.size(), status, week, groups)
                 : String.format(MESSAGE_SUCCESS_WITH_REMARKS, studentsToMark.size(), status, week, groups,
                         remarkCount));
+    }
+
+    /** Names the command as the user types it, rather than as one word. */
+    @Override
+    public String getUndoDescription() {
+        return MarkCommand.COMMAND_WORD + " " + KEYWORD_ALL;
     }
 
     @Override

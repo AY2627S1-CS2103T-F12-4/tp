@@ -132,12 +132,18 @@ public class ParserUtil {
 
     /**
      * Parses {@code Collection<String> tags} into a {@code Set<Tag>}.
+     * Tags that differ only in letter case are the same label, so only the spelling given first is kept.
+     * Tags themselves stay case-sensitive, so changing a tag's case is still a real edit.
      */
     public static Set<Tag> parseTags(Collection<String> tags) throws ParseException {
         requireNonNull(tags);
         final Set<Tag> tagSet = new HashSet<>();
+        final Set<String> seenNames = new HashSet<>();
         for (String tagName : tags) {
-            tagSet.add(parseTag(tagName));
+            Tag tag = parseTag(tagName);
+            if (seenNames.add(tag.tagName.toLowerCase(Locale.ROOT))) {
+                tagSet.add(tag);
+            }
         }
         return tagSet;
     }

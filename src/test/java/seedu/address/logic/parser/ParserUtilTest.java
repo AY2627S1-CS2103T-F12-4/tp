@@ -242,4 +242,12 @@ public class ParserUtilTest {
 
         assertEquals(expectedTagSet, actualTagSet);
     }
+
+    @Test
+    public void parseTags_sameTagInDifferentCase_keepsFirstSpelling() throws Exception {
+        Set<Tag> actualTagSet = ParserUtil.parseTags(List.of("exchange", "Exchange", "EXCHANGE"));
+
+        assertEquals(1, actualTagSet.size());
+        assertEquals("exchange", actualTagSet.iterator().next().tagName);
+    }
 }

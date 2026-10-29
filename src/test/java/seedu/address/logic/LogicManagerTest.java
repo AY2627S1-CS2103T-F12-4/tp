@@ -203,6 +203,21 @@ public class LogicManagerTest {
     }
 
     @Test
+    public void execute_undoAndRedoAllCommands_nameCommandAsTyped() throws Exception {
+        logic.execute("init grp/T09");
+        logic.execute("add n/Alex Tan e/alex@example.com m/A0123456X grp/T09");
+        logic.execute("session grp/T09 w/1 d/2026-08-11");
+
+        logic.execute("mark all w/1 s/present");
+        assertEquals("Undid the most recent mark all command.", logic.execute("undo").getFeedbackToUser());
+        assertEquals("Redid the most recent mark all command.", logic.execute("redo").getFeedbackToUser());
+
+        logic.execute("delete all");
+        assertEquals("Undid the most recent delete all command.", logic.execute("undo").getFeedbackToUser());
+        assertEquals("Redid the most recent delete all command.", logic.execute("redo").getFeedbackToUser());
+    }
+
+    @Test
     public void execute_clear_canBeUndoneWithoutClearingEarlierHistory() throws Exception {
         logic.execute("init grp/T09");
         logic.execute("clear");

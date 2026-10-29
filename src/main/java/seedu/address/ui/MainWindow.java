@@ -35,8 +35,8 @@ public class MainWindow extends UiPart<Stage> {
 
     private static final String FXML = "MainWindow.fxml";
 
-    /** Share of the window the student detail panel covers while it is open. */
-    private static final double DETAIL_PANEL_SHARE = 0.45;
+    /** Share of the roster's width the student detail panel covers while it is open. */
+    private static final double DETAIL_PANEL_SHARE = 0.5;
 
     private final Logger logger = LogsCenter.getLogger(getClass());
 
@@ -74,7 +74,7 @@ public class MainWindow extends UiPart<Stage> {
     private StackPane studentDetailPlaceholder;
 
     @FXML
-    private StackPane pageArea;
+    private StackPane rosterArea;
 
     /**
      * Creates a {@code MainWindow} with the given {@code Stage}, {@code Logic},
@@ -165,14 +165,14 @@ public class MainWindow extends UiPart<Stage> {
     }
 
     /**
-     * Keeps the detail panel to a share of the window rather than a fixed width, so the student
+     * Keeps the detail panel to a share of the roster rather than a fixed width, so the student
      * list stays readable beside it even at the window's smallest size.
      */
     private void sizeStudentDetailPanel() {
         Region panel = studentDetailPanel.getRoot();
-        panel.maxWidthProperty().bind(pageArea.widthProperty().multiply(DETAIL_PANEL_SHARE));
+        panel.maxWidthProperty().bind(rosterArea.widthProperty().multiply(DETAIL_PANEL_SHARE));
         panel.prefWidthProperty().bind(panel.maxWidthProperty());
-        // The panel runs the page's full height, so it covers the command box while it is open
+        // The panel covers only the roster's height, so the command box and result stay visible
         panel.setMaxHeight(Double.MAX_VALUE);
     }
 
