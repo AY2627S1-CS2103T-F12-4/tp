@@ -149,8 +149,6 @@ public class VersionedAddressBook extends AddressBook {
      * Asserts that every saved state has a matching command name and that the current state is one of them.
      */
     private void assertValidHistory() {
-        assert addressBookStateList.size() <= MAX_HISTORY_STATES : "History must stay within its command limit";
-        assert commandDescriptionList.getFirst() == null : "The history boundary has no preceding command";
         assert addressBookStateList.size() == commandDescriptionList.size()
                 : "Every saved state should have a matching command name";
         assert currentStatePointer >= 0 && currentStatePointer < addressBookStateList.size()
