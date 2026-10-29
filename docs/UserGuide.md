@@ -103,7 +103,7 @@ Parameter | Accepted value
 `e/EMAIL` | A valid email address such as `alex.tan@example.com`. Surrounding spaces are removed and the address is converted to lowercase.
 `c/COMMENT` | Text to add to a student's existing comment. 1–200 characters once surrounding spaces are removed and repeated spaces become one space.
 `c-/COMMENT` | Text to replace a student's comment with. Same rules as `c/`, except that `c-/` on its own clears the comment.
-`t/TAG` | One or more letters or digits, with no spaces or other characters. Repeat `t/` to give a student multiple tags.
+`t/TAG` | Letters and digits, optionally joined by single hyphens, e.g. `exchange` or `needs-follow-up`. No spaces or other characters, and a hyphen cannot start or end a tag. Repeat `t/` to give a student multiple tags.
 `w/WEEK` | A whole number from `1` to `13`, without a leading zero.
 `d/DATE` | A real calendar date in `YYYY-MM-DD` format.
 `s/STATUS` | `present` or `absent`, case-insensitive.
