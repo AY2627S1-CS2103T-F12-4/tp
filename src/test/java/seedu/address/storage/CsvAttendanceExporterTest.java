@@ -3,9 +3,12 @@ package seedu.address.storage;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.DirectoryNotEmptyException;
 import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -15,6 +18,7 @@ import java.util.Optional;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
+import javafx.collections.ObservableList;
 import seedu.address.model.AddressBook;
 import seedu.address.model.attendance.Status;
 import seedu.address.model.person.Group;
@@ -103,6 +107,40 @@ public class CsvAttendanceExporterTest {
     }
 
     @Test
+    public void export_destinationAppearsDuringWrite_preservesItAndRemovesTemporaryOutput() throws Exception {
+        Path output = temporaryFolder.resolve("concurrent.csv");
+        AddressBook roster = beforeReadingSessions(() -> {
+            assertTrue(Files.exists(temporaryOutput()));
+            Files.writeString(output, "created by another writer");
+        });
+
+        assertThrows(FileAlreadyExistsException.class, () -> exporter.export(roster, output, Optional.empty()));
+
+        assertEquals("created by another writer", Files.readString(output));
+        assertEquals(List.of("concurrent.csv"), filenames());
+        assertEquals(roster(), roster);
+    }
+
+    @Test
+    public void export_writeAndCleanupFail_preservesWriteFailureAndSuppressesCleanupFailure() throws Exception {
+        Path output = temporaryFolder.resolve("failed.csv");
+        AddressBook roster = beforeReadingSessions(() -> {
+            Path temporary = temporaryOutput();
+            Files.delete(temporary);
+            Files.createDirectory(temporary);
+            Files.writeString(temporary.resolve("block-cleanup"), "keep");
+        });
+
+        IOException failure = assertThrows(IOException.class, () -> exporter.export(roster, output, Optional.empty()));
+
+        assertFalse(failure instanceof DirectoryNotEmptyException, "The write error must remain the primary failure");
+        assertEquals(1, failure.getSuppressed().length);
+        assertTrue(failure.getSuppressed()[0] instanceof DirectoryNotEmptyException);
+        assertFalse(Files.exists(output));
+        assertEquals(roster(), roster);
+    }
+
+    @Test
     public void escape_separatorsQuotesAndLineBreaks_producesValidCsvFields() {
         assertEquals("plain", CsvAttendanceExporter.escape("plain"));
         assertEquals("", CsvAttendanceExporter.escape(""));
@@ -121,9 +159,36 @@ public class CsvAttendanceExporterTest {
         return roster;
     }
 
+    /** Changes only the test folder after export creates a temporary file and before writing starts. */
+    private AddressBook beforeReadingSessions(IoAction action) {
+        return new AddressBook(roster()) {
+            @Override
+            public ObservableList<Session> getSessionList() {
+                try {
+                    action.run();
+                } catch (IOException e) {
+                    throw new UncheckedIOException(e);
+                }
+                return super.getSessionList();
+            }
+        };
+    }
+
+    private Path temporaryOutput() throws IOException {
+        try (var paths = Files.list(temporaryFolder)) {
+            return paths.filter(path -> path.getFileName().toString().startsWith(".roster-export-"))
+                    .findFirst().orElseThrow();
+        }
+    }
+
     private List<String> filenames() throws IOException {
         try (var paths = Files.list(temporaryFolder)) {
             return paths.map(path -> path.getFileName().toString()).sorted().toList();
         }
+    }
+
+    @FunctionalInterface
+    private interface IoAction {
+        void run() throws IOException;
     }
 }

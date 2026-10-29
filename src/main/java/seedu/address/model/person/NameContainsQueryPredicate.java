@@ -2,6 +2,7 @@ package seedu.address.model.person;
 
 import static java.util.Objects.requireNonNull;
 import static seedu.address.commons.util.AppUtil.checkArgument;
+import static seedu.address.commons.util.StringUtil.normalizeWhitespace;
 
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
@@ -18,7 +19,6 @@ public class NameContainsQueryPredicate implements Predicate<Person> {
 
     private final String query;
     private final Pattern substringPattern;
-    private final Pattern wholeWordPattern;
 
     /**
      * Creates a predicate from a valid search phrase, normalizing its whitespace.
@@ -29,7 +29,6 @@ public class NameContainsQueryPredicate implements Predicate<Person> {
         checkArgument(isValidQuery(this.query), MESSAGE_CONSTRAINTS);
         int flags = Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE;
         substringPattern = Pattern.compile(Pattern.quote(this.query), flags);
-        wholeWordPattern = Pattern.compile("(?<!\\S)" + Pattern.quote(this.query) + "(?!\\S)", flags);
     }
 
     /**
@@ -56,20 +55,9 @@ public class NameContainsQueryPredicate implements Predicate<Person> {
         return substringPattern.matcher(normalizeName(person)).find();
     }
 
-    /**
-     * Returns whether the complete query matches whole name words rather than part of a word.
-     */
-    public boolean isWholeWordMatch(Person person) {
-        return wholeWordPattern.matcher(normalizeName(person)).find();
-    }
-
     private String normalizeName(Person person) {
         requireNonNull(person);
         return normalizeWhitespace(person.getName().fullName);
-    }
-
-    private static String normalizeWhitespace(String value) {
-        return value.replaceAll("(?U)\\s+", " ").strip();
     }
 
     @Override
@@ -78,6 +66,11 @@ public class NameContainsQueryPredicate implements Predicate<Person> {
             return true;
         }
         return other instanceof NameContainsQueryPredicate otherPredicate && query.equals(otherPredicate.query);
+    }
+
+    @Override
+    public int hashCode() {
+        return query.hashCode();
     }
 
     @Override
