@@ -49,7 +49,7 @@
             <StackPane fx:id="commandBoxPlaceholder" />
           </VBox>
 
-          <StackPane fx:id="resultDisplayPlaceholder" minHeight="62" prefHeight="62" maxHeight="110" />
+          <StackPane fx:id="resultDisplayPlaceholder" minHeight="80" prefHeight="80" maxHeight="110" />
 
           <VBox fx:id="personList" spacing="6" styleClass="roster-panel" VBox.vgrow="ALWAYS">
             <padding>
