@@ -2,6 +2,7 @@ package seedu.address.model.person;
 
 import static java.util.Objects.requireNonNull;
 import static seedu.address.commons.util.AppUtil.checkArgument;
+import static seedu.address.commons.util.StringUtil.normalizeWhitespace;
 
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
@@ -57,10 +58,6 @@ public class NameContainsQueryPredicate implements Predicate<Person> {
     private String normalizeName(Person person) {
         requireNonNull(person);
         return normalizeWhitespace(person.getName().fullName);
-    }
-
-    private static String normalizeWhitespace(String value) {
-        return value.replaceAll("(?U)\\s+", " ").strip();
     }
 
     @Override
