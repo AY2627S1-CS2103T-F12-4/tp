@@ -228,6 +228,10 @@ the complete student list, independently of the displayed search or group filter
 immutable students before changing the session list, retaining names, email, matriculation numbers,
 groups, tags, comments and unrelated attendance.
 
+The sequence diagram below shows how `editsession grp/T09 w/3 d/2026-08-27` updates the session and the attendance that refers to it.
+
+![Editing a session date and rebuilding the attendance that refers to it](images/EditSessionSequenceDiagram.png)
+
 An `Attendance` embeds a complete `Session`, including its date. Updating only `UniqueSessionList`
 would therefore leave stale dates in students' stored attendance. Editing replaces each affected
 attendance with one referring to the edited session and its original status. Unmarked students stay
@@ -365,6 +369,10 @@ changing anything. If any group has no session for that week, the command fails 
 `Model#deletePerson`. Attendance records are stored inside each `Person`, so they are removed with the student.
 Tutorial groups and sessions are kept, even when a group becomes empty. `delete all` copies the displayed list
 before deleting, because the list shrinks as students are removed. Both commands are undoable.
+
+The activity diagram below shows how `delete all` deletes the displayed students while keeping groups and sessions.
+
+<img src="images/DeleteAllActivityDiagram.png" width="450" alt="Activity diagram showing deletion of displayed students while retaining groups and sessions" />
 
 ### Showing a newly added student
 
