@@ -56,4 +56,17 @@ public class TagTest {
         assertTrue(Tag.isValidTagName("week-5")); // hyphen before a digit
     }
 
+    @Test
+    public void isValidTagName_length_acceptsUpToMaxLength() {
+        assertTrue(Tag.isValidTagName("a")); // shortest
+        assertTrue(Tag.isValidTagName("a".repeat(Tag.MAX_LENGTH))); // exactly the maximum length
+        assertFalse(Tag.isValidTagName("a".repeat(Tag.MAX_LENGTH + 1))); // one character over
+    }
+
+    @Test
+    public void isValidTagName_veryLongHyphenatedTag_returnsFalseWithoutError() {
+        // Thousands of hyphenated parts used to overflow the stack inside the regex
+        assertFalse(Tag.isValidTagName("a" + "-a".repeat(5000)));
+    }
+
 }

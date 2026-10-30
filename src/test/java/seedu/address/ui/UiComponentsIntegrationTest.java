@@ -38,6 +38,7 @@ import seedu.address.model.person.Group;
 import seedu.address.model.session.Session;
 import seedu.address.model.session.SessionDate;
 import seedu.address.model.session.Week;
+import seedu.address.model.tag.Tag;
 import seedu.address.testutil.PersonBuilder;
 
 public class UiComponentsIntegrationTest {
@@ -218,7 +219,7 @@ public class UiComponentsIntegrationTest {
                 .withMatric("A0000001X").withEmail(hasLongText ? "verylongemail".repeat(5) + "@example.com"
                         : "alex@example.com").withGroup("T09")
                 .withComment(hasLongText ? longestComment() : "Needs worksheet")
-                .withTags("classrep", hasLongText ? "x".repeat(100) : "exchange");
+                .withTags("classrep", hasLongText ? "x".repeat(Tag.MAX_LENGTH) : "exchange");
         first.withAttendance(book.getSessionList().getFirst(), Status.PRESENT);
         book.addPerson(first.build());
         book.addPerson(new PersonBuilder().withName("Bernice Tan").withMatric("A0000002X")

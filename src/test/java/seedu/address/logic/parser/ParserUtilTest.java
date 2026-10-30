@@ -6,8 +6,10 @@ import static seedu.address.logic.parser.ParserUtil.MESSAGE_INVALID_INDEX;
 import static seedu.address.testutil.Assert.assertThrows;
 import static seedu.address.testutil.TypicalIndexes.INDEX_FIRST_PERSON;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.IntStream;
 
 import org.junit.jupiter.api.Test;
 
@@ -249,5 +251,28 @@ public class ParserUtilTest {
 
         assertEquals(1, actualTagSet.size());
         assertEquals("exchange", actualTagSet.iterator().next().tagName);
+    }
+
+    @Test
+    public void parseTags_maximumNumberOfTags_returnsTagSet() throws Exception {
+        assertEquals(Tag.MAX_TAGS_PER_STUDENT, ParserUtil.parseTags(numberedTags(Tag.MAX_TAGS_PER_STUDENT)).size());
+    }
+
+    @Test
+    public void parseTags_tooManyTags_throwsParseException() {
+        assertThrows(ParseException.class, Tag.MESSAGE_TOO_MANY_TAGS, () ->
+                ParserUtil.parseTags(numberedTags(Tag.MAX_TAGS_PER_STUDENT + 1)));
+    }
+
+    @Test
+    public void parseTags_extraTagsDifferingOnlyInCase_countedOnce() throws Exception {
+        List<String> tags = new ArrayList<>(numberedTags(Tag.MAX_TAGS_PER_STUDENT));
+        tags.add("TAG1");
+
+        assertEquals(Tag.MAX_TAGS_PER_STUDENT, ParserUtil.parseTags(tags).size());
+    }
+
+    private static List<String> numberedTags(int count) {
+        return IntStream.rangeClosed(1, count).mapToObj(i -> "tag" + i).toList();
     }
 }

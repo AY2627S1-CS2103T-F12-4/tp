@@ -67,6 +67,21 @@ public class EmailTest {
     }
 
     @Test
+    public void isValidEmail_length_acceptsUpToMaxLength() {
+        String domain = "@example.com";
+        String longestLocalPart = "a".repeat(Email.MAX_LENGTH - domain.length());
+
+        assertTrue(Email.isValidEmail(longestLocalPart + domain)); // exactly the maximum length
+        assertFalse(Email.isValidEmail("a" + longestLocalPart + domain)); // one character over
+    }
+
+    @Test
+    public void isValidEmail_veryLongRepeatedDomainLabels_returnsFalseWithoutError() {
+        // Thousands of short labels used to overflow the stack inside the regex
+        assertFalse(Email.isValidEmail("b@" + "a.".repeat(5000) + "com"));
+    }
+
+    @Test
     public void isValidEmail_adjacentSpecialCharacters_acceptsExceptConsecutivePeriods() {
         for (char first : "+_.-".toCharArray()) {
             for (char second : "+_.-".toCharArray()) {
