@@ -22,6 +22,8 @@ import javafx.geometry.Bounds;
 import javafx.scene.Node;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
+import javafx.scene.control.skin.VirtualFlow;
+import javafx.scene.layout.Region;
 import javafx.stage.Stage;
 import seedu.address.model.AddressBook;
 import seedu.address.model.person.Group;
@@ -175,6 +177,84 @@ public class GroupStripScrollUiTest {
             waitForRenderingCycles(3);
             onFxThread(() -> {
                 assertSelectedAndVisible(fixture.stage(), "T20");
+                return null;
+            });
+        }
+    }
+
+    @Test
+    public void list_partiallyClippedLeftEntry_revealsTheWholeSelection() throws Exception {
+        try (MainWindowTestFixture fixture = createWindow()) {
+            scrollTo(fixture.stage(), 20);
+            String clippedGroup = onFxThread(() -> {
+                ListView<?> list = groupList(fixture.stage());
+                VirtualFlow<?> flow = (VirtualFlow<?>) list.lookup(".virtual-flow");
+                flow.scrollPixels(15);
+                Bounds viewport = bounds(list.lookup(".clipped-container"));
+                return list.lookupAll(".list-cell").stream()
+                        .filter(node -> node instanceof ListCell<?> row && !row.isEmpty())
+                        .<ListCell<?>>map(node -> (ListCell<?>) node)
+                        .filter(row -> bounds(row).getMinX() < viewport.getMinX() - 1
+                                && bounds(row).getMaxX() > viewport.getMinX() + 1)
+                        .map(row -> row.getItem().toString()).findFirst().orElseThrow();
+            });
+            runCommand(fixture.stage(), "list grp/" + clippedGroup);
+            onFxThread(() -> {
+                assertSelectedAndVisible(fixture.stage(), clippedGroup);
+                return null;
+            });
+        }
+    }
+
+    @Test
+    public void list_selectionClearedBeforeLayout_canRevealTheNextSelection() throws Exception {
+        try (MainWindowTestFixture fixture = createWindow()) {
+            onFxThread(() -> {
+                enterCommand(fixture.stage(), "list grp/T50");
+                groupList(fixture.stage()).getSelectionModel().clearSelection();
+                return null;
+            });
+            waitForRenderingCycles(3);
+            onFxThread(() -> {
+                assertNull(groupList(fixture.stage()).getSelectionModel().getSelectedItem());
+                assertEquals(new Group("T50"), fixture.model().getActiveGroup().orElseThrow());
+                assertTrue(isFullyVisible(fixture.stage(), "All students"),
+                        "Clearing the pending selection must not scroll to the previous target");
+                return null;
+            });
+            runCommand(fixture.stage(), "list grp/T50");
+            onFxThread(() -> {
+                assertSelectedAndVisible(fixture.stage(), "T50");
+                return null;
+            });
+        }
+    }
+
+    @Test
+    public void list_narrowViewport_keepsSelectionAndRecoversWhenWidened() throws Exception {
+        try (MainWindowTestFixture fixture = createWindow()) {
+            onFxThread(() -> {
+                ListView<?> list = groupList(fixture.stage());
+                list.setMinWidth(0);
+                list.setPrefWidth(30);
+                list.setMaxWidth(30);
+                enterCommand(fixture.stage(), "list grp/T50");
+                return null;
+            });
+            waitForRenderingCycles(20);
+            onFxThread(() -> {
+                ListView<?> list = groupList(fixture.stage());
+                assertEquals("T50", list.getSelectionModel().getSelectedItem());
+                assertFalse(isFullyVisible(fixture.stage(), "T50"),
+                        "This viewport is deliberately narrower than the selected entry");
+                list.setMinWidth(Region.USE_COMPUTED_SIZE);
+                list.setPrefWidth(Region.USE_COMPUTED_SIZE);
+                list.setMaxWidth(Region.USE_COMPUTED_SIZE);
+                return null;
+            });
+            runCommand(fixture.stage(), "list grp/T50");
+            onFxThread(() -> {
+                assertSelectedAndVisible(fixture.stage(), "T50");
                 return null;
             });
         }
