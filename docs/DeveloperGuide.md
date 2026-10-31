@@ -366,6 +366,10 @@ changing anything. If any group has no session for that week, the command fails 
 Tutorial groups and sessions are kept, even when a group becomes empty. `delete all` copies the displayed list
 before deleting, because the list shrinks as students are removed. Both commands are undoable.
 
+The activity diagram below shows how `delete all` deletes the displayed students while keeping groups and sessions.
+
+<img src="images/DeleteAllActivityDiagram.png" width="450" alt="Activity diagram showing deletion of displayed students while retaining groups and sessions" />
+
 ### Showing a newly added student
 
 After adding a student, `AddCommand` checks whether the student is in the displayed list. If not, for example
