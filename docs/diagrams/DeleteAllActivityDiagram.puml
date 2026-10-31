@@ -1,0 +1,28 @@
+@startuml
+skin rose
+skinparam ActivityFontSize 15
+skinparam ArrowFontSize 12
+start
+:User enters delete all;
+if () then ([displayed list is empty])
+  :Show "no students" error;
+  stop
+else ([else])
+endif
+:Copy the displayed list;
+note right: The displayed list shrinks\nas students are deleted
+repeat
+  :Delete the next copied student,
+  with their attendance records;
+repeat while () is ([more students to delete])
+->[all copied students deleted];
+note right
+  Groups and sessions are kept,
+  even when a group becomes empty.
+  Students not displayed are kept.
+end note
+:Save Roster and record
+the change for undo;
+:Show how many students were deleted;
+stop
+@enduml
