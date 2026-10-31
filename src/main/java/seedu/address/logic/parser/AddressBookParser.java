@@ -56,6 +56,13 @@ public class AddressBookParser {
         final String commandWord = matcher.group("commandWord");
         final String arguments = matcher.group("arguments");
 
+        if ((commandWord.equals(ExitCommand.COMMAND_WORD) || commandWord.equals(HelpCommand.COMMAND_WORD))
+                && !arguments.matches("(?U)\\s*")) {
+            String usage = commandWord.equals(ExitCommand.COMMAND_WORD)
+                    ? ExitCommand.MESSAGE_USAGE : HelpCommand.MESSAGE_USAGE;
+            throw new ParseException(String.format(MESSAGE_INVALID_COMMAND_FORMAT, usage));
+        }
+
         // Only search normalizes line breaks within its arguments.
         if (!commandWord.equals(FindCommand.COMMAND_WORD) && !arguments.matches(".*")) {
             throw new ParseException(String.format(MESSAGE_INVALID_COMMAND_FORMAT, HelpCommand.MESSAGE_USAGE));

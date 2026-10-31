@@ -179,6 +179,8 @@ Shows a message explaining how to access this User Guide.
 
 Format: `help`
 
+Additional arguments are rejected with an error; the Help window is not opened.
+
 ![Help message](images/helpMessage.png?v=1.5)
 
 ### Creating a tutorial group: `init`
@@ -637,6 +639,8 @@ Example: `edit 1 n/Alex Tan`, `undo`, then `redo` reapplies the name change.
 Exits the application.
 
 Format: `exit`
+
+Additional arguments are rejected with an error; Roster stays open.
 
 You can also close the main window normally. Data-changing commands save immediately; exiting is not a separate save step.
 
