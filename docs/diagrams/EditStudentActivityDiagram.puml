@@ -1,0 +1,60 @@
+@startuml
+skinparam ActivityFontSize 15
+skinparam ArrowFontSize 12
+skinparam Shadowing false
+title Editing a student
+
+start
+:Parse the displayed index and at least one of
+name, email, matriculation number, group or tags;
+if (Arguments valid?) then (yes)
+else (no)
+    :Report a parsing error;
+    stop
+endif
+
+:Resolve the index in the displayed student list;
+if (Index exists?) then (yes)
+else (no)
+    :Report an invalid displayed index;
+    stop
+endif
+
+:Create an immutable replacement student
+from edited and unchanged fields;
+if (Tutorial group changed?) then (yes)
+    :Clear all attendance records
+    from the replacement student;
+else (no)
+    :Preserve all attendance records;
+endif
+
+if (Replacement group is registered?) then (yes)
+else (no)
+    :Report an unknown group;
+    stop
+endif
+
+if (Matriculation number belongs to another student?) then (yes)
+    :Report a duplicate student;
+    stop
+else (no)
+endif
+
+if (Email belongs to another student?) then (yes)
+    :Report a duplicate email;
+    stop
+else (no)
+endif
+
+:Replace the student in the full roster;
+:Show all students, ordered by matriculation number;
+:Save Roster and record the change for undo;
+if (Tutorial group changed?) then (yes)
+    :Report the old and new groups
+    and number of cleared attendance records;
+else (no)
+    :Report the edited student;
+endif
+stop
+@enduml
