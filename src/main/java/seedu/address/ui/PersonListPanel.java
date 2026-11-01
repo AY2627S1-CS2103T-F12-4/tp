@@ -153,7 +153,7 @@ public class PersonListPanel extends UiPart<Region> {
         int index = personListView.getItems().indexOf(person);
         if (index < 0) {
             // Commands only ask to show students they have displayed, so this points to a bug in a command
-            logger.warning("Cannot scroll to " + person.getMatric() + ", who is not in the displayed list");
+            logger.warning("Cannot scroll to a student who is not in the displayed list.");
             return;
         }
         cancelPendingScroll();
