@@ -130,7 +130,10 @@ public class CommandPasteUiTest {
             Clipboard clipboard = Clipboard.getSystemClipboard();
             Map<DataFormat, Object> previous = new HashMap<>();
             for (DataFormat format : clipboard.getContentTypes()) {
-                previous.put(format, clipboard.getContent(format));
+                Object content = clipboard.getContent(format);
+                if (content != null) {
+                    previous.put(format, content);
+                }
             }
             try {
                 return action.call();
