@@ -406,15 +406,6 @@ group switch hides its previous student, its refresh may follow the added studen
 * Handle scrolling in `PersonListPanel`, where rendered row heights and viewport bounds are available.
   Bounded post-layout retries accommodate wrapped attendance without leaving an indefinite callback.
 
-### Student comments
-
-`comment INDEX c/COMMENT` appends to a student's `Comment`, joining notes with `; `, while `c-/COMMENT` replaces it
-and an empty `c-/` clears it. Only `c-/` discards existing text, so a note is never lost by accident. A comment is
-limited to 500 characters, and an append that would exceed the limit is rejected without changing the comment.
-`; ` is the note separator in both directions: `StudentDetailPanel.commentNotes` splits a stored comment on it, so a
-separator the tutor types also starts a new note. A semicolon with no following space is ordinary text, and the
-separator itself is never shown as part of a note.
-
 ### Field completion
 
 `FieldCompletion` suggests command words, the prefixes the current command accepts, registered group codes after
@@ -422,25 +413,46 @@ separator itself is never shown as part of a note.
 list of groups, and never executes or validates a command. `CommandBox` shows its suggestions in a pop-up list.
 Each suggestion records the range of text it replaces, so accepting one leaves the rest of the command unchanged.
 
-### Comment command execution
+### Commenting on a student
 
-`CommentCommandParser` turns the append, replace and clear forms described under
-[Student comments](#student-comments) into a `CommentCommand`. Supplying both comment prefixes, or
-`c/` with no text, is rejected during parsing rather than at execution.
+`comment INDEX c/COMMENT` appends to a student's `Comment`, joining notes with `; `, while `c-/COMMENT` replaces it
+and an empty `c-/` clears it. Only `c-/` discards existing text, so a note is never lost by accident. A comment is
+limited to 500 characters, checked in two places: `Comment.isValidComment` rejects over-long text as the command is
+parsed, and appending is checked a second time against the combined result, because two comments that each fit can
+exceed the limit once joined with `; `. A rejected append leaves the comment as it was.
+`; ` is the note separator in both directions: `StudentDetailPanel.commentNotes` splits a stored comment on it, so a
+separator the tutor types also starts a new note. A semicolon with no following space is ordinary text, and the
+separator itself is never shown as part of a note.
 
-`CommentCommand` resolves the index against the displayed student list and asks `Comment` for the length
-of the combined text before making any change. An append that would exceed `Comment.MAX_LENGTH` is
-rejected, leaving the student's existing comment untouched. The new comment is applied by building a
-replacement immutable `Person` through `Person#withComment` and handing it to `Model#setPerson`.
+That limit counts what `String.length()` returns, which is UTF-16 code units rather than characters as a reader
+would count them. A character outside the Basic Multilingual Plane is stored as a surrogate pair and so costs two:
+a comment made only of 😀 is rejected at 251 of them, not 500. An emoji assembled from several code points costs
+two for each, so 👍🏽 costs four and the 👨‍👩‍👧 sequence costs eight. `Comment.normalize` collapses whitespace and
+nothing else — it never applies `java.text.Normalizer` — so `café` costs four written with a precomposed `é` and
+five written as `e` followed by a combining acute. Only ISO control characters are rejected, and a zero-width
+joiner is a format character rather than a control, so every one of these is accepted up to the limit.
 
-The sequence below follows `comment 3 c/asks good questions` after parsing.
+`CommentCommandParser` turns the three forms above into a `CommentCommand`, rejecting a bad index, both comment
+prefixes at once, neither of them, and `c/` with no text. It builds the `Comment` through
+`ParserUtil#parseComment`, so the text the tutor typed has already passed the length and control-character checks
+by the time the command exists; an empty `c-/` becomes `Comment.EMPTY`, which is the clear.
 
-![Appending to a student's comment](images/CommentSequenceDiagram.png)
+`CommentCommand` then resolves the index against the displayed student list. A replacement is applied as it
+stands, since its length was settled during parsing. An append instead reads the existing comment and asks it for
+`lengthAfterAppending`, and is rejected if the combined text would pass `Comment.MAX_LENGTH`. Either way the new
+comment is applied by building a replacement immutable `Person` through `Person#withComment` and handing it to
+`Model#setPerson`.
+
+The sequence below covers all three forms, from parsing through to the updated student.
+
+![Commenting on a student](images/CommentSequenceDiagram.png)
 
 **Design choices**
 
 * Check the combined length before appending rather than truncating, so a rejected comment never loses
   text the tutor has already recorded.
+* Check the length again at execution rather than trusting the parse-time check, because only the student's
+  existing comment decides whether an addition fits, and the parser never sees it.
 * Make `c-/` an explicit prefix rather than treating an empty `c/` as a clear, so that destroying an
   existing comment is always deliberate.
 * Preserve the current displayed-list filter after the update, so the indexes the tutor is reading off

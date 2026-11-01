@@ -109,7 +109,7 @@ Parameter | Accepted value
 `n/NAME` | 1–70 characters. Letters and their accents, spaces, hyphens, apostrophes, full stops and the relationship abbreviations `s/o`, `d/o`, `a/l`, `a/p` (in any letter case). Must begin with a letter and end with a letter, accent or full stop. A later part of the name, such as a preferred name, may be in brackets after a space, e.g. `Tan Ah Kow (Mike)`. Examples: `J. Tan`, `Ravi s/o Kumar`, `Tan Ah Kow (Mike)`. Surrounding spaces are removed, repeated spaces become one space, and letter case is preserved.
 `m/MATRIC` | `A`, followed by seven digits and one letter, e.g. `A0287654J`. Surrounding spaces are removed and letters are converted to uppercase.
 `e/EMAIL` | A valid email address such as `alex.tan@example.com`. The local part accepts letters, digits and `+_.-`, including adjacent special characters such as `alice__tan` or `alice_+tan`. It must start and end with a letter or digit and cannot contain consecutive periods. Surrounding spaces are removed and the address is converted to lowercase.
-`c/COMMENT` | Text to add to a student's existing comment. 1–500 characters once surrounding spaces are removed and repeated spaces become one space. A semicolon followed by a space (`; `) starts a new note.
+`c/COMMENT` | Text to add to a student's existing comment. 1–500 characters once surrounding spaces are removed and repeated spaces become one space. Emoji and some accented letters count as more than one character each. A semicolon followed by a space (`; `) starts a new note.
 `c-/COMMENT` | Text to replace a student's comment with. Same rules as `c/`, except that `c-/` on its own clears the comment.
 `t/TAG` | Letters and digits, optionally joined by single hyphens, e.g. `exchange` or `needs-follow-up`. No spaces or other characters, and a hyphen cannot start or end a tag. Repeat `t/` to give a student multiple tags. Tags that differ only in letter case, such as `exchange` and `Exchange`, count as one tag; the spelling given first is kept.
 `w/WEEK` | A whole number from `1` to `13`, without a leading zero.
@@ -465,6 +465,7 @@ Examples:
 * A semicolon followed by a space separates notes, whether Roster added it or you typed it. `comment 1 c/Bring notes; revise recursion` records two notes and the student's details list them separately. A semicolon with no space after it, such as `see slides 3;4`, is ordinary text and stays within one note.
 * `c-/` is the only form that discards an existing note, so a comment is never lost without you having typed it.
 * A comment is limited to 500 characters. Adding to a comment fails if the combined text would be longer, and the existing comment is left unchanged.
+* The 500 counts how the text is stored, not how many characters you see. Most emoji count as two, so a comment of nothing but 😀 is full at 250. An emoji with a skin tone counts as four, and one made of several joined people, such as 👨‍👩‍👧, counts as eight. An accented letter counts as one or two depending on how your keyboard produces it.
 * Clearing a student who has no comment reports that there was nothing to clear.
 * Giving both `c/` and `c-/` in one command is rejected, as is giving neither.
 * The displayed list and its indexes stay unchanged after a successful comment.
