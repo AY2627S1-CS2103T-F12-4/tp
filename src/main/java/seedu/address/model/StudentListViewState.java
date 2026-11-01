@@ -16,6 +16,9 @@ import seedu.address.model.person.Person;
 public record StudentListViewState(Predicate<? super Person> predicate, Comparator<? super Person> comparator,
         Optional<Group> activeGroup, boolean isShowingAllStudents) {
 
+    /**
+     * Creates a view state with a non-null optional active group.
+     */
     public StudentListViewState {
         requireNonNull(activeGroup);
     }
