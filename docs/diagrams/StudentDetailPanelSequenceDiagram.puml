@@ -74,9 +74,10 @@ else the number matched nobody, but the command reported a displayed student
     Panel --> MainWindow
     deactivate Panel
     note right of MainWindow
-      Only reachable when an edit changed the matriculation
-      number itself, which is the number being searched for.
-      CommandResult names the student the command touched.
+      Two commands reach this. An edit can change the very
+      number being searched for, and a command can switch the
+      displayed view out from under the panel: adding a student
+      to another group shows that group instead.
     end note
 
 else neither
@@ -85,8 +86,9 @@ else neither
     Panel --> MainWindow
     deactivate Panel
     note right of MainWindow
-      The student was deleted or filtered out of the
-      displayed list, so there is nothing to show.
+      The student was deleted or filtered out of the displayed
+      list, and the command reported nobody displayed either,
+      so there is nothing left to show.
     end note
 end
 

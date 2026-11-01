@@ -10,6 +10,7 @@ end box
 
 box Logic LOGIC_COLOR_T1
 participant ":LogicManager" as LogicManager LOGIC_COLOR
+participant "l:ListCommand" as ListCommand LOGIC_COLOR
 end box
 
 box Model MODEL_COLOR_T1
@@ -33,15 +34,36 @@ activate MainWindow
 MainWindow -> LogicManager : execute("list grp/T09")
 activate LogicManager
 
-LogicManager -> Model : updateFilteredPersonList(inT09)
-activate Model
-Model --> LogicManager
-deactivate Model
+note over LogicManager, ListCommand
+  Parsing is omitted. AddressBookParser has already built l,
+  holding the group to list, or nothing for All students.
+end note
 
-LogicManager -> Model : setActiveGroup(T09)
-activate Model
-Model --> LogicManager
-deactivate Model
+LogicManager -> ListCommand : execute(m)
+activate ListCommand
+
+alt a group was chosen
+    ListCommand -> Model : showGroup(T09)
+    activate Model
+    note right of Model
+      One call sets the active group, filters the roster to it and
+      restores matriculation-number ordering. Setting the active
+      group also clears showingAllStudents.
+    end note
+    Model --> ListCommand
+    deactivate Model
+else the All students entry
+    ListCommand -> Model : updateFilteredPersonList(PREDICATE_SHOW_ALL_PERSONS)
+    activate Model
+    note right of Model
+      Sets showingAllStudents and clears the active group.
+    end note
+    Model --> ListCommand
+    deactivate Model
+end
+
+ListCommand --> LogicManager : result
+deactivate ListCommand
 
 LogicManager --> MainWindow : result
 deactivate LogicManager

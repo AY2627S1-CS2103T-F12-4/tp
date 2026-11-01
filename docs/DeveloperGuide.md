@@ -393,9 +393,12 @@ command and looks the student up again rather than trusting the object the panel
 is immutable and an edit replaces it. The lookup is by matriculation number, which identifies a student, so a new
 comment or a changed name is picked up and the row number follows the student if the list reordered.
 
-One case defeats that lookup: an edit that changes the matriculation number itself changes the key being searched
-for. `CommandResult` carries the student a command touched, so when the number matches nobody, the reported
-student is used instead, provided they are still displayed. If neither finds them, the panel closes.
+Two kinds of command defeat that lookup. An edit can change the matriculation number itself, which is the key
+being searched for. A command can also switch the displayed view out from under the panel: adding a student to
+another group calls `Model#showGroup`, so the open student is no longer listed. `CommandResult` carries the
+student a command touched, so when the number matches nobody, that reported student is used instead, provided
+they are displayed. If neither finds them, the panel closes. A closed panel stays closed, because
+`refreshStudentDetail` returns immediately unless the panel is already showing.
 
 `StudentDetailPanel.show` rewrites the row number first and then returns early when the student and sessions are
 unchanged, so a command that only renumbers the displayed list does not rebuild the panel's contents.
@@ -406,8 +409,10 @@ unchanged, so a command that only renumbers the displayed list does not rebuild 
 
 * Look the student up again rather than hold a reference, so the panel can never show a copy that an edit has
   replaced.
-* Use the reported student only as a fallback. Preferring it would switch the panel to whichever student the last
-  command touched, rather than keeping the one the tutor opened.
+* Prefer the student found by the search to the one the command reports, so the panel stays on the student the
+  tutor opened. An edit or a new comment then updates that student instead of swapping in another.
+* Fall back to the reported student only when the search finds nobody, which means the view itself has moved.
+  Adding a student to another group switches the list, and showing that student is more useful than closing.
 * Close rather than guess when the student is no longer displayed, so the panel never contradicts the list.
 
 ### Group strip navigation
@@ -416,6 +421,12 @@ The group strip holds no view state of its own. Choosing an entry builds the com
 `list grp/T09`, or `list` for the **All students** entry, and hands it to the same `MainWindow::executeCommand`
 the command box uses. There is therefore one code path for changing the displayed view, whether it was reached by
 clicking, by Enter, or by typing.
+
+The command then runs as any other list command does. `LogicManager` hands it to `ListCommand`, which for a group calls
+`Model#showGroup` — one call that sets the active group, filters the roster to it and restores
+matriculation-number ordering. For **All students** it calls `Model#updateFilteredPersonList` with the show-all
+predicate, which sets `showingAllStudents` and clears the active group. Either way the two properties the strip
+reads next are left consistent with the list the tutor is looking at.
 
 Afterwards the strip re-reads the model instead of assuming the command did what the click asked.
 `refreshActiveView` selects the entry matching the active group, selects **All students** when the model reports
