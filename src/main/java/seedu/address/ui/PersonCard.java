@@ -4,6 +4,7 @@ import static seedu.address.commons.util.CollectionUtil.requireAllNonNull;
 
 import java.util.List;
 
+import javafx.beans.binding.Bindings;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
 import javafx.scene.layout.FlowPane;
@@ -62,5 +63,17 @@ public class PersonCard extends UiPart<Region> {
         if (attendance.getChildren().isEmpty()) {
             attendance.getChildren().add(new Label("No sessions yet"));
         }
+        configureAttendanceWrapping();
+    }
+
+    /**
+     * Wraps attendance to the allotted card width, including before its first layout.
+     */
+    private void configureAttendanceWrapping() {
+        double fixedColumnsWidth = cardPane.getChildren().stream().filter(node -> node != attendance)
+                .mapToDouble(node -> node.prefWidth(-1)).sum();
+        attendance.prefWrapLengthProperty().bind(Bindings.createDoubleBinding(() ->
+                Math.max(1, cardPane.getPrefWidth() - cardPane.getInsets().getLeft() - cardPane.getInsets().getRight()
+                        - fixedColumnsWidth), cardPane.prefWidthProperty(), cardPane.insetsProperty()));
     }
 }
