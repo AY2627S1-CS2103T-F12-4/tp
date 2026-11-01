@@ -26,7 +26,6 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
-import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Region;
 import seedu.address.commons.core.LogsCenter;
@@ -252,7 +251,6 @@ public class PersonListPanel extends UiPart<Region> {
                 }, widthProperty(), insetsProperty(), viewport == null
                         ? personListView.widthProperty() : viewport.layoutBoundsProperty()));
                 card.maxWidthProperty().bind(card.prefWidthProperty());
-                configureCardContents(card);
                 setGraphic(card);
                 // Measure the styled content before the virtualized list caches this row's height.
                 card.applyCss();
@@ -262,17 +260,6 @@ public class PersonListPanel extends UiPart<Region> {
                                 + snappedTopInset() + snappedBottomInset()),
                         card.prefWidthProperty(), card.needsLayoutProperty(), insetsProperty()));
             }
-        }
-
-        private void configureCardContents(Region card) {
-            FlowPane attendance = (FlowPane) card.lookup("#attendance");
-            HBox details = (HBox) attendance.getParent();
-            double fixedColumnsWidth = details.getChildren().stream().filter(node -> node != attendance)
-                    .mapToDouble(node -> node.prefWidth(-1)).sum();
-            // Use the target column width even before the first layout, avoiding an oversized cached row.
-            attendance.prefWrapLengthProperty().bind(Bindings.createDoubleBinding(() ->
-                    Math.max(1, card.getPrefWidth() - card.getInsets().getLeft() - card.getInsets().getRight()
-                            - fixedColumnsWidth), card.prefWidthProperty(), card.insetsProperty()));
         }
     }
 
