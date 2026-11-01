@@ -6,6 +6,7 @@ import static seedu.address.commons.util.AppUtil.checkArgument;
 import java.io.IOException;
 import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Path;
+import java.util.Locale;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.logging.Level;
@@ -26,7 +27,7 @@ public class ExportCommand extends Command {
     public static final String COMMAND_WORD = "export";
     public static final String MESSAGE_USAGE = "export: Exports attendance to a new CSV file.\n"
             + "Parameters: f/FILE_PATH [grp/GROUP]\nExample: export f/attendance.csv grp/T09";
-    public static final String MESSAGE_INVALID_PATH = CsvFileAccess.MESSAGE_INVALID_PATH;
+    public static final String MESSAGE_INVALID_PATH = "Provide a valid CSV file path ending in .csv.";
     public static final String MESSAGE_SUCCESS = "Exported %1$d student(s) in %2$d CSV row(s) to %3$s.";
     public static final String MESSAGE_FILE_EXISTS = "File already exists: %s. Choose another destination.";
     public static final String MESSAGE_WRITE_FAILURE = "Could not export attendance to %1$s: %2$s";
@@ -57,7 +58,9 @@ public class ExportCommand extends Command {
      * Returns whether the destination has a CSV filename.
      */
     public static boolean isValidDestination(Path destination) {
-        return CsvFileAccess.isCsvPath(destination);
+        requireNonNull(destination);
+        return destination.getFileName() != null
+                && destination.getFileName().toString().toLowerCase(Locale.ROOT).endsWith(".csv");
     }
 
     @Override
