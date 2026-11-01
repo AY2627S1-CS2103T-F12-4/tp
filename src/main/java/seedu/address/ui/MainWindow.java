@@ -319,10 +319,6 @@ public class MainWindow extends UiPart<Stage> {
         primaryStage.hide();
     }
 
-    public PersonListPanel getPersonListPanel() {
-        return personListPanel;
-    }
-
     /** Runs navigation through the usual command path without touching unfinished command input. */
     private void navigateToGroup(String commandText) {
         try {
