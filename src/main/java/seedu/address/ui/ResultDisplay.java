@@ -30,10 +30,6 @@ public class ResultDisplay extends UiPart<Region> {
         super(FXML);
     }
 
-    public void setFeedbackToUser(String feedbackToUser) {
-        setSuccessFeedback(feedbackToUser);
-    }
-
     /** Shows feedback for a command that completed successfully. */
     public void setSuccessFeedback(String feedbackToUser) {
         setFeedback(feedbackToUser, false);
