@@ -87,16 +87,31 @@ else displayed is empty
       suggestion never comes from outside the group searched.
     end note
 
-    FindCommand -> Similar : best()
+    FindCommand -> Similar : isEmpty()
     activate Similar
-    Similar --> FindCommand : closest students
+    Similar --> FindCommand : whether anything was kept
     deactivate Similar
 
-    FindCommand --> LogicManager : CommandResult naming those students
-    note right of FindCommand
-      The displayed list stays empty. A suggestion is a hint,
-      never a result that delete 1 could act on by accident.
-    end note
+    alt nothing scored high enough
+        FindCommand --> LogicManager : CommandResult with MESSAGE_NO_RESULTS
+        note right of FindCommand
+          Nobody cleared DEFAULT_THRESHOLD, so best() is never
+          called. A query resembling no one is told so, rather
+          than offered the least bad name in the roster.
+        end note
+
+    else at least one student is close enough
+        FindCommand -> Similar : best()
+        activate Similar
+        Similar --> FindCommand : closest students
+        deactivate Similar
+
+        FindCommand --> LogicManager : CommandResult naming those students
+        note right of FindCommand
+          The displayed list stays empty. A suggestion is a hint,
+          never a result that delete 1 could act on by accident.
+        end note
+    end
 end
 deactivate FindCommand
 

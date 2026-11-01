@@ -308,15 +308,18 @@ start of a name, as in `srah` for `Sarah`, scores 0.865, while a genuinely diffe
 | `jhon`  | `John Tan`    | 0.925 | yes       |
 | `sahra` | `Sarah Tan`   | 0.893 | yes       |
 | `srah`  | `Sarah Tan`   | 0.865 | yes       |
-| `sarah` | `Sandra Tan`  | 0.858 | yes       |
 | `ben`   | `Bernice Tan` | 0.848 | no        |
 | `amy`   | `Amirah Tan`  | 0.733 | no        |
 | `zzzz`  | `Sarah Tan`   | 0.000 | no        |
 
 `srah` and `ben` are the pair the cut separates, and they sit 0.017 apart, so the threshold is tight rather
-than arbitrary. `sarah` against `Sandra Tan` is the cost of that tightness: a genuinely different name can
-clear the bar. That is accepted because a suggestion is only ever offered after an exact search has already
-found nobody, the list is never displayed, and the matriculation number beside each name tells them apart.
+than arbitrary. Every query above finds nobody outright, because a name search matches on a substring: `sarah`
+is absent from the table for that reason, since it would reach `Sarah Tan` directly and never be scored at all.
+
+The cost of a tight cut is that a name the tutor did not mean can clear it. `sahra` is aimed at `Sarah Tan` and
+reaches it at 0.893, but `Sandra Tan` also scores 0.858, so both are offered. That is accepted because a
+suggestion is only ever made after an exact search has already found nobody, the list is never displayed, and
+the matriculation number beside each name tells the two apart.
 
 `TopSimilarStudents` collects the near misses. It keeps a heap bounded at `MAX_SUGGESTIONS`, so the best three are
 found in a single pass where sorting every candidate would do far more work for the same three names. Ties are
@@ -815,14 +818,14 @@ requirements and do not describe available commands. Priority records importance
 
       Use case ends.
 
-* 2a. No student matches the given details.
+* 2a. No student matches the given details, and no student's name is close enough to a name the TA gave.
 
     * 2a1. Roster shows a message stating that no students were found.
 
       Use case ends.
 
-* 2b. No student matches the given details, but the roster holds students whose names are close to the
-  name given.
+* 2b. No student matches the given details, but the TA gave a name and students matching every other
+  detail given have names close to it.
 
     * 2b1. Roster names up to three of those students in its message, without displaying them.
 
