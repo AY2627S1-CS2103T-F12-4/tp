@@ -89,6 +89,15 @@ public class ExportCommandTest {
     }
 
     @Test
+    public void isValidDestination_filenameRequiredAndExtensionIgnoresCase() {
+        assertTrue(ExportCommand.isValidDestination(Path.of("report.csv")));
+        assertTrue(ExportCommand.isValidDestination(Path.of("report.CSV")));
+        assertFalse(ExportCommand.isValidDestination(Path.of("report.txt")));
+        assertFalse(ExportCommand.isValidDestination(temporaryFolder.toAbsolutePath().getRoot()));
+        assertThrows(NullPointerException.class, () -> ExportCommand.isValidDestination(null));
+    }
+
+    @Test
     public void constructor_missingOrNonCsvDestination_rejectsInvalidInput() {
         assertThrows(NullPointerException.class, () -> new ExportCommand(null, null, files()));
         assertThrows(IllegalArgumentException.class, () -> new ExportCommand(Path.of("report.txt"), null, files()));
