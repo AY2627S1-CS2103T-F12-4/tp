@@ -372,13 +372,39 @@ The activity diagram below shows how `delete all` deletes the displayed students
 
 ### Showing a newly added student
 
-After adding a student, `AddCommand` checks whether the student is in the displayed list. If not, for example
-because a different group is shown, it shows the student's group instead. It returns a `CommandResult` that names
-the student to show, and `MainWindow` asks `PersonListPanel` to scroll to and highlight the student's card.
+After validating the group and checking for duplicate identifiers, `AddCommand` inserts the student into the
+complete roster and checks `Model#getFilteredPersonList`. If the current view already includes the student,
+it keeps that view, including an active search. Otherwise, `Model#showGroup` replaces the filter with the new
+student's group and restores matriculation-number ordering. This covers both a different group and a search
+that does not match the added student.
+
+The returned `CommandResult` carries the student through `getPersonToShow()`. `LogicManager` commits history
+and saves before returning the result to `MainWindow`, which calls `PersonListPanel#scrollTo`. A failed save
+instead restores the previous roster, history and view and throws `CommandException`; the UI clears the
+selection rather than using the earlier success result.
+
+The sequence below follows a successful add after parsing. Validation, history and saving are summarized
+so that the group-switching and student-revealing steps remain visible.
+
+![Revealing a newly added student by switching view, scrolling and highlighting](images/NewStudentShownSequenceDiagram.png)
 
 `PersonListPanel` cannot scroll accurately until the list has been laid out, because cards differ in height. It
 therefore checks after each layout pass whether the card is fully visible and scrolls again if not, up to a fixed
-number of attempts. The highlight is cleared by the next command, including one that fails.
+number of attempts (`MAX_SCROLL_ATTEMPTS`, currently 10). It uses the student's current displayed index rather
+than assuming that an addition appends a row. The pending callback is removed when the row is visible, the
+student is no longer displayed or the retry limit is reached. A later scroll or selection clear cancels it too.
+
+Successful commands without a reported student and all failed commands clear the highlight; add and edit can
+highlight the student they report instead. `MainWindow` also refreshes the active group-strip entry after a
+successful command. Revealing a card does not open a closed detail panel. If a panel is already open and a
+group switch hides its previous student, its refresh may follow the added student from `CommandResult`.
+
+**Design choices**
+
+* Keep the current view when it already contains the student, preserving a useful group or search filter.
+* Return the student rather than its index, because sorting and filtering can put the new row anywhere.
+* Handle scrolling in `PersonListPanel`, where rendered row heights and viewport bounds are available.
+  Bounded post-layout retries accommodate wrapped attendance without leaving an indefinite callback.
 
 ### Student comments
 

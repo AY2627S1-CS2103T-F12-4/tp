@@ -141,9 +141,10 @@ Scroll inside the panel to read later sessions. Click another row to switch stud
 
 Close the panel with its × button or Escape to see the full roster again. If command
 completion suggestions are open, Escape dismisses those first. Opening or closing details does not
-change the roster, active group, or displayed row numbers. Successful commands refresh an open panel;
-it closes if its student is no longer displayed. After undoing a matriculation-number edit, reopen the
-student's row to view their restored details.
+change the roster, active group, or displayed row numbers. Successful commands refresh an open panel.
+If its student is no longer displayed, an add or edit can make the open panel follow the new or updated
+student instead; otherwise it closes. After undoing a matriculation-number edit, reopen the student's row
+to view their restored details.
 
 ### Completing command fields
 
@@ -263,15 +264,24 @@ Format: `add n/NAME e/EMAIL m/MATRIC grp/GROUP [t/TAG]...`
 
 Examples:
 
-* `add n/Alex Tan e/alex.tan@example.com m/A0123456X grp/T09`
-* `add n/Bernice Yu e/bernice@example.com m/A0287402K grp/T09 t/exchange`
+* `add n/Jamie Koh e/jamie.koh@example.com m/A0312345L grp/T09`
+* `add n/Nora Lim e/nora.lim@example.com m/A0312346M grp/T09 t/exchange`
+
+These examples assume T09 exists and the example students have not already been added.
+Their emails and matriculation numbers differ from the sample roster and Quick start example.
+
 * The tutorial group must already exist.
 * Matriculation numbers and email addresses must be unique across all tutorial groups.
 * Names do not need to be unique because different students may share a name.
-* If the new student is not in the list on screen, for example because another group or a search is shown, Roster switches to the new student's tutorial group so that you can see them.
-* Roster scrolls the list to the new student and highlights their card until your next command. The list is sorted by matriculation number, so the new student may appear anywhere in it.
+* If the new student matches the view on screen, Roster keeps that view. Otherwise, for example when another
+  group is shown or a search does not match the new student's name, Roster switches to the student's group.
+* Roster scrolls to and highlights the new student's card. Students are sorted by matriculation number,
+  so the new student may appear anywhere in the list. A later command or row selection can replace or clear
+  the highlight.
 
-On success, Roster displays a confirmation such as `Added Alex Tan (A0123456X) to tutorial group T09.` When Roster switches to the student's group, the confirmation ends with `Now showing T09.`
+On success, Roster displays a confirmation such as
+`Added Jamie Koh (A0312345L) to tutorial group T09.` When Roster switches to the student's group,
+the confirmation ends with `Now showing T09.` Adding a student does not open a closed detail panel.
 
 ### Editing a student: `edit`
 
