@@ -1,0 +1,78 @@
+@startuml
+!include style.puml
+skinparam ArrowFontStyle plain
+title Opening a tutorial group from the group strip
+
+box Ui UI_COLOR_T1
+participant ":GroupListPanel" as GroupListPanel UI_COLOR
+participant ":MainWindow" as MainWindow UI_COLOR
+end box
+
+box Logic LOGIC_COLOR_T1
+participant ":LogicManager" as LogicManager LOGIC_COLOR
+end box
+
+box Model MODEL_COLOR_T1
+participant "m:Model" as Model MODEL_COLOR
+end box
+
+[-> GroupListPanel : click T09, or Enter on the highlighted entry
+activate GroupListPanel
+
+GroupListPanel -> GroupListPanel : activateSelection()
+activate GroupListPanel
+
+note right of GroupListPanel
+  The strip builds the command a tutor could have typed:
+  "list grp/T09", or "list" for the All students entry.
+end note
+
+GroupListPanel -> MainWindow : executeCommand("list grp/T09")
+activate MainWindow
+
+MainWindow -> LogicManager : execute("list grp/T09")
+activate LogicManager
+
+LogicManager -> Model : updateFilteredPersonList(inT09)
+activate Model
+Model --> LogicManager
+deactivate Model
+
+LogicManager -> Model : setActiveGroup(T09)
+activate Model
+Model --> LogicManager
+deactivate Model
+
+LogicManager --> MainWindow : result
+deactivate LogicManager
+
+MainWindow -> GroupListPanel : refreshActiveView()
+activate GroupListPanel
+
+GroupListPanel -> Model : activeGroup, showingAllStudents
+activate Model
+Model --> GroupListPanel : the view the model is showing
+deactivate Model
+
+alt a group is active
+    GroupListPanel -> GroupListPanel : select that entry
+else showing every student
+    GroupListPanel -> GroupListPanel : select All students
+else neither, as after a find
+    GroupListPanel -> GroupListPanel : clear the selection
+end
+
+GroupListPanel --> MainWindow
+deactivate GroupListPanel
+
+MainWindow --> GroupListPanel
+deactivate MainWindow
+deactivate GroupListPanel
+deactivate GroupListPanel
+
+note over GroupListPanel, Model
+  activeGroup and showingAllStudents are observable, and the panel
+  listens to both, so a typed "list grp/T10" reaches refreshActiveView()
+  through the same path and moves the selection without any click.
+end note
+@enduml

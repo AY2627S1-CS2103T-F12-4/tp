@@ -88,6 +88,7 @@ The UI consists of a `MainWindow` and its parts, such as `CommandBox`, `ResultDi
   runs the matching `list` command. Up/Down are retained as aliases for horizontal selection, and Enter
   opens the selected view without replacing unfinished command text.
   After successful commands it also refreshes the active entry, including repeated `list` commands.
+  [Group strip navigation](#group-strip-navigation) covers how that refresh reads the model.
   Revealing an off-screen entry waits for layout, with bounded retries while cell widths settle;
   visible entries stay in place and a later view change cancels an outstanding scroll.
 * `PersonListPanel` binds the displayed-student count and shows one `PersonCard` per displayed student.
@@ -98,6 +99,7 @@ The UI consists of a `MainWindow` and its parts, such as `CommandBox`, `ResultDi
   After each successful command, `MainWindow` refreshes the panel by matriculation number; an edit's
   `CommandResult` also identifies the updated student when their number changes. If the student is no
   longer displayed, the panel closes. Escape closes it unless completion suggestions are open.
+  [Student detail panel updates](#student-detail-panel-updates) covers the refresh in detail.
   `AttendanceSummary` counts sessions of the student's own group and excludes unmarked sessions from
   the attendance percentage. Session dates use the English format `EEE d MMM uuuu`, including the year
   (for example, `Tue 11 Aug 2026`).
@@ -379,6 +381,59 @@ the student to show, and `MainWindow` asks `PersonListPanel` to scroll to and hi
 `PersonListPanel` cannot scroll accurately until the list has been laid out, because cards differ in height. It
 therefore checks after each layout pass whether the card is fully visible and scrolls again if not, up to a fixed
 number of attempts. The highlight is cleared by the next command, including one that fails.
+
+### Student detail panel updates
+
+Clicking a student's row in `PersonListPanel`, or pressing Enter on the highlighted row, reports the student and
+their row number to `MainWindow`, which opens the separate `StudentDetailPanel`. The list panel only reports: it
+never changes the model, so opening a student leaves the displayed list and its indexes alone.
+
+Keeping an open panel current is the harder half. `MainWindow.refreshStudentDetail` runs after every successful
+command and looks the student up again rather than trusting the object the panel already holds, because `Person`
+is immutable and an edit replaces it. The lookup is by matriculation number, which identifies a student, so a new
+comment or a changed name is picked up and the row number follows the student if the list reordered.
+
+One case defeats that lookup: an edit that changes the matriculation number itself changes the key being searched
+for. `CommandResult` carries the student a command touched, so when the number matches nobody, the reported
+student is used instead, provided they are still displayed. If neither finds them, the panel closes.
+
+`StudentDetailPanel.show` rewrites the row number first and then returns early when the student and sessions are
+unchanged, so a command that only renumbers the displayed list does not rebuild the panel's contents.
+
+![Opening a student and keeping the panel current](images/StudentDetailPanelSequenceDiagram.png)
+
+**Design choices**
+
+* Look the student up again rather than hold a reference, so the panel can never show a copy that an edit has
+  replaced.
+* Use the reported student only as a fallback. Preferring it would switch the panel to whichever student the last
+  command touched, rather than keeping the one the tutor opened.
+* Close rather than guess when the student is no longer displayed, so the panel never contradicts the list.
+
+### Group strip navigation
+
+The group strip holds no view state of its own. Choosing an entry builds the command a tutor could have typed,
+`list grp/T09`, or `list` for the **All students** entry, and hands it to the same `MainWindow::executeCommand`
+the command box uses. There is therefore one code path for changing the displayed view, whether it was reached by
+clicking, by Enter, or by typing.
+
+Afterwards the strip re-reads the model instead of assuming the command did what the click asked.
+`refreshActiveView` selects the entry matching the active group, selects **All students** when the model reports
+it is showing everyone, and otherwise clears the selection, which is the state after a `find` whose results span
+several groups.
+
+Because `activeGroup` and `showingAllStudents` are observable and the panel listens to both, a typed
+`list grp/T10` reaches the same method, so the strip's selection follows the model rather than the last click.
+
+![Opening a tutorial group from the group strip](images/GroupStripNavigationSequenceDiagram.png)
+
+**Design choices**
+
+* Run the same command a tutor could type, so the strip cannot drift from the behaviour of `list`.
+* Follow the model's active group rather than the activated entry, so a typed command and the strip can never
+  disagree about which view is open.
+* Clear the selection when neither a group nor the full roster is shown, rather than leaving a stale highlight
+  on a group whose students are only partly displayed.
 
 ### Student comments
 
