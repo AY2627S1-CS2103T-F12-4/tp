@@ -1,0 +1,105 @@
+@startuml
+!include style.puml
+skinparam ArrowFontStyle plain
+title Suggesting close names when a search finds nobody
+
+box Logic LOGIC_COLOR_T1
+participant ":LogicManager" as LogicManager LOGIC_COLOR
+participant "f:FindCommand" as FindCommand LOGIC_COLOR
+end box
+
+box Model MODEL_COLOR_T1
+participant "m:Model" as Model MODEL_COLOR
+participant "predicate:StudentMatchesFiltersPredicate" as Predicate MODEL_COLOR
+participant "similar:TopSimilarStudents" as Similar MODEL_COLOR
+participant "NameSimilarityScorer" as Scorer MODEL_COLOR
+end box
+
+note over LogicManager, FindCommand
+  Parsing is omitted. FindCommandParser has already built f,
+  holding predicate for n/sarh grp/T09. T09 is registered, so
+  the unknown-group branch is not shown.
+end note
+
+[-> LogicManager : execute("find n/sarh grp/T09")
+activate LogicManager
+
+LogicManager -> FindCommand : execute(m)
+activate FindCommand
+
+FindCommand -> Model : updateFilteredPersonList(predicate)
+activate Model
+Model --> FindCommand
+deactivate Model
+
+FindCommand -> Model : getFilteredPersonList()
+activate Model
+Model --> FindCommand : displayed
+deactivate Model
+
+alt displayed is not empty
+    FindCommand --> LogicManager : CommandResult with the match count
+    note right of FindCommand
+      No name is scored. This is the common case, so a
+      search that finds someone never pays for scoring.
+    end note
+
+else displayed is empty
+    create Similar
+    FindCommand -> Similar : TopSimilarStudents("sarh")
+    activate Similar
+    Similar --> FindCommand
+    deactivate Similar
+
+    FindCommand -> Model : getAddressBook()
+    activate Model
+    Model --> FindCommand : roster
+    deactivate Model
+
+    loop every student in the roster
+        FindCommand -> Predicate : matchesExceptName(student)
+        activate Predicate
+        Predicate --> FindCommand : allowed
+        deactivate Predicate
+
+        opt allowed
+            FindCommand -> Similar : consider(student)
+            activate Similar
+
+            Similar -> Scorer : score("sarh", name)
+            activate Scorer
+            Scorer --> Similar : score
+            deactivate Scorer
+
+            note right of Similar
+              Kept only if score is at least DEFAULT_THRESHOLD,
+              and a heap bounded at MAX_SUGGESTIONS holds the
+              best few rather than sorting every candidate.
+            end note
+
+            Similar --> FindCommand
+            deactivate Similar
+        end
+    end
+
+    note over FindCommand, Predicate
+      Only students the other filters allow are offered, so a
+      suggestion never comes from outside the group searched.
+    end note
+
+    FindCommand -> Similar : best()
+    activate Similar
+    Similar --> FindCommand : closest students
+    deactivate Similar
+
+    FindCommand --> LogicManager : CommandResult naming those students
+    note right of FindCommand
+      The displayed list stays empty. A suggestion is a hint,
+      never a result that delete 1 could act on by accident.
+    end note
+end
+deactivate FindCommand
+
+[<-- LogicManager
+deactivate LogicManager
+@enduml
