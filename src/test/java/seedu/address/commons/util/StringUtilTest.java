@@ -155,4 +155,18 @@ public class StringUtilTest {
         assertThrows(NullPointerException.class, () -> StringUtil.getDetails(null));
     }
 
+
+    @Test
+    public void stripWhitespace_unicodeBoundaries_preservesInternalSpaces() {
+        assertEquals("reports/A  B\u00a0C.csv",
+                StringUtil.stripWhitespace("\u00a0\u2007 reports/A  B\u00a0C.csv \u202f"));
+        assertEquals("", StringUtil.stripWhitespace(" \t\u00a0\u2007\u202f\u2003"));
+        assertEquals("", StringUtil.stripWhitespace(""));
+        assertEquals("1\u00a02", StringUtil.stripWhitespace("\u00a01\u00a02\u00a0"));
+    }
+
+    @Test
+    public void stripWhitespace_null_throwsNullPointerException() {
+        assertThrows(NullPointerException.class, () -> StringUtil.stripWhitespace(null));
+    }
 }

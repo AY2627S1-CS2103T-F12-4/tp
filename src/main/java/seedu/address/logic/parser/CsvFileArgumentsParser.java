@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import seedu.address.commons.util.StringUtil;
 import seedu.address.logic.parser.exceptions.ParseException;
 import seedu.address.model.person.Group;
 import seedu.address.storage.CsvFileAccess;
@@ -64,7 +65,8 @@ class CsvFileArgumentsParser {
 
     private ArgumentMultimap tokenize(String args) throws ParseException {
         List<PrefixPosition> positions = findPrefixPositions(maskQuotedValues(args));
-        if (positions.isEmpty() || !args.substring(0, positions.getFirst().start()).isBlank()) {
+        if (positions.isEmpty()
+                || !StringUtil.stripWhitespace(args.substring(0, positions.getFirst().start())).isEmpty()) {
             throw invalidFormat();
         }
         ArgumentMultimap result = new ArgumentMultimap();
@@ -107,7 +109,8 @@ class CsvFileArgumentsParser {
     }
 
     private String extractValue(String args, PrefixPosition position, int end) throws ParseException {
-        String value = args.substring(position.start() + position.prefix().getPrefix().length(), end).strip();
+        String value = StringUtil.stripWhitespace(
+                args.substring(position.start() + position.prefix().getPrefix().length(), end));
         if (value.contains("\"") && !(position.prefix().equals(PREFIX_FILE) && value.matches("\"[^\"]*\""))) {
             throw invalidFormat();
         }
