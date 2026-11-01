@@ -2,6 +2,7 @@ package seedu.address.logic.commands;
 
 import static java.util.Objects.requireNonNull;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -44,6 +45,9 @@ public class FindCommand extends Command {
 
     private final StudentMatchesFiltersPredicate predicate;
 
+    /**
+     * Creates a search restricted to the supplied name query.
+     */
     public FindCommand(NameContainsQueryPredicate predicate) {
         this(requireNonNull(predicate), null, null);
     }
@@ -72,10 +76,10 @@ public class FindCommand extends Command {
         if (!predicate.isNameOnly()) {
             if (count == 0) {
                 return new CommandResult(suggestions == null
-                        ? String.format(MESSAGE_FILTER_NO_RESULTS, predicate.describeFilters())
-                        : String.format(MESSAGE_FILTER_DID_YOU_MEAN, predicate.describeFilters(), suggestions));
+                        ? String.format(MESSAGE_FILTER_NO_RESULTS, describeFilters())
+                        : String.format(MESSAGE_FILTER_DID_YOU_MEAN, describeFilters(), suggestions));
             }
-            return new CommandResult(String.format(MESSAGE_FILTER_SUCCESS, count, predicate.describeFilters()));
+            return new CommandResult(String.format(MESSAGE_FILTER_SUCCESS, count, describeFilters()));
         }
 
         String query = predicate.getNamePredicate().orElseThrow().getQuery();
@@ -85,6 +89,17 @@ public class FindCommand extends Command {
                     : String.format(MESSAGE_DID_YOU_MEAN, query, suggestions));
         }
         return new CommandResult(String.format(MESSAGE_SUCCESS, count, query));
+    }
+
+    /**
+     * Describes the normalized filters in a consistent order for command feedback.
+     */
+    private String describeFilters() {
+        List<String> filters = new ArrayList<>();
+        predicate.getNamePredicate().ifPresent(name -> filters.add("n/\"" + name.getQuery() + "\""));
+        predicate.getMatric().ifPresent(matric -> filters.add("m/" + matric.value));
+        predicate.getGroup().ifPresent(group -> filters.add("grp/" + group.value));
+        return String.join(" ", filters);
     }
 
     /**
@@ -139,7 +154,7 @@ public class FindCommand extends Command {
     @Override
     public String toString() {
         return new ToStringBuilder(this)
-                .add("predicate", predicate)
+                .add("predicate", describeFilters())
                 .toString();
     }
 }
