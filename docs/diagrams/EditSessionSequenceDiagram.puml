@@ -1,7 +1,6 @@
 @startuml
 !include style.puml
 skinparam ArrowFontStyle plain
-title Editing a session date while preserving attendance
 
 box Logic LOGIC_COLOR_T1
 participant ":LogicManager" as LogicManager LOGIC_COLOR
@@ -12,6 +11,7 @@ box Model MODEL_COLOR_T1
 participant "m:Model" as Model MODEL_COLOR
 participant "ab:AddressBook" as AddressBook MODEL_COLOR
 participant "sessions:UniqueSessionList" as Sessions MODEL_COLOR
+participant "persons:UniquePersonList" as Persons MODEL_COLOR
 participant "p:Person" as Person MODEL_COLOR
 end box
 
@@ -59,6 +59,11 @@ else date changed
     activate Sessions
     Sessions --> AddressBook
     deactivate Sessions
+
+    AddressBook -> Persons : setPersons(updated students)
+    activate Persons
+    Persons --> AddressBook
+    deactivate Persons
     note right of AddressBook
       Marked students keep their present/absent status.
       Unmarked students remain unmarked.
@@ -70,13 +75,13 @@ else date changed
     deactivate Model
 
     EditSessionCommand --> LogicManager : CommandResult
+
+    ref over LogicManager, Model
+      Commit one undo step and save the roster
+      (see Architecture sequence)
+    end ref
 end
 deactivate EditSessionCommand
-
-ref over LogicManager, Model
-  Commit one undo step and save the roster
-  (see Architecture sequence)
-end ref
 
 [<-- LogicManager
 deactivate LogicManager

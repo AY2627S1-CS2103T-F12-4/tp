@@ -241,9 +241,9 @@ Undo restores the session and attendance together. A failed save restores the pr
 committing history. Existing observable lists refresh the attendance strips; no storage schema change
 or migration is needed. Field completion offers the new commands, their prefixes and registered groups.
 
-The sequence below follows a successful date change. Students are read from the complete roster rather
-than the displayed list; only students with an existing mark receive a replacement `Attendance`, and its
-present or absent status is copied unchanged.
+The sequence below shows a date change, including the two cases where it is rejected. Students are read
+from the complete roster rather than the displayed list; only students with an existing mark receive a
+replacement `Attendance`, and its present or absent status is copied unchanged.
 
 ![Editing a session date while preserving attendance](images/EditSessionSequenceDiagram.png)
 

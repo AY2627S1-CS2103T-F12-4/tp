@@ -1,59 +1,59 @@
 @startuml
+skin rose
 skinparam ActivityFontSize 15
 skinparam ArrowFontSize 12
 skinparam Shadowing false
-title Editing a student
 
 start
 :Parse the displayed index and at least one of
 name, email, matriculation number, group or tags;
-if (Arguments valid?) then (yes)
-else (no)
+if () then ([arguments are invalid])
     :Report a parsing error;
     stop
+else ([arguments are valid])
 endif
 
 :Resolve the index in the displayed student list;
-if (Index exists?) then (yes)
-else (no)
+if () then ([index is out of range])
     :Report an invalid displayed index;
     stop
+else ([index exists])
 endif
 
 :Create an immutable replacement student
 from edited and unchanged fields;
-if (Tutorial group changed?) then (yes)
+if () then ([tutorial group changed])
     :Clear all attendance records
     from the replacement student;
-else (no)
+else ([tutorial group unchanged])
     :Preserve all attendance records;
 endif
 
-if (Replacement group is registered?) then (yes)
-else (no)
+if () then ([replacement group is not registered])
     :Report an unknown group;
     stop
+else ([replacement group is registered])
 endif
 
-if (Matriculation number belongs to another student?) then (yes)
+if () then ([matriculation number belongs to another student])
     :Report a duplicate student;
     stop
-else (no)
+else ([matriculation number is unique])
 endif
 
-if (Email belongs to another student?) then (yes)
+if () then ([email belongs to another student])
     :Report a duplicate email;
     stop
-else (no)
+else ([email is unique])
 endif
 
 :Replace the student in the full roster;
 :Show all students, ordered by matriculation number;
 :Save Roster and record the change for undo;
-if (Tutorial group changed?) then (yes)
+if () then ([clearedRecordCount > 0])
     :Report the old and new groups
     and number of cleared attendance records;
-else (no)
+else ([no attendance records were cleared])
     :Report the edited student;
 endif
 stop
