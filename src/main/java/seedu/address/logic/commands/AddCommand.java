@@ -83,11 +83,11 @@ public class AddCommand extends Command {
             model.showGroup(toAdd.getGroup());
             assert model.getFilteredPersonList().contains(toAdd)
                     : "The new student should be displayed once their group is shown";
-            logger.fine("Added " + toAdd.getMatric() + " outside the displayed list, so showing " + toAdd.getGroup());
+            logger.fine("Added a student outside the displayed list, so showing " + toAdd.getGroup());
             return new CommandResult(String.format(MESSAGE_SUCCESS_SHOWING_GROUP,
                     toAdd.getName(), toAdd.getMatric(), toAdd.getGroup()), toAdd);
         }
-        logger.fine("Added " + toAdd.getMatric() + " to " + toAdd.getGroup());
+        logger.fine("Added a student to " + toAdd.getGroup());
         // The list is sorted by matriculation number, so the new student can be anywhere in it
         return new CommandResult(String.format(MESSAGE_SUCCESS,
                 toAdd.getName(), toAdd.getMatric(), toAdd.getGroup()), toAdd);

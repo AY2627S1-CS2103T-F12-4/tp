@@ -340,7 +340,7 @@ public class MainWindow extends UiPart<Stage> {
     private CommandResult executeCommand(String commandText) throws CommandException, ParseException {
         try {
             CommandResult commandResult = logic.execute(commandText);
-            logger.info("Result: " + commandResult.getFeedbackToUser());
+            logger.info("Command completed successfully.");
             resultDisplay.setSuccessFeedback(commandResult.getFeedbackToUser());
             commandBox.setStyleToIndicateCommandSuccess();
             // A highlight is only kept until the next command, so it never marks an unrelated student
@@ -359,7 +359,7 @@ public class MainWindow extends UiPart<Stage> {
 
             return commandResult;
         } catch (CommandException | ParseException e) {
-            logger.info("An error occurred while executing command: " + commandText);
+            logger.info("Command rejected: " + e.getClass().getSimpleName());
             resultDisplay.setErrorFeedback(e.getMessage());
             commandBox.setStyleToIndicateCommandFailure();
             personListPanel.clearSelection();
