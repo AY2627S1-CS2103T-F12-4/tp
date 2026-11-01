@@ -11,8 +11,10 @@ import java.util.Locale;
 import java.util.Optional;
 import java.util.regex.Pattern;
 
+import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
+import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressBar;
@@ -49,6 +51,7 @@ public class StudentDetailPanel extends UiPart<Region> {
     /** The student on show, or null while the panel is hidden. */
     private Person shown;
     private List<Session> shownSessions = List.of();
+    private Runnable pendingScrollRestore;
 
     @FXML
     private Label avatar;
@@ -111,6 +114,10 @@ public class StudentDetailPanel extends UiPart<Region> {
         if (person.equals(shown) && sessions.equals(shownSessions)) {
             return;
         }
+        // A command on the open student rebuilds these contents. Keeping the scroll leaves the
+        // reader where they were, rather than sending them back to the top of a long panel.
+        boolean sameStudent = shown != null && shown.getMatric().equals(person.getMatric());
+        double keptScroll = sameStudent ? scrolledPixels() : 0;
         shown = person;
         shownSessions = List.copyOf(sessions);
         avatar.setText(initialsOf(person.getName().fullName));
@@ -127,11 +134,72 @@ public class StudentDetailPanel extends UiPart<Region> {
 
         getRoot().setVisible(true);
         getRoot().setManaged(true);
-        detailScroll.setVvalue(0);
+        cancelPendingScrollRestore();
+        if (!sameStudent) {
+            detailScroll.setVvalue(0);
+            return;
+        }
+        // Applied twice on purpose: now, from the heights the last layout measured, and again once
+        // the rebuilt contents have been laid out and their real height is known.
+        applyScrolledPixels(keptScroll);
+        restoreScrollAfterLayout(keptScroll);
+    }
+
+    /**
+     * Scrolls the panel to {@code pixels}, clamped, since the contents can have become shorter,
+     * as when a comment is cleared.
+     */
+    private void applyScrolledPixels(double pixels) {
+        double scrollable = scrollableHeight();
+        detailScroll.setVvalue(scrollable <= 0 ? 0 : Math.min(pixels, scrollable) / scrollable);
+    }
+
+    /**
+     * Returns how far the panel is scrolled, in pixels rather than as the proportion
+     * {@code vvalue} holds. A new note or a newly marked session makes the contents taller, and the
+     * same proportion of a taller panel is a different place, so a proportion would drift.
+     */
+    private double scrolledPixels() {
+        double scrollable = scrollableHeight();
+        return scrollable <= 0 ? 0 : detailScroll.getVvalue() * scrollable;
+    }
+
+    /** Returns the height that can be scrolled through, which is zero while everything fits. */
+    private double scrollableHeight() {
+        if (detailScroll.getContent() == null) {
+            return 0;
+        }
+        return detailScroll.getContent().getLayoutBounds().getHeight()
+                - detailScroll.getViewportBounds().getHeight();
+    }
+
+    /**
+     * Corrects the scroll once the rebuilt contents have been laid out, because a new note or a
+     * newly marked session changes their height and that is not known until then.
+     */
+    private void restoreScrollAfterLayout(double pixels) {
+        Scene scene = detailScroll.getScene();
+        if (scene == null) {
+            return;
+        }
+        pendingScrollRestore = () -> {
+            cancelPendingScrollRestore();
+            applyScrolledPixels(pixels);
+        };
+        scene.addPostLayoutPulseListener(pendingScrollRestore);
+        Platform.requestNextPulse();
+    }
+
+    private void cancelPendingScrollRestore() {
+        if (pendingScrollRestore != null && detailScroll.getScene() != null) {
+            detailScroll.getScene().removePostLayoutPulseListener(pendingScrollRestore);
+        }
+        pendingScrollRestore = null;
     }
 
     /** Hides the panel, leaving the list beneath it untouched. */
     public void hide() {
+        cancelPendingScrollRestore();
         shown = null;
         shownSessions = List.of();
         getRoot().setVisible(false);
