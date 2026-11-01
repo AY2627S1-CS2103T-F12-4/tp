@@ -203,6 +203,74 @@ public class StudentDetailUiTest {
         }
     }
 
+    @Test
+    public void detailPanel_commandOnTheOpenStudent_keepsTheScrollPosition() throws Exception {
+        Person alice = new PersonBuilder().withName("Alice Tan").withMatric("A0000001X")
+                .withGroup("T09").withEmail("alice@example.com").build();
+        Person bob = new PersonBuilder().withName("Bob Tan").withMatric("A0000002X")
+                .withGroup("T09").withEmail("bob@example.com").build();
+        AddressBook book = new AddressBookBuilder().withPerson(alice).withPerson(bob).build();
+        for (int week = 1; week <= 13; week++) {
+            book.addSession(new Session(new Group("T09"), new Week(week),
+                    new SessionDate(java.time.LocalDate.of(2026, 8, 11).plusWeeks(week - 1).toString())));
+        }
+        try (MainWindowTestFixture fixture = MainWindowTestFixture.create(book, temporaryFolder)) {
+            Stage stage = fixture.stage();
+            onFxThread(() -> {
+                MainWindowTestFixture.enterCommand(stage, "list grp/T09");
+                clickRow(stage, 0);
+                return null;
+            });
+            waitForRenderingCycles(2);
+
+            double[] pixelsBefore = new double[1];
+            onFxThread(() -> {
+                ScrollPane scroll = scrollPane(stage);
+                assertTrue(scrollableHeight(scroll) > 0, "the panel must overflow for this test to mean anything");
+                scroll.setVvalue(0.8);
+                pixelsBefore[0] = 0.8 * scrollableHeight(scroll);
+                return null;
+            });
+            waitForRenderingCycles(2);
+
+            // A comment rebuilds the panel's contents, which used to send the reader back to the top
+            onFxThread(() -> {
+                MainWindowTestFixture.enterCommand(stage, "comment 1 c/asks good questions");
+                return null;
+            });
+            waitForRenderingCycles(2);
+            onFxThread(() -> {
+                assertTrue(detailShowing(stage));
+                assertEquals("Alice Tan", detailText(stage, "studentName"));
+                ScrollPane scroll = scrollPane(stage);
+                // The new note makes the contents taller, so the position is kept in pixels, not as
+                // the proportion vvalue holds, which would drift
+                assertEquals(pixelsBefore[0], scroll.getVvalue() * scrollableHeight(scroll), 2.0);
+                return null;
+            });
+
+            // Opening someone else is a fresh read, so it still starts at the top
+            onFxThread(() -> {
+                clickRow(stage, 1);
+                return null;
+            });
+            waitForRenderingCycles(2);
+            onFxThread(() -> {
+                assertEquals("Bob Tan", detailText(stage, "studentName"));
+                assertEquals(0.0, scrollPane(stage).getVvalue(), 0.0001);
+                return null;
+            });
+        }
+    }
+
+    private static ScrollPane scrollPane(Stage stage) {
+        return (ScrollPane) stage.getScene().lookup("#detailScroll");
+    }
+
+    private static double scrollableHeight(ScrollPane scroll) {
+        return scroll.getContent().getLayoutBounds().getHeight() - scroll.getViewportBounds().getHeight();
+    }
+
     private static boolean detailShowing(Stage stage) {
         return stage.getScene().lookup("#detailPane").isVisible();
     }
