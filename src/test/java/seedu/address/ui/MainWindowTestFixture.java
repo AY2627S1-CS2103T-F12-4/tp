@@ -1,6 +1,7 @@
 package seedu.address.ui;
 
 import static seedu.address.testutil.FxTestUtil.onFxThread;
+import static seedu.address.testutil.FxTestUtil.waitForRenderingCycles;
 
 import java.nio.file.Path;
 
@@ -21,7 +22,7 @@ record MainWindowTestFixture(Stage stage, ModelManager model, JsonAddressBookSto
 
     /** Saves the initial roster and opens its window on the JavaFX application thread. */
     static MainWindowTestFixture create(AddressBook book, Path folder) throws Exception {
-        return onFxThread(() -> {
+        MainWindowTestFixture fixture = onFxThread(() -> {
             ModelManager model = new ModelManager(book, new UserPrefs());
             JsonAddressBookStorage storage = new JsonAddressBookStorage(folder.resolve("roster.json"));
             storage.saveAddressBook(book);
@@ -32,6 +33,9 @@ record MainWindowTestFixture(Stage stage, ModelManager model, JsonAddressBookSto
             window.show();
             return new MainWindowTestFixture(window.getPrimaryStage(), model, storage);
         });
+        // Allow layout and native focus changes after showing a new window.
+        waitForRenderingCycles(2);
+        return fixture;
     }
 
     /** Enters a command through the real field; call this on the JavaFX application thread. */
