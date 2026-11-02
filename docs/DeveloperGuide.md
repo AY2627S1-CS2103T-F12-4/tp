@@ -243,6 +243,10 @@ Undo restores the session and attendance together. A failed save restores the pr
 committing history. Existing observable lists refresh the attendance strips; no storage schema change
 or migration is needed. Field completion offers the new commands, their prefixes and registered groups.
 
+The following sequence diagram shows a successful `deletesession grp/T09 w/5` command, including
+committing history before saving. Model and Storage internals are summarized; the legend explains failure paths.
+
+![Deleting a tutorial session and saving its undo history](images/DeleteSessionSequenceDiagram.png)
 The sequence below shows a date change, including the two cases where it is rejected. Students are read
 from the complete roster rather than the displayed list; only students with an existing mark receive a
 replacement `Attendance`, and its present or absent status is copied unchanged.
@@ -584,6 +588,12 @@ separator itself is never shown as part of a note.
 `grp/`, attendance statuses after `s/`, and `all` for `mark` and `delete`. It only reads the command text and the
 list of groups, and never executes or validates a command. `CommandBox` shows its suggestions in a pop-up list.
 Each suggestion records the range of text it replaces, so accepting one leaves the rest of the command unchanged.
+
+The following sequence diagram shows suggestions for `list grp/T` and accepting `T09` with Tab.
+`FieldCompletion.suggest()` is static; completion edits the command text without executing the command.
+Text replacement preserves surrounding input and supports command-text undo.
+
+![Suggesting and accepting a tutorial-group field completion](images/FieldCompletionSequenceDiagram.png)
 
 ### Comment command execution
 
