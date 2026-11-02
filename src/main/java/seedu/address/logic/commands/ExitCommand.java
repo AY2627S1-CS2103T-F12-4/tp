@@ -9,6 +9,9 @@ public class ExitCommand extends Command {
 
     public static final String COMMAND_WORD = "exit";
 
+    public static final String MESSAGE_USAGE = COMMAND_WORD + ": Exits Roster.\n"
+            + "This command takes no arguments.\nExample: " + COMMAND_WORD;
+
     public static final String MESSAGE_EXIT_ACKNOWLEDGEMENT = "Exiting Roster as requested ...";
 
     @Override
