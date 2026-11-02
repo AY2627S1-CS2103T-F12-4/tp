@@ -52,6 +52,7 @@ public class StudentDetailPanel extends UiPart<Region> {
     private Person shown;
     private List<Session> shownSessions = List.of();
     private Runnable pendingScrollRestore;
+    private Scene scrollRestoreScene;
 
     @FXML
     private Label avatar;
@@ -116,8 +117,8 @@ public class StudentDetailPanel extends UiPart<Region> {
         }
         // A command on the open student rebuilds these contents. Keeping the scroll leaves the
         // reader where they were, rather than sending them back to the top of a long panel.
-        boolean sameStudent = shown != null && shown.getMatric().equals(person.getMatric());
-        double keptScroll = sameStudent ? scrolledPixels() : 0;
+        boolean isSameStudent = shown != null && shown.getMatric().equals(person.getMatric());
+        double keptScroll = isSameStudent ? scrolledPixels() : 0;
         shown = person;
         shownSessions = List.copyOf(sessions);
         avatar.setText(initialsOf(person.getName().fullName));
@@ -135,7 +136,7 @@ public class StudentDetailPanel extends UiPart<Region> {
         getRoot().setVisible(true);
         getRoot().setManaged(true);
         cancelPendingScrollRestore();
-        if (!sameStudent) {
+        if (!isSameStudent) {
             detailScroll.setVvalue(0);
             return;
         }
@@ -166,9 +167,6 @@ public class StudentDetailPanel extends UiPart<Region> {
 
     /** Returns the height that can be scrolled through, which is zero while everything fits. */
     private double scrollableHeight() {
-        if (detailScroll.getContent() == null) {
-            return 0;
-        }
         return detailScroll.getContent().getLayoutBounds().getHeight()
                 - detailScroll.getViewportBounds().getHeight();
     }
@@ -186,15 +184,19 @@ public class StudentDetailPanel extends UiPart<Region> {
             cancelPendingScrollRestore();
             applyScrolledPixels(pixels);
         };
+        // Held so that the listener is removed from the scene it was added to, even if the panel
+        // has since moved to another one.
+        scrollRestoreScene = scene;
         scene.addPostLayoutPulseListener(pendingScrollRestore);
         Platform.requestNextPulse();
     }
 
     private void cancelPendingScrollRestore() {
-        if (pendingScrollRestore != null && detailScroll.getScene() != null) {
-            detailScroll.getScene().removePostLayoutPulseListener(pendingScrollRestore);
+        if (pendingScrollRestore != null) {
+            scrollRestoreScene.removePostLayoutPulseListener(pendingScrollRestore);
+            pendingScrollRestore = null;
+            scrollRestoreScene = null;
         }
-        pendingScrollRestore = null;
     }
 
     /** Hides the panel, leaving the list beneath it untouched. */

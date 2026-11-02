@@ -7,6 +7,7 @@ import static seedu.address.testutil.FxTestUtil.onFxThread;
 import static seedu.address.testutil.FxTestUtil.waitForRenderingCycles;
 
 import java.nio.file.Path;
+import java.time.LocalDate;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
@@ -119,7 +120,7 @@ public class StudentDetailUiTest {
         AddressBook book = new AddressBookBuilder().withPerson(student).build();
         for (int week = 1; week <= 13; week++) {
             book.addSession(new Session(new Group("T09"), new Week(week),
-                    new SessionDate(java.time.LocalDate.of(2026, 8, 11).plusWeeks(week - 1).toString())));
+                    new SessionDate(LocalDate.of(2026, 8, 11).plusWeeks(week - 1).toString())));
         }
         try (MainWindowTestFixture fixture = MainWindowTestFixture.create(book, temporaryFolder)) {
             Stage stage = fixture.stage();
@@ -212,7 +213,7 @@ public class StudentDetailUiTest {
         AddressBook book = new AddressBookBuilder().withPerson(alice).withPerson(bob).build();
         for (int week = 1; week <= 13; week++) {
             book.addSession(new Session(new Group("T09"), new Week(week),
-                    new SessionDate(java.time.LocalDate.of(2026, 8, 11).plusWeeks(week - 1).toString())));
+                    new SessionDate(LocalDate.of(2026, 8, 11).plusWeeks(week - 1).toString())));
         }
         try (MainWindowTestFixture fixture = MainWindowTestFixture.create(book, temporaryFolder)) {
             Stage stage = fixture.stage();
@@ -246,6 +247,23 @@ public class StudentDetailUiTest {
                 // The new note makes the contents taller, so the position is kept in pixels, not as
                 // the proportion vvalue holds, which would drift
                 assertEquals(pixelsBefore[0], scroll.getVvalue() * scrollableHeight(scroll), 2.0);
+                return null;
+            });
+
+            // Marking attendance rebuilds the session rows, and must not scroll away from them
+            double[] pixelsBeforeMark = new double[1];
+            onFxThread(() -> {
+                ScrollPane scroll = scrollPane(stage);
+                pixelsBeforeMark[0] = scroll.getVvalue() * scrollableHeight(scroll);
+                assertTrue(pixelsBeforeMark[0] > 0, "the panel must still be scrolled down");
+                MainWindowTestFixture.enterCommand(stage, "mark 1 w/3 s/present");
+                return null;
+            });
+            waitForRenderingCycles(2);
+            onFxThread(() -> {
+                assertEquals("Alice Tan", detailText(stage, "studentName"));
+                ScrollPane scroll = scrollPane(stage);
+                assertEquals(pixelsBeforeMark[0], scroll.getVvalue() * scrollableHeight(scroll), 2.0);
                 return null;
             });
 
