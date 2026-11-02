@@ -139,24 +139,12 @@ public class UiComponentsIntegrationTest {
     }
 
     @Test
-    public void horizontalGroupNavigation_manyGroups_keepsSelectionAndDraftInput() throws Exception {
-        try (MainWindowTestFixture fixture = createWindow(false)) {
-            onFxThread(() -> {
-                for (int i = 1; i <= 20; i++) {
-                    Group group = new Group(String.format("T%02d", i));
-                    if (!fixture.model().hasGroup(group)) {
-                        fixture.model().addGroup(group);
-                    }
-                }
-                fixture.stage().setWidth(740);
-                fixture.stage().setHeight(600);
-                return null;
-            });
-            waitForRenderingCycles(3);
+    public void horizontalGroupNavigation_arrows_onlySelectWithoutChangingScopeOrDraft() throws Exception {
+        try (MainWindowTestFixture fixture = createWindowWithManyGroups()) {
             onFxThread(() -> {
                 Stage stage = fixture.stage();
                 getCommandInput(stage).setText("unfinished command");
-                ListView<?> groups = (ListView<?>) stage.getScene().lookup("#groupListView");
+                ListView<?> groups = groupList(stage);
                 groups.getSelectionModel().selectFirst();
                 groups.fireEvent(key(KeyCode.DOWN));
                 assertEquals("T01", groups.getSelectionModel().getSelectedItem());
@@ -167,24 +155,74 @@ public class UiComponentsIntegrationTest {
                 groups.fireEvent(key(KeyCode.LEFT));
                 assertEquals("All students", groups.getSelectionModel().getSelectedItem());
                 assertTrue(fixture.model().getActiveGroup().isEmpty(), "Arrows only select until Enter is pressed");
+                assertEquals("unfinished command", getCommandInput(stage).getText());
+                return null;
+            });
+        }
+    }
+
+    @Test
+    public void horizontalGroupNavigation_enter_activatesSelectionAndPreservesDraft() throws Exception {
+        try (MainWindowTestFixture fixture = createWindowWithManyGroups()) {
+            onFxThread(() -> {
+                Stage stage = fixture.stage();
+                getCommandInput(stage).setText("unfinished command");
+                ListView<?> groups = groupList(stage);
                 groups.getSelectionModel().selectLast();
                 groups.scrollTo(groups.getItems().size() - 1);
-                groups.fireEvent(new KeyEvent(KeyEvent.KEY_PRESSED, "", "", KeyCode.ENTER,
-                        false, false, false, false));
+                groups.fireEvent(key(KeyCode.ENTER));
                 assertEquals(new Group("T20"), fixture.model().getActiveGroup().orElseThrow());
                 assertEquals("unfinished command", getCommandInput(stage).getText());
                 assertEquals("0 students", label(stage, "studentCount").getText());
-                stage.getScene().getRoot().applyCss();
-                stage.getScene().getRoot().layout();
+                return null;
+            });
+        }
+    }
+
+    @Test
+    public void horizontalGroupLayout_manyGroups_keepsLabelsAboveScrollbar() throws Exception {
+        try (MainWindowTestFixture fixture = createWindowWithManyGroups()) {
+            onFxThread(() -> {
+                ListView<?> groups = groupList(fixture.stage());
+                groups.getSelectionModel().selectLast();
+                groups.scrollTo(groups.getItems().size() - 1);
+                return null;
+            });
+            waitForRenderingCycles(3);
+            onFxThread(() -> {
+                ListView<?> groups = groupList(fixture.stage());
+                assertTrue(groups.lookupAll(".list-cell").stream()
+                        .anyMatch(node -> node instanceof ListCell<?> cell && "T20".equals(cell.getItem())));
                 for (Node node : groups.lookupAll(".list-cell")) {
                     if (node instanceof ListCell<?> cell && !cell.isEmpty()) {
                         assertTrue(cell.getHeight() >= 20, "Group names must fit above the scrollbar");
                     }
                 }
-                saveScreenshot(stage, "many-groups.png");
+                saveScreenshot(fixture.stage(), "many-groups.png");
                 return null;
             });
         }
+    }
+
+    private MainWindowTestFixture createWindowWithManyGroups() throws Exception {
+        MainWindowTestFixture fixture = createWindow(false);
+        onFxThread(() -> {
+            for (int i = 1; i <= 20; i++) {
+                Group group = new Group(String.format("T%02d", i));
+                if (!fixture.model().hasGroup(group)) {
+                    fixture.model().addGroup(group);
+                }
+            }
+            fixture.stage().setWidth(740);
+            fixture.stage().setHeight(600);
+            return null;
+        });
+        waitForRenderingCycles(3);
+        return fixture;
+    }
+
+    private static ListView<?> groupList(Stage stage) {
+        return (ListView<?>) stage.getScene().lookup("#groupListView");
     }
 
     /** Returns the longest comment the model allows, for stressing the layout. */

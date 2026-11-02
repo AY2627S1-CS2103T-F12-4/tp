@@ -3,11 +3,11 @@ package seedu.address.model.person;
 import static java.util.Objects.requireNonNull;
 import static seedu.address.commons.util.AppUtil.checkArgument;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Predicate;
+
+import seedu.address.commons.util.ToStringBuilder;
 
 /**
  * Matches students against every supplied name, matriculation-number and tutorial-group filter.
@@ -50,29 +50,19 @@ public class StudentMatchesFiltersPredicate implements Predicate<Person> {
         return Optional.ofNullable(group);
     }
 
+    public Optional<Matric> getMatric() {
+        return Optional.ofNullable(matric);
+    }
+
     public Optional<NameContainsQueryPredicate> getNamePredicate() {
         return Optional.ofNullable(namePredicate);
     }
 
+    /**
+     * Returns whether the name is the only supplied filter.
+     */
     public boolean isNameOnly() {
         return namePredicate != null && matric == null && group == null;
-    }
-
-    /**
-     * Describes the normalized filters in a consistent order for command feedback.
-     */
-    public String describeFilters() {
-        List<String> filters = new ArrayList<>();
-        if (namePredicate != null) {
-            filters.add("n/\"" + namePredicate.getQuery() + "\"");
-        }
-        if (matric != null) {
-            filters.add("m/" + matric.value);
-        }
-        if (group != null) {
-            filters.add("grp/" + group.value);
-        }
-        return String.join(" ", filters);
     }
 
     @Override
@@ -90,6 +80,10 @@ public class StudentMatchesFiltersPredicate implements Predicate<Person> {
 
     @Override
     public String toString() {
-        return describeFilters();
+        return new ToStringBuilder(this)
+                .add("namePredicate", namePredicate)
+                .add("matric", matric)
+                .add("group", group)
+                .toString();
     }
 }

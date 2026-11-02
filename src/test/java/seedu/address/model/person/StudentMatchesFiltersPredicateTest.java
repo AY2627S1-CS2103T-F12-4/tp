@@ -80,6 +80,18 @@ public class StudentMatchesFiltersPredicateTest {
         }
     }
 
+    @Test
+    public void toString_reportsPresentAndAbsentFilters() {
+        for (Filters filters : filterCombinations()) {
+            StudentMatchesFiltersPredicate predicate = new StudentMatchesFiltersPredicate(
+                    filters.name(), filters.matric(), filters.group());
+            String expected = StudentMatchesFiltersPredicate.class.getCanonicalName()
+                    + "{namePredicate=" + filters.name() + ", matric=" + filters.matric()
+                    + ", group=" + filters.group() + "}";
+            assertEquals(expected, predicate.toString());
+        }
+    }
+
     private List<Filters> filterCombinations() {
         return List.of(new Filters(name, null, null), new Filters(null, matric, null), new Filters(null, null, group),
                 new Filters(name, matric, null), new Filters(name, null, group), new Filters(null, matric, group),

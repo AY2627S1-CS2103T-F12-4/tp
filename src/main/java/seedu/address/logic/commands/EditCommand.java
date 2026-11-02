@@ -108,8 +108,8 @@ public class EditCommand extends Command {
         String feedback = String.format(MESSAGE_EDIT_PERSON_SUCCESS, Messages.format(editedPerson));
         int clearedRecordCount = personToEdit.getAttendances().size() - editedPerson.getAttendances().size();
         if (clearedRecordCount > 0) {
-            logger.info("Cleared " + clearedRecordCount + " attendance record(s) of " + editedPerson.getMatric()
-                    + " after moving them from " + personToEdit.getGroup() + " to " + editedPerson.getGroup());
+            logger.info("Cleared " + clearedRecordCount + " attendance record(s) after moving a student from "
+                    + personToEdit.getGroup() + " to " + editedPerson.getGroup());
             feedback += "\n" + String.format(MESSAGE_ATTENDANCE_CLEARED, personToEdit.getGroup(),
                     editedPerson.getGroup(), clearedRecordCount, clearedRecordCount == 1 ? "record" : "records");
         }

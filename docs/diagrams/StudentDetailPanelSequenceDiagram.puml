@@ -1,0 +1,97 @@
+@startuml
+!include style.puml
+skinparam ArrowFontStyle plain
+title Opening a student and keeping the panel current
+
+box Ui UI_COLOR_T1
+participant ":PersonListPanel" as PersonListPanel UI_COLOR
+participant ":MainWindow" as MainWindow UI_COLOR
+participant "panel:StudentDetailPanel" as Panel UI_COLOR
+end box
+
+box Logic LOGIC_COLOR_T1
+participant ":LogicManager" as LogicManager LOGIC_COLOR
+end box
+
+== Opening a student ==
+
+[-> PersonListPanel : click a row, or Enter on the highlighted row
+activate PersonListPanel
+
+PersonListPanel -> MainWindow : onStudentChosen(student, rowNumber)
+activate MainWindow
+
+MainWindow -> Panel : show(student, rowNumber, sessions)
+activate Panel
+note right of Panel
+  show() rewrites the row number, then returns early if the
+  student and sessions are unchanged, so a command that only
+  renumbers the list does not rebuild the panel.
+end note
+Panel --> MainWindow
+deactivate Panel
+
+MainWindow --> PersonListPanel
+deactivate MainWindow
+deactivate PersonListPanel
+
+== Any later command ==
+
+[-> MainWindow : executeCommand("edit 1 m/A0000003X")
+activate MainWindow
+
+MainWindow -> LogicManager : execute(commandText)
+activate LogicManager
+LogicManager --> MainWindow : result
+deactivate LogicManager
+
+MainWindow -> MainWindow : refreshStudentDetail(result.getPersonToShow())
+activate MainWindow
+
+MainWindow -> Panel : shownStudent()
+activate Panel
+Panel --> MainWindow : open student
+deactivate Panel
+
+MainWindow -> LogicManager : getFilteredPersonList()
+activate LogicManager
+LogicManager --> MainWindow : displayed
+deactivate LogicManager
+
+alt a displayed student has the open student's matriculation number
+    MainWindow -> Panel : show(thatStudent, newRowNumber, sessions)
+    activate Panel
+    Panel --> MainWindow
+    deactivate Panel
+    note right of MainWindow
+      The usual case. A comment or an edit is picked up, and the
+      row number follows the list if the student moved.
+    end note
+
+else the number matched nobody, but the command reported a displayed student
+    MainWindow -> Panel : show(reportedStudent, newRowNumber, sessions)
+    activate Panel
+    Panel --> MainWindow
+    deactivate Panel
+    note right of MainWindow
+      Two commands reach this. An edit can change the very
+      number being searched for, and a command can switch the
+      displayed view out from under the panel: adding a student
+      to another group shows that group instead.
+    end note
+
+else neither
+    MainWindow -> Panel : hide()
+    activate Panel
+    Panel --> MainWindow
+    deactivate Panel
+    note right of MainWindow
+      The student was deleted or filtered out of the displayed
+      list, and the command reported nobody displayed either,
+      so there is nothing left to show.
+    end note
+end
+
+deactivate MainWindow
+deactivate MainWindow
+@enduml

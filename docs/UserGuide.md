@@ -141,9 +141,10 @@ Scroll inside the panel to read later sessions. Click another row to switch stud
 
 Close the panel with its × button or Escape to see the full roster again. If command
 completion suggestions are open, Escape dismisses those first. Opening or closing details does not
-change the roster, active group, or displayed row numbers. Successful commands refresh an open panel;
-it closes if its student is no longer displayed. After undoing a matriculation-number edit, reopen the
-student's row to view their restored details.
+change the roster, active group, or displayed row numbers. Successful commands refresh an open panel.
+If its student is no longer displayed, an add or edit can make the open panel follow the new or updated
+student instead; otherwise it closes. After undoing a matriculation-number edit, reopen the student's row
+to view their restored details.
 
 ### Completing command fields
 
@@ -263,15 +264,24 @@ Format: `add n/NAME e/EMAIL m/MATRIC grp/GROUP [t/TAG]...`
 
 Examples:
 
-* `add n/Alex Tan e/alex.tan@example.com m/A0123456X grp/T09`
-* `add n/Bernice Yu e/bernice@example.com m/A0287402K grp/T09 t/exchange`
+* `add n/Jamie Koh e/jamie.koh@example.com m/A0312345L grp/T09`
+* `add n/Nora Lim e/nora.lim@example.com m/A0312346M grp/T09 t/exchange`
+
+These examples assume T09 exists and the example students have not already been added.
+Their emails and matriculation numbers differ from the sample roster and Quick start example.
+
 * The tutorial group must already exist.
 * Matriculation numbers and email addresses must be unique across all tutorial groups.
 * Names do not need to be unique because different students may share a name.
-* If the new student is not in the list on screen, for example because another group or a search is shown, Roster switches to the new student's tutorial group so that you can see them.
-* Roster scrolls the list to the new student and highlights their card until your next command. The list is sorted by matriculation number, so the new student may appear anywhere in it.
+* If the new student matches the view on screen, Roster keeps that view. Otherwise, for example when another
+  group is shown or a search does not match the new student's name, Roster switches to the student's group.
+* Roster scrolls to and highlights the new student's card. Students are sorted by matriculation number,
+  so the new student may appear anywhere in the list. A later command or row selection can replace or clear
+  the highlight.
 
-On success, Roster displays a confirmation such as `Added Alex Tan (A0123456X) to tutorial group T09.` When Roster switches to the student's group, the confirmation ends with `Now showing T09.`
+On success, Roster displays a confirmation such as
+`Added Jamie Koh (A0312345L) to tutorial group T09.` When Roster switches to the student's group,
+the confirmation ends with `Now showing T09.` Adding a student does not open a closed detail panel.
 
 ### Editing a student: `edit`
 
@@ -390,11 +400,17 @@ Format: `find [n/KEYWORD] [m/MATRIC] [grp/GROUP]`
   may contain only a subset of that group's students.
 * Name-only searches retain feedback such as `Found 2 student(s) matching "John".` Other searches report
   the result count and normalized filters, for example `Found 1 student(s) matching filters: n/"John" grp/T09.`
-  No-match searches show an empty list. If a name was supplied, Roster may suggest up to three similar
-  names with their matriculation numbers. Suggestions respect any matriculation-number and group filters.
-  They are hints only: run another search using the suggested name or matriculation number to display
-  that student before using an index-based command. For example, `find n/srah` may suggest Sarah.
-  If no names are sufficiently similar, Roster asks you to try another name or filter.
+  A search that matches nobody shows an empty list.
+* If a search matches nobody and you supplied `n/`, Roster suggests up to three students whose names come
+  closest, each with their matriculation number:
+  `No students found matching "srah". Did you mean: Sarah Tan (A0000001X)?`
+    * Suggestions are hints, not results: the displayed list stays empty. Search again using the suggested
+      name or matriculation number before using an index-based command such as `delete 1`.
+    * A close name is not always the right student, so check the matriculation number before acting on one.
+    * Only names are compared. A nearly-right matriculation number or group code is never suggested, and a
+      search without `n/` never offers a suggestion at all.
+    * Suggestions respect your `m/` and `grp/` filters, so a suggested student is always one the rest of
+      your search would have allowed.
 * Blank or malformed values, repeated prefixes, unsupported parameters, text before the first prefix,
   and `find` without filters are rejected without changing the displayed list or active group.
 * `mark INDEX`, `delete INDEX` and `edit INDEX` use the displayed result indexes. Deleting a student refreshes
@@ -410,6 +426,7 @@ Examples:
 * `find m/a0123456x` finds the student with matriculation number `A0123456X`.
 * `find grp/T09` finds every student in registered group T09.
 * `find n/John grp/T09` finds students in T09 whose names contain `John`.
+* `find n/srah` displays nobody and suggests `Sarah Tan (A0000001X)`, if a student's name is close enough.
 * `find grp/T09 m/A0123456X n/John` requires all three conditions to match.
 
 ### Deleting a student: `delete`

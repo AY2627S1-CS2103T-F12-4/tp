@@ -13,9 +13,9 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import seedu.address.commons.util.StringUtil;
+import seedu.address.logic.commands.ExportCommand;
 import seedu.address.logic.parser.exceptions.ParseException;
 import seedu.address.model.person.Group;
-import seedu.address.storage.CsvFileAccess;
 
 /**
  * Parses CSV command arguments, preserving path whitespace and quoted prefix-like fragments.
@@ -26,10 +26,16 @@ class CsvFileArgumentsParser {
 
     private final String usage;
 
+    /**
+     * Creates a parser that reports the supplied usage for malformed arguments.
+     */
     CsvFileArgumentsParser(String usage) {
         this.usage = requireNonNull(usage);
     }
 
+    /**
+     * Parses a required CSV path and an optional tutorial group.
+     */
     CsvFileArguments parse(String args) throws ParseException {
         requireNonNull(args);
         ArgumentMultimap arguments = tokenize(args);
@@ -52,13 +58,13 @@ class CsvFileArgumentsParser {
         try {
             path = Path.of(value);
         } catch (InvalidPathException e) {
-            throw new ParseException(CsvFileAccess.MESSAGE_INVALID_PATH);
+            throw new ParseException(ExportCommand.MESSAGE_INVALID_PATH);
         }
         if (value.codePoints().anyMatch(Character::isISOControl)) {
-            throw new ParseException(CsvFileAccess.MESSAGE_INVALID_PATH);
+            throw new ParseException(ExportCommand.MESSAGE_INVALID_PATH);
         }
-        if (!CsvFileAccess.isCsvPath(path)) {
-            throw new ParseException(CsvFileAccess.MESSAGE_INVALID_PATH);
+        if (!ExportCommand.isValidDestination(path)) {
+            throw new ParseException(ExportCommand.MESSAGE_INVALID_PATH);
         }
         return path;
     }
@@ -121,9 +127,15 @@ class CsvFileArgumentsParser {
         return new ParseException(String.format(MESSAGE_INVALID_COMMAND_FORMAT, usage));
     }
 
+    /**
+     * Holds a parsed CSV path and the optional group to export.
+     */
     record CsvFileArguments(Path path, Group group) {
     }
 
+    /**
+     * Locates an argument prefix outside quoted path fragments.
+     */
     private record PrefixPosition(Prefix prefix, int start) {
     }
 }

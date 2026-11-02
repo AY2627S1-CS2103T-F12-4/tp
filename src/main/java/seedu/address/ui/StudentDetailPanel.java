@@ -51,8 +51,6 @@ public class StudentDetailPanel extends UiPart<Region> {
     private List<Session> shownSessions = List.of();
 
     @FXML
-    private VBox detailPane;
-    @FXML
     private Label avatar;
     @FXML
     private Button closeButton;

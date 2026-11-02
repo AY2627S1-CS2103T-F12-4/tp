@@ -135,8 +135,8 @@ class JsonSerializableAddressBook {
             // Data files saved before groups were stored, such as the saved sample data, list students
             // without their groups. Registering the group keeps those files loadable.
             if (!addressBook.hasGroup(person.getGroup())) {
-                logger.info("Registered tutorial group " + person.getGroup() + ", which " + person.getMatric()
-                        + " belongs to but the groups list in the data file does not include");
+                logger.info("Registered tutorial group " + person.getGroup()
+                        + ", which a student belongs to but the groups list in the data file does not include");
                 addressBook.addGroup(person.getGroup());
             }
             addressBook.addPerson(person);
@@ -173,7 +173,7 @@ class JsonSerializableAddressBook {
             }
             return restored;
         } catch (IllegalArgumentException | IllegalValueException e) {
-            logger.warning("Discarding invalid undo/redo history: " + e.getMessage());
+            logger.warning("Discarding invalid undo/redo history: " + e.getClass().getSimpleName());
             return result;
         }
     }

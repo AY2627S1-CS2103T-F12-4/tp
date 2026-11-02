@@ -61,7 +61,7 @@ public class JsonAddressBookStorage {
         try {
             return Optional.of(jsonAddressBook.get().toVersionedModelType());
         } catch (IllegalValueException ive) {
-            logger.info("Illegal values found in " + filePath + ": " + ive.getMessage());
+            logger.info("Illegal values found in " + filePath + ": " + ive.getClass().getSimpleName());
             throw new DataLoadingException(ive);
         }
     }

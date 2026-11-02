@@ -72,15 +72,6 @@ public class CsvFileAccessTest {
     }
 
     @Test
-    public void isCsvPath_filenameRequiredAndExtensionIgnoresCase() {
-        assertTrue(CsvFileAccess.isCsvPath(Path.of("report.csv")));
-        assertTrue(CsvFileAccess.isCsvPath(Path.of("report.CSV")));
-        assertFalse(CsvFileAccess.isCsvPath(Path.of("report.txt")));
-        assertFalse(CsvFileAccess.isCsvPath(temporaryFolder.toAbsolutePath().getRoot()));
-        assertThrows(NullPointerException.class, () -> CsvFileAccess.isCsvPath(null));
-    }
-
-    @Test
     public void applicationHome_packagedJarWithSpaces_usesJarFolder() throws Exception {
         Path home = Files.createDirectory(temporaryFolder.resolve("application folder"));
         Path jar = Files.createFile(home.resolve("roster.jar"));

@@ -1,0 +1,87 @@
+@startuml
+!include style.puml
+skinparam ArrowFontStyle plain
+title Revealing a newly added student
+
+participant ":MainWindow" as Window UI_COLOR
+participant ":LogicManager" as Logic LOGIC_COLOR
+participant "command:AddCommand" as Add LOGIC_COLOR
+participant "model:Model" as Model MODEL_COLOR
+participant ":PersonListPanel" as List UI_COLOR
+
+[-> Window : executeCommand("add ... grp/T09")
+activate Window
+Window -> Logic : execute(commandText)
+activate Logic
+Logic -> Add : execute(model)
+activate Add
+
+note over Add, Model
+  Parsing and group/duplicate checks are summarized.
+  student is the new Person in registered group T09.
+end note
+
+Add -> Model : addPerson(student)
+activate Model
+Model --> Add
+deactivate Model
+Add -> Model : getFilteredPersonList()
+activate Model
+Model --> Add : displayedStudents
+deactivate Model
+
+alt student is not in displayedStudents
+    Add -> Model : showGroup(student.getGroup())
+    activate Model
+    note right of Model
+      Replace the current filter with group T09.
+      Show the group's students in matriculation order.
+    end note
+    Model --> Add
+    deactivate Model
+else student is already displayed
+    note over Add, Model : Keep the current group or search view.
+end
+
+Add --> Logic : result:CommandResult\n(personToShow = student)
+deactivate Add
+
+ref over Logic, Model
+  Commit history and save successfully
+  (see the Logic component's save handling)
+end ref
+
+Logic --> Window : result
+deactivate Logic
+Window -> List : scrollTo(student)
+activate List
+note right of List
+  Find the student's current displayed index.
+  Select that row to highlight it,
+  then request scrolling to its index.
+end note
+List -> List : scrollIntoViewAfterLayout(student)
+activate List
+note right of List
+  Register a post-layout callback.
+  Return without waiting for the next layout.
+end note
+List --> List
+deactivate List
+List --> Window
+deactivate List
+[<-- Window : result
+deactivate Window
+
+note right of List
+  The callback runs on later layout pulses.
+  Check visibility and retry scrolling at most 10 times.
+  Cancel when visible, removed or out of attempts.
+end note
+
+legend left
+  Successful-path diagram. If saving fails, LogicManager rolls back and throws;
+  MainWindow clears the selection instead of scrolling to the added student.
+  Feedback, detail-panel refresh and group-strip refresh are outside this diagram's focus.
+endlegend
+@enduml

@@ -1,0 +1,109 @@
+@startuml
+!include style.puml
+skinparam ArrowFontStyle plain
+skinparam MaxMessageSize 180
+title Suggesting and accepting a tutorial-group completion
+
+box UI UI_COLOR_T1
+participant ":CommandBox" as CommandBox UI_COLOR
+participant ":TextField" as TextField UI_COLOR
+participant ":Popup" as Popup UI_COLOR
+end box
+
+box Logic LOGIC_COLOR_T1
+participant "FieldCompletion" as Completion LOGIC_COLOR
+end box
+
+note over CommandBox, Completion
+  Example: text = "list grp/T", caret = 10; registered groups include T09 and T10.
+  The input is focused, acceptingCompletion is false, and screen coordinates are available.
+  FieldCompletion is a class with a static suggest method, not a constructed object.
+end note
+
+== Updating suggestions ==
+[-> CommandBox : updateSuggestions()\n(text / caret / group-list listener)
+activate CommandBox
+CommandBox -> TextField : getText()
+activate TextField
+TextField --> CommandBox : "list grp/T"
+deactivate TextField
+CommandBox -> TextField : getCaretPosition()
+activate TextField
+TextField --> CommandBox : 10
+deactivate TextField
+CommandBox -> Completion : suggest(text, caret, groupCodes)
+activate Completion
+note right of Completion
+  Return matching Suggestion values:
+  start=9, end=10, value="T09"
+  start=9, end=10, value="T10"
+  The end index is exclusive.
+end note
+Completion --> CommandBox : matches:List<Suggestion>
+deactivate Completion
+
+note over CommandBox, TextField
+  Replace the suggestion-list items with matches.
+  Select the first item and size the popup.
+  These ListView interactions are omitted.
+end note
+CommandBox -> TextField : localToScreen(0, getHeight())
+activate TextField
+TextField --> CommandBox : position
+deactivate TextField
+CommandBox -> Popup : show(commandTextField, x, y)
+activate Popup
+Popup --> CommandBox
+deactivate Popup
+[<-- CommandBox
+deactivate CommandBox
+
+== Accepting with plain Tab ==
+[-> CommandBox : handleCompletionKey(event)\n[Tab; popup showing]
+activate CommandBox
+CommandBox -> CommandBox : acceptCompletion()
+activate CommandBox
+note left of CommandBox
+  Read the selected Suggestion from the list.
+  Set acceptingCompletion = true.
+end note
+CommandBox -> TextField : replaceText(9, 10, "T09")
+activate TextField
+note over CommandBox, TextField
+  Text becomes "list grp/T09".
+  The text/caret listeners run, but updateSuggestions()
+  returns immediately while acceptingCompletion is true.
+end note
+TextField --> CommandBox
+deactivate TextField
+CommandBox -> TextField : positionCaret(12)
+activate TextField
+TextField --> CommandBox
+deactivate TextField
+note left of CommandBox
+  Set acceptingCompletion = false.
+end note
+CommandBox -> Popup : hide()
+activate Popup
+Popup --> CommandBox
+deactivate Popup
+CommandBox -> TextField : requestFocus()
+activate TextField
+TextField --> CommandBox
+deactivate TextField
+CommandBox --> CommandBox
+deactivate CommandBox
+note left of CommandBox
+  Consume the Tab event.
+end note
+[<-- CommandBox
+deactivate CommandBox
+
+legend left
+  * No command is executed and no roster data changes during completion.
+  * replaceText preserves surrounding input and supports command-text undo.
+  * No matches: hide the popup. Unfocused input: skip updating suggestions.
+  * Up/Down selects an item; a primary click accepts it through acceptCompletion().
+  * Shift+Tab dismisses without accepting; Enter uses the separate command-execution path.
+endlegend
+@enduml

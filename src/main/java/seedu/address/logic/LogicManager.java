@@ -50,9 +50,8 @@ public class LogicManager implements Logic {
 
     @Override
     public CommandResult execute(String commandText) throws CommandException, ParseException {
-        logger.info("----------------[USER COMMAND][" + commandText + "]");
-
         Command command = addressBookParser.parseCommand(commandText);
+        logger.info("Executing command: " + command.getUndoDescription());
         VersionedAddressBook stateBeforeCommand = command.requiresSave()
                 ? new VersionedAddressBook(model.getAddressBook()) : null;
         StudentListViewState viewBeforeCommand = command.requiresSave() ? model.getStudentListViewState() : null;

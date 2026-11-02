@@ -1,0 +1,76 @@
+@startuml
+!include style.puml
+skinparam ArrowFontStyle plain
+skinparam MaxMessageSize 180
+title Deleting an existing session: successful save
+
+box Logic LOGIC_COLOR_T1
+participant ":LogicManager" as LogicManager LOGIC_COLOR
+participant "command:DeleteSessionCommand" as Command LOGIC_COLOR
+end box
+
+box Model MODEL_COLOR_T1
+participant "model:Model" as Model MODEL_COLOR
+end box
+
+box Storage STORAGE_COLOR_T1
+participant "storage:Storage" as Storage STORAGE_COLOR
+end box
+
+[-> LogicManager : execute("deletesession grp/T09 w/5")
+activate LogicManager
+
+ref over LogicManager, Command
+  AddressBookParser delegates argument validation to
+  DeleteSessionCommandParser, which constructs the command.
+end ref
+
+ref over LogicManager, Model
+  Capture a VersionedAddressBook snapshot and StudentListViewState
+  for rollback. Parsing and snapshot internals are omitted.
+end ref
+
+LogicManager -> Command : execute(model)
+activate Command
+Command -> Model : findSession(group, week)
+activate Model
+Model --> Command : Optional.of(session)
+deactivate Model
+
+Command -> Model : deleteSession(session)
+activate Model
+note right of Model
+  Model internals are omitted.
+  Remove the session and its attendance records
+  across the full roster, including hidden students.
+  Keep students, groups and other sessions.
+end note
+Model --> Command
+deactivate Model
+Command --> LogicManager : result:CommandResult
+deactivate Command
+
+LogicManager -> Model : commitAddressBook("deletesession")
+activate Model
+Model --> LogicManager
+deactivate Model
+LogicManager -> Model : getAddressBook()
+activate Model
+Model --> LogicManager : rosterWithHistory
+deactivate Model
+LogicManager -> Storage : saveAddressBook(rosterWithHistory)
+activate Storage
+Storage --> LogicManager
+deactivate Storage
+
+[<-- LogicManager : result
+deactivate LogicManager
+
+legend left
+  Failure paths are outside this successful-path diagram:
+  * Invalid arguments: parsing fails before any model change.
+  * Missing session: execute(model) throws CommandException before deletion.
+  * Save failure: LogicManager restores roster, history and student-list view,
+    then throws CommandException instead of returning the success result.
+endlegend
+@enduml
