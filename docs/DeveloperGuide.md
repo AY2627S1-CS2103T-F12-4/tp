@@ -266,9 +266,11 @@ replacement `Attendance`, and its present or absent status is copied unchanged.
 
 ![Editing a session date while preserving attendance](images/EditSessionSequenceDiagram.png?v=1.6)
 
-**Design choice:** keep group/week as a stable session identity. Rescheduling changes the date while
-retaining marks. Moving attendance to a different teaching week or group would be a separate operation
-with different meaning; these commands do not silently transfer it.
+**Design choices**
+
+* Keep group/week as a stable session identity. Rescheduling changes the date while retaining marks.
+  Moving attendance to a different teaching week or group would be a separate operation with different
+  meaning; these commands do not silently transfer it.
 
 ### Adding a student
 
@@ -480,7 +482,7 @@ changing anything. If any group has no session for that week, the command fails 
 
 <img src="images/MarkAllActivityDiagram.png" width="360" alt="Activity diagram for mark all" />
 
-**Design considerations**
+**Design choices**
 
 * **Aspect: which session a student is marked for**
   * **Alternative 1 (current choice):** use the session of each student's own group for the given week.
@@ -765,7 +767,7 @@ rollback when the data file cannot be saved:
 
 <img src="images/CommitActivityDiagram.png?v=1.5" width="890" alt="Command execution with unchanged-data detection, history commit before saving, and rollback on save failure" />
 
-#### Design considerations:
+**Design choices**
 
 **Aspect: How undo executes:**
 
