@@ -14,6 +14,15 @@ title: Developer Guide
 * [JUnit 5](https://junit.org/junit5/), [JaCoCo](https://www.jacoco.org/jacoco/) and [Checkstyle](https://checkstyle.org/) for testing, coverage and coding-style checks.
 * [Gradle](https://gradle.org/) and [Shadow](https://gradleup.com/shadow/) for building the application and packaged JAR; [PlantUML](https://plantuml.com/) for UML diagrams.
 
+**Notable uses of AI**
+
+OpenAI Codex/Anthropic Claude Code was used extensively during development, including:
+
+* Generating and modifying implementation code and automated tests.
+* Investigating bugs, refactoring code and improving code quality.
+* Drafting and revising the User Guide, Developer Guide and UML diagrams.
+* Reviewing pull requests, running verification checks and investigating CI failures.
+
 --------------------------------------------------------------------------------------------------------------------
 
 ## **Setting up, getting started**
