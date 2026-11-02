@@ -400,11 +400,17 @@ Format: `find [n/KEYWORD] [m/MATRIC] [grp/GROUP]`
   may contain only a subset of that group's students.
 * Name-only searches retain feedback such as `Found 2 student(s) matching "John".` Other searches report
   the result count and normalized filters, for example `Found 1 student(s) matching filters: n/"John" grp/T09.`
-  No-match searches show an empty list. If a name was supplied, Roster may suggest up to three similar
-  names with their matriculation numbers. Suggestions respect any matriculation-number and group filters.
-  They are hints only: run another search using the suggested name or matriculation number to display
-  that student before using an index-based command. For example, `find n/srah` may suggest Sarah.
-  If no names are sufficiently similar, Roster asks you to try another name or filter.
+  A search that matches nobody shows an empty list.
+* If a search matches nobody and you supplied `n/`, Roster suggests up to three students whose names come
+  closest, each with their matriculation number:
+  `No students found matching "srah". Did you mean: Sarah Tan (A0000001X)?`
+    * Suggestions are hints, not results: the displayed list stays empty. Search again using the suggested
+      name or matriculation number before using an index-based command such as `delete 1`.
+    * A close name is not always the right student, so check the matriculation number before acting on one.
+    * Only names are compared. A nearly-right matriculation number or group code is never suggested, and a
+      search without `n/` never offers a suggestion at all.
+    * Suggestions respect your `m/` and `grp/` filters, so a suggested student is always one the rest of
+      your search would have allowed.
 * Blank or malformed values, repeated prefixes, unsupported parameters, text before the first prefix,
   and `find` without filters are rejected without changing the displayed list or active group.
 * `mark INDEX`, `delete INDEX` and `edit INDEX` use the displayed result indexes. Deleting a student refreshes
@@ -420,6 +426,7 @@ Examples:
 * `find m/a0123456x` finds the student with matriculation number `A0123456X`.
 * `find grp/T09` finds every student in registered group T09.
 * `find n/John grp/T09` finds students in T09 whose names contain `John`.
+* `find n/srah` displays nobody and suggests `Sarah Tan (A0000001X)`, if a student's name is close enough.
 * `find grp/T09 m/A0123456X n/John` requires all three conditions to match.
 
 ### Deleting a student: `delete`

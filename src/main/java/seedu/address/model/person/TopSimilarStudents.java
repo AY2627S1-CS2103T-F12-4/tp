@@ -10,8 +10,8 @@ import java.util.PriorityQueue;
 /**
  * Collects the students whose names are closest to a search query, keeping only the best few.
  * <p>
- * Students are offered one at a time with {@link #consider(Person)} while the search is already
- * walking the roster, so finding the near misses costs no extra pass over the students.
+ * Students are offered one at a time with {@link #consider(Person)}, and only once a search has
+ * already come back empty, so a search that finds someone never pays for scoring names.
  * <p>
  * Only names scoring at least {@link NameSimilarityScorer#DEFAULT_THRESHOLD} are kept, so a query
  * that resembles nobody produces nothing rather than the least bad student in the roster.

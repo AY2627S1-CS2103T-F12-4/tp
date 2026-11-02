@@ -1,0 +1,60 @@
+@startuml
+skin rose
+skinparam ActivityFontSize 15
+skinparam ArrowFontSize 12
+skinparam Shadowing false
+
+start
+:Parse the displayed index and at least one of
+name, email, matriculation number, group or tags;
+if () then ([arguments are invalid])
+    :Report a parsing error;
+    stop
+else ([arguments are valid])
+endif
+
+:Resolve the index in the displayed student list;
+if () then ([index is out of range])
+    :Report an invalid displayed index;
+    stop
+else ([index exists])
+endif
+
+:Create an immutable replacement student
+from edited and unchanged fields;
+if () then ([tutorial group changed])
+    :Clear all attendance records
+    from the replacement student;
+else ([tutorial group unchanged])
+    :Preserve all attendance records;
+endif
+
+if () then ([replacement group is not registered])
+    :Report an unknown group;
+    stop
+else ([replacement group is registered])
+endif
+
+if () then ([matriculation number belongs to another student])
+    :Report a duplicate student;
+    stop
+else ([matriculation number is unique])
+endif
+
+if () then ([email belongs to another student])
+    :Report a duplicate email;
+    stop
+else ([email is unique])
+endif
+
+:Replace the student in the full roster;
+:Show all students, ordered by matriculation number;
+:Save Roster and record the change for undo;
+if () then ([clearedRecordCount > 0])
+    :Report the old and new groups
+    and number of cleared attendance records;
+else ([no attendance records were cleared])
+    :Report the edited student;
+endif
+stop
+@enduml

@@ -88,6 +88,7 @@ The UI consists of a `MainWindow` and its parts, such as `CommandBox`, `ResultDi
   runs the matching `list` command. Up/Down are retained as aliases for horizontal selection, and Enter
   opens the selected view without replacing unfinished command text.
   After successful commands it also refreshes the active entry, including repeated `list` commands.
+  [Group strip navigation](#group-strip-navigation) covers how that refresh reads the model.
   Revealing an off-screen entry waits for layout, with bounded retries while cell widths settle;
   visible entries stay in place and a later view change cancels an outstanding scroll.
 * `PersonListPanel` binds the displayed-student count and shows one `PersonCard` per displayed student.
@@ -98,6 +99,7 @@ The UI consists of a `MainWindow` and its parts, such as `CommandBox`, `ResultDi
   After each successful command, `MainWindow` refreshes the panel by matriculation number; an edit's
   `CommandResult` also identifies the updated student when their number changes. If the student is no
   longer displayed, the panel closes. Escape closes it unless completion suggestions are open.
+  [Student detail panel updates](#student-detail-panel-updates) covers the refresh in detail.
   `AttendanceSummary` counts sessions of the student's own group and excludes unmarked sessions from
   the attendance percentage. Session dates use the English format `EEE d MMM uuuu`, including the year
   (for example, `Tue 11 Aug 2026`).
@@ -241,9 +243,31 @@ Undo restores the session and attendance together. A failed save restores the pr
 committing history. Existing observable lists refresh the attendance strips; no storage schema change
 or migration is needed. Field completion offers the new commands, their prefixes and registered groups.
 
+The sequence below shows a date change, including the two cases where it is rejected. Students are read
+from the complete roster rather than the displayed list; only students with an existing mark receive a
+replacement `Attendance`, and its present or absent status is copied unchanged.
+
+![Editing a session date while preserving attendance](images/EditSessionSequenceDiagram.png)
+
 **Design choice:** keep group/week as a stable session identity. Rescheduling changes the date while
 retaining marks. Moving attendance to a different teaching week or group would be a separate operation
 with different meaning; these commands do not silently transfer it.
+
+### Editing a student
+
+`edit INDEX [n/NAME] [e/EMAIL] [m/MATRIC] [grp/GROUP] [t/TAG]...` resolves `INDEX` against the
+displayed student list, but validates uniqueness against the complete roster. The command builds a new
+immutable `Person`, checks that its tutorial group is registered and rejects a matriculation number or
+email belonging to another student before replacing the original.
+
+Attendance is preserved when the student remains in the same tutorial group. Moving the student to a
+different group clears every attendance record because those records belong to sessions in the old group.
+After a successful edit, the full student list is restored and sorted by matriculation number, so the edited
+student may move to a different displayed position. `CommandResult` identifies that student for the UI to
+highlight it again. The normal save-and-commit path makes the complete edit, including cleared attendance,
+one undoable change.
+
+![Editing a student, including validation and group changes](images/EditStudentActivityDiagram.png)
 
 ### Filtered student search
 
@@ -259,6 +283,8 @@ context-dependent lowercasing errors such as Greek final sigma. Accents and punc
 The active group is cleared because even a group-filtered search may display only part of a group.
 The observable list reflects additions and removals while the search predicate is active. A modifying
 command can subsequently choose another view; its own command specification defines that behavior.
+A search that finds nobody also offers close names, described under
+[Name suggestions for an empty search](#name-suggestions-for-an-empty-search).
 
 The sequence below follows `find n/John grp/T09` after parsing. An unknown group is rejected before
 the model is updated. A valid search replaces the predicate and clears the active-group selection.
@@ -278,6 +304,79 @@ without rewriting the roster file or copying the roster for undo history. Other 
 approach, while data-changing commands retain their existing save behaviour.
 Assertions are enabled for Gradle tests and `./gradlew run`. When running a packaged JAR for testing,
 use `java -ea -jar roster.jar`; enable VM option `-ea` in an IDE run configuration as well.
+
+### Name suggestions for an empty search
+
+When a search that supplied `n/` finds nobody, `FindCommand` offers up to three students whose names come closest,
+so a mistyped query such as `find n/sarh` still leads the tutor to Sarah.
+
+Only the name is scored. `m/` and `grp/` stay exact filters that narrow the candidates before any scoring,
+so a search without `n/` produces no suggestions at all: `suggestSimilarStudents` returns as soon as it sees
+that the predicate holds no name.
+
+`NameSimilarityScorer.score` measures the resemblance. Both sides are lowercased and split into words, each query
+word is scored against its best-matching name word, and the mean of those scores is returned. The measure is
+Jaro-Winkler rather than an edit distance normalised by length, because a single typo in a short name costs too
+much under the latter: `sarh` against `Sarah` is one edit in five characters and scores 0.80, while Jaro-Winkler
+scores it 0.95 and separates it cleanly from `sarh` against `Sandra` at 0.80.
+
+`DEFAULT_THRESHOLD` is 0.85, set from measured pairs rather than a round number. Swapping two letters away from the
+start of a name, as in `srah` for `Sarah`, scores 0.865, while a genuinely different student such as `ben` against
+`Bernice` scores 0.848, so the cut sits between them. The measured set, against a roster holding
+`Sarah Tan`, `John Tan`, `Sandra Tan`, `Bernice Tan` and `Amirah Tan`:
+
+| Query   | Closest name  | Score | Suggested |
+|---------|---------------|-------|-----------|
+| `sarh`  | `Sarah Tan`   | 0.953 | yes       |
+| `jonh`  | `John Tan`    | 0.933 | yes       |
+| `jhon`  | `John Tan`    | 0.925 | yes       |
+| `sahra` | `Sarah Tan`   | 0.893 | yes       |
+| `srah`  | `Sarah Tan`   | 0.865 | yes       |
+| `ben`   | `Bernice Tan` | 0.848 | no        |
+| `amy`   | `Amirah Tan`  | 0.733 | no        |
+| `zzzz`  | `Sarah Tan`   | 0.000 | no        |
+
+`srah` and `ben` are the pair the cut separates, and they sit 0.017 apart, so the threshold is tight rather
+than arbitrary. Every query above finds nobody outright, because a name search matches on a substring: `sarah`
+is absent from the table for that reason, since it would reach `Sarah Tan` directly and never be scored at all.
+
+The cost of a tight cut is that a name the tutor did not mean can clear it. `sahra` is aimed at `Sarah Tan` and
+reaches it at 0.893, but `Sandra Tan` also scores 0.858, so both are offered. That is accepted because a
+suggestion is only ever made after an exact search has already found nobody, the list is never displayed, and
+the matriculation number beside each name tells the two apart.
+
+`TopSimilarStudents` collects the near misses. It keeps a heap bounded at `MAX_SUGGESTIONS`, so the best three are
+found in a single pass where sorting every candidate would do far more work for the same three names. Ties are
+broken by matriculation number so that the same roster always produces the same suggestions.
+
+Only students that satisfy the command's other filters are considered, through
+`StudentMatchesFiltersPredicate.matchesExceptName`, so a suggestion never comes from outside the group that was
+searched. The feedback uses `MESSAGE_DID_YOU_MEAN`, or `MESSAGE_FILTER_DID_YOU_MEAN` when filters other than a
+name were supplied, with each student rendered as `Name (MATRIC)` by `FindCommand.describe`:
+
+```text
+No students found matching "srah". Did you mean: Sarah Tan (A0000001X)?
+No students found matching filters: n/"srah" grp/T09. Did you mean: Sarah Tan (A0000001X)?
+```
+
+When nothing clears the threshold, the plain `MESSAGE_NO_RESULTS` or `MESSAGE_FILTER_NO_RESULTS` is used, so a
+search never shows an empty "Did you mean" list.
+
+The sequence below follows `find n/sarh grp/T09` when the search finds nobody. A search that finds someone
+returns before any name is scored.
+
+![Suggesting close names when a search finds nobody](images/FindSuggestionSequenceDiagram.png)
+
+**Design choices**
+
+* Score names only after the search has come back empty. The scan is a second pass over the roster, so a search
+  that finds someone never pays for it; this is the common case.
+* Offer a hint rather than displaying the suggested students. The displayed list stays empty, so an index-based
+  command such as `delete 1` can never act on a student the tutor only saw suggested.
+* Suggest rather than correct the query, so the tutor decides which student was meant.
+* Bound the number of suggestions at three. Beyond a few, a list of guesses stops being a hint.
+* Accept a few false suggestions rather than raise the bar. Missing the student the tutor meant is worse
+  than naming one extra, since a suggestion is only a hint over an already-empty result.
 
 ### Attendance CSV export
 
@@ -405,6 +504,70 @@ group switch hides its previous student, its refresh may follow the added studen
 * Return the student rather than its index, because sorting and filtering can put the new row anywhere.
 * Handle scrolling in `PersonListPanel`, where rendered row heights and viewport bounds are available.
   Bounded post-layout retries accommodate wrapped attendance without leaving an indefinite callback.
+
+### Student detail panel updates
+
+Clicking a student's row in `PersonListPanel`, or pressing Enter on the highlighted row, reports the student and
+their row number to `MainWindow`, which opens the separate `StudentDetailPanel`. The list panel only reports: it
+never changes the model, so opening a student leaves the displayed list and its indexes alone.
+
+Keeping an open panel current is the harder half. `MainWindow.refreshStudentDetail` runs after every successful
+command and looks the student up again rather than trusting the object the panel already holds, because `Person`
+is immutable and an edit replaces it. The lookup is by matriculation number, which identifies a student, so a new
+comment or a changed name is picked up and the row number follows the student if the list reordered.
+
+Two kinds of command defeat that lookup. An edit can change the matriculation number itself, which is the key
+being searched for. A command can also switch the displayed view out from under the panel: adding a student to
+another group calls `Model#showGroup`, so the open student is no longer listed. `CommandResult` carries the
+student a command touched, so when the number matches nobody, that reported student is used instead, provided
+they are displayed. If neither finds them, the panel closes. A closed panel stays closed, because
+`refreshStudentDetail` returns immediately unless the panel is already showing.
+
+`StudentDetailPanel.show` rewrites the row number first and then returns early when the student and sessions are
+unchanged, so a command that only renumbers the displayed list does not rebuild the panel's contents.
+
+![Opening a student and keeping the panel current](images/StudentDetailPanelSequenceDiagram.png)
+
+**Design choices**
+
+* Look the student up again rather than hold a reference, so the panel can never show a copy that an edit has
+  replaced.
+* Prefer the student found by the search to the one the command reports, so the panel stays on the student the
+  tutor opened. An edit or a new comment then updates that student instead of swapping in another.
+* Fall back to the reported student only when the search finds nobody, which means the view itself has moved.
+  Adding a student to another group switches the list, and showing that student is more useful than closing.
+* Close rather than guess when the student is no longer displayed, so the panel never contradicts the list.
+
+### Group strip navigation
+
+The group strip holds no view state of its own. Choosing an entry builds the command a tutor could have typed,
+`list grp/T09`, or `list` for the **All students** entry, and hands it to the same `MainWindow::executeCommand`
+the command box uses. There is therefore one code path for changing the displayed view, whether it was reached by
+clicking, by Enter, or by typing.
+
+The command then runs as any other list command does. `LogicManager` hands it to `ListCommand`, which for a group calls
+`Model#showGroup` — one call that sets the active group, filters the roster to it and restores
+matriculation-number ordering. For **All students** it calls `Model#updateFilteredPersonList` with the show-all
+predicate, which sets `showingAllStudents` and clears the active group. Either way the two properties the strip
+reads next are left consistent with the list the tutor is looking at.
+
+Afterwards the strip re-reads the model instead of assuming the command did what the click asked.
+`refreshActiveView` selects the entry matching the active group, selects **All students** when the model reports
+it is showing everyone, and otherwise clears the selection, which is the state after a `find` whose results span
+several groups.
+
+Because `activeGroup` and `showingAllStudents` are observable and the panel listens to both, a typed
+`list grp/T10` reaches the same method, so the strip's selection follows the model rather than the last click.
+
+![Opening a tutorial group from the group strip](images/GroupStripNavigationSequenceDiagram.png)
+
+**Design choices**
+
+* Run the same command a tutor could type, so the strip cannot drift from the behaviour of `list`.
+* Follow the model's active group rather than the activated entry, so a typed command and the strip can never
+  disagree about which view is open.
+* Clear the selection when neither a group nor the full roster is shown, rather than leaving a stale highlight
+  on a group whose students are only partly displayed.
 
 ### Field completion
 
@@ -783,9 +946,16 @@ requirements and do not describe available commands. Priority records importance
 
       Use case ends.
 
-* 2a. No student matches the given details.
+* 2a. No student matches the given details, and no student's name is close enough to a name the TA gave.
 
     * 2a1. Roster shows a message stating that no students were found.
+
+      Use case ends.
+
+* 2b. No student matches the given details, but the TA gave a name and students matching every other
+  detail given have names close to it.
+
+    * 2b1. Roster names up to three of those students in its message, without displaying them.
 
       Use case ends.
 
