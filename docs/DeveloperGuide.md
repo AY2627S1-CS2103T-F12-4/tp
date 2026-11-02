@@ -259,12 +259,12 @@ or migration is needed. Field completion offers the new commands, their prefixes
 The following sequence diagram shows a successful `deletesession grp/T09 w/5` command, including
 committing history before saving. Model and Storage internals are summarized; the legend explains failure paths.
 
-![Deleting a tutorial session and saving its undo history](images/DeleteSessionSequenceDiagram.png)
+![Deleting a tutorial session and saving its undo history](images/DeleteSessionSequenceDiagram.png?v=1.6)
 The sequence below shows a date change, including the two cases where it is rejected. Students are read
 from the complete roster rather than the displayed list; only students with an existing mark receive a
 replacement `Attendance`, and its present or absent status is copied unchanged.
 
-![Editing a session date while preserving attendance](images/EditSessionSequenceDiagram.png)
+![Editing a session date while preserving attendance](images/EditSessionSequenceDiagram.png?v=1.6)
 
 **Design choice:** keep group/week as a stable session identity. Rescheduling changes the date while
 retaining marks. Moving attendance to a different teaching week or group would be a separate operation
@@ -285,7 +285,7 @@ highlight it again. If roster data changed, the normal commit-and-save path make
 cleared attendance, one undoable change. An unchanged edit preserves undo/redo history without saving.
 The [command execution activity diagram](#undo-and-redo-feature) covers the shared save-failure rollback.
 
-![Editing a student, including validation and group changes](images/EditStudentActivityDiagram.png)
+![Editing a student, including validation and group changes](images/EditStudentActivityDiagram.png?v=1.6)
 
 ### Filtered student search
 
@@ -383,7 +383,7 @@ search never shows an empty "Did you mean" list.
 The sequence below follows `find n/sarh grp/T09` when the search finds nobody. A search that finds someone
 returns before any name is scored.
 
-![Suggesting close names when a search finds nobody](images/FindSuggestionSequenceDiagram.png)
+![Suggesting close names when a search finds nobody](images/FindSuggestionSequenceDiagram.png?v=1.6)
 
 **Design choices**
 
@@ -485,7 +485,7 @@ before deleting, because the list shrinks as students are removed. Both commands
 
 The activity diagram below shows how `delete all` deletes the displayed students while keeping groups and sessions.
 
-<img src="images/DeleteAllActivityDiagram.png" width="450" alt="Activity diagram showing deletion of displayed students while retaining groups and sessions" />
+<img src="images/DeleteAllActivityDiagram.png?v=1.6" width="450" alt="Activity diagram showing deletion of displayed students while retaining groups and sessions" />
 
 ### Showing a newly added student
 
@@ -503,7 +503,7 @@ selection rather than using the earlier success result.
 The sequence below follows a successful add after parsing. Validation, history and saving are summarized
 so that the group-switching and student-revealing steps remain visible.
 
-![Revealing a newly added student by switching view, scrolling and highlighting](images/NewStudentShownSequenceDiagram.png)
+![Revealing a newly added student by switching view, scrolling and highlighting](images/NewStudentShownSequenceDiagram.png?v=1.6)
 
 `PersonListPanel` cannot scroll accurately until the list has been laid out, because cards differ in height. It
 therefore checks after each layout pass whether the card is fully visible and scrolls again if not, up to a fixed
@@ -544,7 +544,7 @@ they are displayed. If neither finds them, the panel closes. A closed panel stay
 `StudentDetailPanel.show` rewrites the row number first and then returns early when the student and sessions are
 unchanged, so a command that only renumbers the displayed list does not rebuild the panel's contents.
 
-![Opening a student and keeping the panel current](images/StudentDetailPanelSequenceDiagram.png)
+![Opening a student and keeping the panel current](images/StudentDetailPanelSequenceDiagram.png?v=1.6)
 
 **Design choices**
 
@@ -577,7 +577,7 @@ several groups.
 Because `activeGroup` and `showingAllStudents` are observable and the panel listens to both, a typed
 `list grp/T10` reaches the same method, so the strip's selection follows the model rather than the last click.
 
-![Opening a tutorial group from the group strip](images/GroupStripNavigationSequenceDiagram.png)
+![Opening a tutorial group from the group strip](images/GroupStripNavigationSequenceDiagram.png?v=1.6)
 
 **Design choices**
 
@@ -598,7 +598,7 @@ The following sequence diagram shows suggestions for `list grp/T` and accepting 
 `FieldCompletion.suggest()` is static; completion edits the command text without executing the command.
 Text replacement preserves surrounding input and supports command-text undo.
 
-![Suggesting and accepting a tutorial-group field completion](images/FieldCompletionSequenceDiagram.png)
+![Suggesting and accepting a tutorial-group field completion](images/FieldCompletionSequenceDiagram.png?v=1.6)
 
 ### Commenting on a student
 
@@ -636,7 +636,7 @@ comment is applied by building a replacement immutable `Person` through `Person#
 
 The sequence below covers all three forms, from parsing through to the updated student.
 
-![Commenting on a student](images/CommentSequenceDiagram.png)
+![Commenting on a student](images/CommentSequenceDiagram.png?v=1.6)
 
 **Design choices**
 

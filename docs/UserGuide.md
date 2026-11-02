@@ -21,7 +21,7 @@ Roster is a **desktop application for NUS teaching assistants to manage students
 
 1. Open a terminal, `cd` to the folder containing the JAR file, and run `java -jar "roster.jar"`.<br>
    Use the terminal command even if double-clicking the JAR does not open it. A GUI similar to the one below should appear in a few seconds. Roster includes sample students in T09 on its first launch; the screenshot shows an example after attendance has been recorded.<br>
-   ![Roster user interface](images/Ui.png?v=1.5-final)
+   ![Roster user interface](images/Ui.png?v=1.6)
 
 1. Type a command in the command box and press Enter to execute it. For example, type **`help`** and press Enter to open the help window.
 
