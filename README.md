@@ -6,7 +6,7 @@
 
 ![Roster user interface](docs/images/Ui.png)
 
-> **Alpha testing:** Download `roster.jar` from the [latest release](https://github.com/AY2627S1-CS2103T-F12-4/tp/releases/latest) and follow the [User Guide](docs/UserGuide.md#quick-start).
+> **Try Roster:** Download `roster.jar` from the [latest release](https://github.com/AY2627S1-CS2103T-F12-4/tp/releases/latest) and follow the [User Guide](docs/UserGuide.md#quick-start).
 
 **Roster is a desktop application that helps teaching assistants manage students across multiple tutorial groups.**
 
@@ -30,7 +30,7 @@ Roster supports:
 - **Student search:** Find students by complete or partial name, exact matriculation number, tutorial group, or a combination of these filters.
 - **Attendance:** Record a student as present or absent for a tutorial session, while keeping unrecorded attendance distinct from confirmed absence.
 - **Comments:** Append, replace or clear a short comment for a student.
-- **Undo:** Reverse changes during the current application session.
+- **Undo and redo:** Reverse or reapply up to 15 recent changes, with history retained after restarting Roster.
 - **CSV export:** Export attendance for all students or a specified tutorial group to a new CSV file.
 
 Participation records and assignment-completion tracking are not implemented. Roster does not cover grading or communicating with students.

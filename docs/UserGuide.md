@@ -313,6 +313,11 @@ On success, Roster displays `Edited student:` followed by the updated student de
 If a group change removes attendance records, the confirmation also names the old and new groups,
 reports how many records were cleared, and reminds you to use `undo` to restore them.
 
+After any successful edit, Roster shows the full roster in matriculation-number order, clears the active group
+and removes any search filter. This also happens when the supplied values leave the student's details unchanged.
+Student indexes may change, so check the displayed list before using an index in another command.
+To continue working with one group, run `list grp/GROUP` again before using `mark all` or `delete all`.
+
 
 ### Listing students: `list`
 
