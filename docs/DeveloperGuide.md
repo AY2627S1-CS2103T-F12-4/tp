@@ -1195,6 +1195,111 @@ requirements and do not describe available commands. Priority records importance
 
       Use case ends.
 
+**Use case: UC15 - Delete every displayed student**
+
+**MSS**
+
+1.  TA <u>lists students (UC04)</u> or <u>finds students (UC05)</u>.
+2.  TA requests to delete every student in the displayed list.
+3.  Roster deletes those students together with their attendance records, and confirms how many were
+    deleted.
+
+    Use case ends.
+
+**Extensions**
+
+* 2a. The displayed list is empty.
+
+    * 2a1. Roster shows an error message and deletes nothing.
+
+      Use case ends.
+
+* 3a. TA wants the deleted students back.
+
+    * 3a1. TA <u>undoes the last change (UC11)</u>.
+
+      Use case ends.
+
+**Use case: UC16 - Complete a command field**
+
+**MSS**
+
+1.  TA begins typing a command in the command box.
+2.  Roster suggests completions for the fragment at the cursor.
+3.  TA selects a suggestion with Up/Down and inserts it with Tab, or clicks it.
+4.  Roster replaces only that fragment, leaving the rest of the command unchanged.
+
+    Steps 2-4 repeat for each field the TA completes.
+
+    Use case ends.
+
+**Extensions**
+
+* 2a. Nothing registered or supported matches what the TA typed.
+
+    * 2a1. Roster offers no suggestion.
+
+      Use case resumes at step 1.
+
+* 2b. The cursor is inside a quoted export path.
+
+    * 2b1. Roster offers no suggestion, so directory names are preserved.
+
+      Use case resumes at step 1.
+
+* 3a. TA presses Escape.
+
+    * 3a1. Roster dismisses the suggestions and leaves the command text unchanged.
+
+      Use case ends.
+
+* 3b. TA presses Shift+Tab.
+
+    * 3b1. Roster dismisses the suggestions and moves focus backwards, leaving the command text
+      unchanged.
+
+      Use case ends.
+
+* 3c. TA keeps typing instead of accepting a suggestion.
+
+      Use case resumes at step 2.
+
+* 4a. TA presses Enter.
+
+    * 4a1. Roster executes the command as it is currently typed.
+
+      Use case ends.
+
+**Use case: UC17 - Redo (Reapply an undone change)**
+
+**MSS**
+
+1.  TA <u>undoes the last change (UC11)</u>.
+2.  TA requests to reapply that change.
+3.  Roster restores its data to the state after the change, and names the command that was reapplied.
+
+    Use case ends.
+
+**Extensions**
+
+* 1a. TA runs a data-changing command before reapplying.
+
+    * 1a1. Roster discards the undone change, which can no longer be reapplied.
+
+      Use case ends.
+
+* 1b. TA runs a command that changes no data before reapplying.
+
+    * 1b1. Roster keeps the undone change available.
+
+      Use case resumes at step 2.
+
+* 2a. There is no undone change to reapply.
+
+    * 2a1. Roster shows an error message.
+
+      Use case ends.
+
 ### Non-Functional Requirements
 
 1. Compatibility: Roster should run on Windows, macOS, and Linux with Java 25 and the required JavaFX runtime, without requiring users to modify or compile its source code.
