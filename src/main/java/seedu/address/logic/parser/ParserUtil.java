@@ -94,7 +94,7 @@ public class ParserUtil {
     public static Email parseEmail(String email) throws ParseException {
         requireNonNull(email);
         String normalizedEmail = email.trim().toLowerCase(Locale.ROOT);
-        if (!Email.isValidEmail(normalizedEmail)) {
+        if (normalizedEmail.length() > Email.MAX_LENGTH || !Email.isValidEmail(normalizedEmail)) {
             throw new ParseException(Email.MESSAGE_CONSTRAINTS);
         }
         return new Email(normalizedEmail);
@@ -124,7 +124,7 @@ public class ParserUtil {
     public static Tag parseTag(String tag) throws ParseException {
         requireNonNull(tag);
         String trimmedTag = tag.trim();
-        if (!Tag.isValidTagName(trimmedTag)) {
+        if (trimmedTag.length() > Tag.MAX_LENGTH || !Tag.isValidTagName(trimmedTag)) {
             throw new ParseException(Tag.MESSAGE_CONSTRAINTS);
         }
         return new Tag(trimmedTag);
@@ -134,6 +134,8 @@ public class ParserUtil {
      * Parses {@code Collection<String> tags} into a {@code Set<Tag>}.
      * Tags that differ only in letter case are the same label, so only the spelling given first is kept.
      * Tags themselves stay case-sensitive, so changing a tag's case is still a real edit.
+     *
+     * @throws ParseException if any tag is invalid or there are more than {@link Tag#MAX_TAGS_PER_STUDENT} tags.
      */
     public static Set<Tag> parseTags(Collection<String> tags) throws ParseException {
         requireNonNull(tags);
@@ -144,6 +146,9 @@ public class ParserUtil {
             if (seenNames.add(tag.tagName.toLowerCase(Locale.ROOT))) {
                 tagSet.add(tag);
             }
+        }
+        if (tagSet.size() > Tag.MAX_TAGS_PER_STUDENT) {
+            throw new ParseException(Tag.MESSAGE_TOO_MANY_TAGS);
         }
         return tagSet;
     }

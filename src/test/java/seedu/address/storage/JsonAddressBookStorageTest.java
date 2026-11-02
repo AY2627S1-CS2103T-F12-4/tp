@@ -2,6 +2,7 @@ package seedu.address.storage;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static seedu.address.testutil.Assert.assertThrows;
 import static seedu.address.testutil.TypicalPersons.ALICE;
 import static seedu.address.testutil.TypicalPersons.HOON;
@@ -18,10 +19,12 @@ import org.junit.jupiter.api.io.TempDir;
 import seedu.address.commons.exceptions.DataLoadingException;
 import seedu.address.model.AddressBook;
 import seedu.address.model.ReadOnlyAddressBook;
+import seedu.address.model.person.Email;
 import seedu.address.model.person.Group;
 import seedu.address.model.session.Session;
 import seedu.address.model.session.SessionDate;
 import seedu.address.model.session.Week;
+import seedu.address.model.tag.Tag;
 
 public class JsonAddressBookStorageTest {
     private static final Path TEST_DATA_FOLDER = Paths.get("src", "test", "data", "JsonAddressBookStorageTest");
@@ -62,6 +65,24 @@ public class JsonAddressBookStorageTest {
     @Test
     public void readAddressBook_invalidAndValidPersonAddressBook_throwDataLoadingException() {
         assertThrows(DataLoadingException.class, () -> readAddressBook("invalidAndValidPersonAddressBook.json"));
+    }
+
+    @Test
+    public void readAddressBook_tagLongerThanMaxLength_loadsAllStudents() throws Exception {
+        // Saved by v1.5, before tags had a length limit
+        ReadOnlyAddressBook addressBook = readAddressBook("longTagAddressBook.json").get();
+        assertEquals(2, addressBook.getPersonList().size());
+        assertTrue(addressBook.getPersonList().stream().flatMap(person -> person.getTags().stream())
+                .anyMatch(tag -> tag.tagName.length() > Tag.MAX_LENGTH));
+    }
+
+    @Test
+    public void readAddressBook_emailLongerThanMaxLength_loadsAllStudents() throws Exception {
+        // Saved by v1.5, before emails had a length limit
+        ReadOnlyAddressBook addressBook = readAddressBook("longEmailAddressBook.json").get();
+        assertEquals(2, addressBook.getPersonList().size());
+        assertTrue(addressBook.getPersonList().stream()
+                .anyMatch(person -> person.getEmail().value.length() > Email.MAX_LENGTH));
     }
 
     @Test

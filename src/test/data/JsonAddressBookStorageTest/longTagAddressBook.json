@@ -1,0 +1,25 @@
+{
+  "groups": [
+    "T09"
+  ],
+  "persons": [
+    {
+      "name": "Alice Tan",
+      "email": "alice@example.com",
+      "matric": "A0000001A",
+      "group": "T09",
+      "tags": [
+        "exchange"
+      ]
+    },
+    {
+      "name": "Ben Lim",
+      "email": "ben@example.com",
+      "matric": "A0000002B",
+      "group": "T09",
+      "tags": [
+        "consultation-requested-week-five"
+      ]
+    }
+  ]
+}
