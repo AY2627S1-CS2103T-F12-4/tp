@@ -1,0 +1,49 @@
+@startuml
+skin rose
+skinparam ActivityFontSize 15
+skinparam ArrowFontSize 12
+skinparam Shadowing false
+
+start
+:Parse the name, email, matriculation number,
+tutorial group and any tags;
+if () then ([a prefix is unsupported, missing or repeated])
+    :Report a parsing error;
+    stop
+else ([arguments are valid])
+endif
+
+:Create an immutable student;
+
+if () then ([tutorial group is not registered])
+    :Report an unknown group;
+    stop
+else ([tutorial group is registered])
+endif
+
+if () then ([matriculation number belongs to an existing student])
+    :Report a duplicate student;
+    stop
+else ([matriculation number is unique])
+endif
+
+if () then ([email belongs to an existing student])
+    :Report a duplicate email;
+    stop
+else ([email is unique])
+endif
+
+:Insert the student into the full roster;
+
+if () then ([the displayed list excludes the new student])
+    :Show the student's tutorial group,
+    ordered by matriculation number;
+    :Report the student and the group now shown;
+else ([the displayed list already includes them])
+    :Report the student;
+endif
+
+:Commit and save through
+the command lifecycle;
+stop
+@enduml

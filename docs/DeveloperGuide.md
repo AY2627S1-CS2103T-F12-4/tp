@@ -270,6 +270,27 @@ replacement `Attendance`, and its present or absent status is copied unchanged.
 retaining marks. Moving attendance to a different teaching week or group would be a separate operation
 with different meaning; these commands do not silently transfer it.
 
+### Adding a student
+
+`add n/NAME e/EMAIL m/MATRIC grp/GROUP [t/TAG]...` takes no index, so unlike `edit` it never resolves a
+position in the displayed list. `AddCommandParser` rejects any unsupported prefix through
+`PrefixValidator#verifySupportedPrefixes`, requires all four mandatory prefixes with an empty preamble, and
+rejects a repeated `n/`, `e/`, `m/` or `grp/`. Tags are optional and may be repeated.
+
+Execution validates in a fixed order, and every check rejects before the roster changes: the tutorial group
+must already be registered, the matriculation number must not belong to an existing student, and neither must
+the email. `Model#hasPerson` compares students by matriculation number alone, so that check is the identity
+check and the email check is separate.
+
+The student is then inserted into the complete roster rather than into the displayed list, which may be
+filtered to another group or to a search. If the displayed list does not contain the new student,
+`Model#showGroup` switches to their tutorial group so they are not added out of sight. That is why `add` has
+two success messages: one reports the student, and one also names the group that was shown.
+[Showing a newly added student](#showing-a-newly-added-student) covers what the UI does next, and the
+[command execution activity diagram](#undo-and-redo-feature) covers the shared save-failure rollback.
+
+![Adding a student, including validation and the view switch](images/AddStudentActivityDiagram.png?v=1.6)
+
 ### Editing a student
 
 `edit INDEX [n/NAME] [e/EMAIL] [m/MATRIC] [grp/GROUP] [t/TAG]...` resolves `INDEX` against the
