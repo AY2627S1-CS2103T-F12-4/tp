@@ -16,7 +16,7 @@ title: Developer Guide
 
 **Notable uses of AI**
 
-OpenAI Codex/Claude Code was used extensively during development, including:
+OpenAI Codex/Anthropic Claude Code was used extensively during development, including:
 
 * Generating and modifying implementation code and automated tests.
 * Investigating bugs, refactoring code and improving code quality.
