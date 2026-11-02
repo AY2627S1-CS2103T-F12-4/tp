@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Optional;
 
+import seedu.address.commons.core.GuiSettings;
 import seedu.address.commons.exceptions.DataLoadingException;
 import seedu.address.commons.util.JsonUtil;
 import seedu.address.model.ReadOnlyUserPrefs;
@@ -40,7 +41,11 @@ public class JsonUserPrefsStorage {
      * @throws DataLoadingException if the file format is not as expected.
      */
     public Optional<UserPrefs> readUserPrefs(Path prefsFilePath) throws DataLoadingException {
-        return JsonUtil.readJsonFile(prefsFilePath, UserPrefs.class);
+        Optional<UserPrefs> prefs = JsonUtil.readJsonFile(prefsFilePath, UserPrefs.class);
+        // A null in a hand-edited file skips the setter's check, which would stop Roster from starting
+        prefs.filter(userPrefs -> userPrefs.getGuiSettings() == null)
+                .ifPresent(userPrefs -> userPrefs.setGuiSettings(new GuiSettings()));
+        return prefs;
     }
 
     /**

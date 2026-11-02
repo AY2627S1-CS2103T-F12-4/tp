@@ -268,9 +268,13 @@ public class MainWindow extends UiPart<Stage> {
     }
 
     /**
-     * Sets the default size based on {@code guiSettings}.
+     * Sets the default size based on {@code savedSettings}, or the default settings if the saved size is unusable.
      */
-    private void setWindowDefaultSize(GuiSettings guiSettings) {
+    private void setWindowDefaultSize(GuiSettings savedSettings) {
+        // A hand-edited preferences file may hold a size that JavaFX rejects, which would stop Roster from starting
+        boolean hasUsableSize = savedSettings.getWindowWidth() >= 0 && savedSettings.getWindowHeight() >= 0
+                && Double.isFinite(savedSettings.getWindowWidth()) && Double.isFinite(savedSettings.getWindowHeight());
+        GuiSettings guiSettings = hasUsableSize ? savedSettings : new GuiSettings();
         primaryStage.setHeight(guiSettings.getWindowHeight());
         primaryStage.setWidth(guiSettings.getWindowWidth());
         Point coordinates = guiSettings.getWindowCoordinates();
