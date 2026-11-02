@@ -90,7 +90,7 @@ use [undo](#undoing-the-previous-change-undo) while that change remains in the r
 
 * A prefix marks the start of a parameter. Values containing `/` are accepted where explicitly supported, such as relationship abbreviations in names and CSV file paths.
 
-* Commands such as `init`, `session`, `edit` and `mark` accept spaces, tabs or copied horizontal whitespace such as non-breaking spaces between fields and around parameter values. Whitespace inside values follows that field's rules. Commands must stay on one line, except for `find`, which also accepts line breaks.
+* Commands such as `init`, `session`, `edit` and `mark` accept spaces, tabs or copied horizontal whitespace such as non-breaking spaces between fields and around parameter values. Whitespace inside values follows that field's rules. The command box is single-line: pasted line breaks and tabs become ordinary spaces, preserving word boundaries. Pasting does not run a command; press Enter to execute it.
 
 * Unless a command states otherwise, each parameter may appear only once.
 
