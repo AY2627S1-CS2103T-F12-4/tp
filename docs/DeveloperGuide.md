@@ -243,9 +243,31 @@ Undo restores the session and attendance together. A failed save restores the pr
 committing history. Existing observable lists refresh the attendance strips; no storage schema change
 or migration is needed. Field completion offers the new commands, their prefixes and registered groups.
 
+The sequence below shows a date change, including the two cases where it is rejected. Students are read
+from the complete roster rather than the displayed list; only students with an existing mark receive a
+replacement `Attendance`, and its present or absent status is copied unchanged.
+
+![Editing a session date while preserving attendance](images/EditSessionSequenceDiagram.png)
+
 **Design choice:** keep group/week as a stable session identity. Rescheduling changes the date while
 retaining marks. Moving attendance to a different teaching week or group would be a separate operation
 with different meaning; these commands do not silently transfer it.
+
+### Editing a student
+
+`edit INDEX [n/NAME] [e/EMAIL] [m/MATRIC] [grp/GROUP] [t/TAG]...` resolves `INDEX` against the
+displayed student list, but validates uniqueness against the complete roster. The command builds a new
+immutable `Person`, checks that its tutorial group is registered and rejects a matriculation number or
+email belonging to another student before replacing the original.
+
+Attendance is preserved when the student remains in the same tutorial group. Moving the student to a
+different group clears every attendance record because those records belong to sessions in the old group.
+After a successful edit, the full student list is restored and sorted by matriculation number, so the edited
+student may move to a different displayed position. `CommandResult` identifies that student for the UI to
+highlight it again. The normal save-and-commit path makes the complete edit, including cleared attendance,
+one undoable change.
+
+![Editing a student, including validation and group changes](images/EditStudentActivityDiagram.png)
 
 ### Filtered student search
 
