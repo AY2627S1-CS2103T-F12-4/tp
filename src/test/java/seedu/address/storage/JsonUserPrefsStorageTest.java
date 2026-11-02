@@ -63,6 +63,14 @@ public class JsonUserPrefsStorageTest {
     }
 
     @Test
+    public void readUserPrefs_nullGuiSettings_defaultValuesUsed() throws DataLoadingException {
+        UserPrefs actual = readUserPrefs("NullGuiSettingsUserPrefs.json").get();
+        assertEquals(new UserPrefs(), actual);
+        // Copying the preferences is what first failed when the settings were null
+        assertEquals(new UserPrefs(), new UserPrefs(actual));
+    }
+
+    @Test
     public void readUserPrefs_extraValuesInFile_extraValuesIgnored() throws DataLoadingException {
         UserPrefs expected = getTypicalUserPrefs();
         UserPrefs actual = readUserPrefs("ExtraValuesUserPref.json").get();

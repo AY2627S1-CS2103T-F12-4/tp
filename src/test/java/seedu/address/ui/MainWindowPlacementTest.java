@@ -52,6 +52,24 @@ public class MainWindowPlacementTest {
         assertTrue(WindowPlacement.isReachable(window, screens), "The window should open where it can be reached");
     }
 
+    @Test
+    public void constructor_negativeSavedSize_opensWindowAtDefaultSize() throws Exception {
+        // Width and height are checked separately, so each is made invalid on its own
+        assertDefaultSize(openWindowAt(new GuiSettings(-500, 600, 10, 10)));
+        assertDefaultSize(openWindowAt(new GuiSettings(800, -500, 10, 10)));
+    }
+
+    @Test
+    public void constructor_infiniteSavedSize_opensWindowAtDefaultSize() throws Exception {
+        assertDefaultSize(openWindowAt(new GuiSettings(Double.POSITIVE_INFINITY, 600, 10, 10)));
+        assertDefaultSize(openWindowAt(new GuiSettings(800, Double.POSITIVE_INFINITY, 10, 10)));
+    }
+
+    private static void assertDefaultSize(Rectangle2D window) {
+        assertEquals(new GuiSettings().getWindowWidth(), window.getWidth());
+        assertEquals(new GuiSettings().getWindowHeight(), window.getHeight());
+    }
+
     /** Creates the main window with {@code guiSettings} and returns where it is placed. */
     private Rectangle2D openWindowAt(GuiSettings guiSettings) throws Exception {
         UserPrefs userPrefs = new UserPrefs();
