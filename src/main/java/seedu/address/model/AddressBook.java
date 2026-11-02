@@ -3,6 +3,7 @@ package seedu.address.model;
 import static java.util.Objects.requireNonNull;
 import static seedu.address.commons.util.CollectionUtil.requireAllNonNull;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -54,13 +55,15 @@ public class AddressBook implements ReadOnlyAddressBook {
     }
 
     /**
-     * Replaces the registered tutorial groups.
+     * Replaces the registered tutorial groups after copying and validating the replacement.
+     * {@code groups} must not contain null or duplicate groups. Invalid input leaves existing groups unchanged.
      */
     public void setGroups(List<Group> groups) {
-        this.groups.clear();
-        for (Group group : groups) {
-            addGroup(group);
+        List<Group> replacement = List.copyOf(groups);
+        if (new HashSet<>(replacement).size() != replacement.size()) {
+            throw new DuplicateGroupException();
         }
+        this.groups.setAll(replacement);
     }
 
     /**

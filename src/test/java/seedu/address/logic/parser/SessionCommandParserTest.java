@@ -7,6 +7,8 @@ import static seedu.address.logic.parser.CliSyntax.PREFIX_WEEK;
 import static seedu.address.logic.parser.CommandParserTestUtil.assertParseFailure;
 import static seedu.address.logic.parser.CommandParserTestUtil.assertParseSuccess;
 
+import java.util.List;
+
 import org.junit.jupiter.api.Test;
 
 import seedu.address.logic.Messages;
@@ -57,6 +59,22 @@ public class SessionCommandParserTest {
     @Test
     public void parse_nonEmptyPreamble_failure() {
         assertParseFailure(parser, "unexpected grp/T09 w/5 d/2026-09-15",
-                String.format(MESSAGE_INVALID_COMMAND_FORMAT, SessionCommand.MESSAGE_USAGE));
+                "Unexpected text 'unexpected' before the parameters. Remove it.\n" + SessionCommand.MESSAGE_USAGE);
+    }
+
+    @Test
+    public void parse_unsupportedPrefix_identifiesParameter() {
+        for (String input : List.of(" grp/T09 w/5 d/2026-09-15 n/Alice",
+                " n/Alice grp/T09 w/5 d/2026-09-15", " grp/T09 n/Alice w/5 d/2026-09-15",
+                " grp/T09 w/5 d/2026-09-15\tn/Alice", " grp/T09 w/5 d/2026-09-15\u00a0n/Alice")) {
+            assertParseFailure(parser, input, "Unsupported parameter 'n/'. Remove it.\n"
+                    + SessionCommand.MESSAGE_USAGE);
+        }
+    }
+
+    @Test
+    public void parse_extraText_identifiesUnexpectedText() {
+        assertParseFailure(parser, " grp/T09 w/5 d/2026-09-15 extra",
+                "Unexpected text 'extra' after d/. Remove it.\n" + SessionCommand.MESSAGE_USAGE);
     }
 }

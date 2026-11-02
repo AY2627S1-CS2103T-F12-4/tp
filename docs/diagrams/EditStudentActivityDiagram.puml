@@ -49,7 +49,13 @@ endif
 
 :Replace the student in the full roster;
 :Show all students, ordered by matriculation number;
-:Save Roster and record the change for undo;
+if () then ([roster data changed])
+    :Commit and save through
+    the command lifecycle;
+else ([roster data unchanged])
+    :Preserve undo/redo history
+    without saving;
+endif
 if () then ([clearedRecordCount > 0])
     :Report the old and new groups
     and number of cleared attendance records;

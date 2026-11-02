@@ -12,7 +12,7 @@ import seedu.address.model.session.Session;
 public class EditSessionCommandParser implements Parser<EditSessionCommand> {
     @Override
     public EditSessionCommand parse(String args) throws ParseException {
-        ArgumentMultimap arguments = SessionArgumentsParser.parse(args, EditSessionCommand.MESSAGE_USAGE,
+        ArgumentMultimap arguments = SingleValueArgumentsParser.parse(args, EditSessionCommand.MESSAGE_USAGE,
                 PREFIX_GROUP, PREFIX_WEEK, PREFIX_DATE);
         return new EditSessionCommand(new Session(ParserUtil.parseGroup(arguments.getValue(PREFIX_GROUP).orElseThrow()),
                 ParserUtil.parseWeek(arguments.getValue(PREFIX_WEEK).orElseThrow()),
