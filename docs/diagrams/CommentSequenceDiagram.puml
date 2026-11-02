@@ -15,10 +15,16 @@ participant "p:Person" as Person MODEL_COLOR
 participant "existing:Comment" as Existing MODEL_COLOR
 end box
 
-[-> LogicManager : execute("comment 3 c/asks good questions")
+[-> LogicManager : execute(commandText)
 activate LogicManager
 
-LogicManager -> Parser : parse("3 c/asks good questions")
+note right of LogicManager
+  commandText is comment INDEX c/COMMENT to append, comment
+  INDEX c-/COMMENT to replace, or comment INDEX c-/ on its
+  own to clear.
+end note
+
+LogicManager -> Parser : parse(arguments)
 activate Parser
 
 note right of Parser
@@ -28,19 +34,31 @@ note right of Parser
   neither of them, or c/ with no text to add.
 end note
 
-Parser -> Parser : ParserUtil.parseComment(text)
-activate Parser
-note right of Parser
-  Comment.isValidComment rejects text longer than MAX_LENGTH
-  or holding control characters, so the comment c carries is
-  already within the limit. An empty c-/ becomes Comment.EMPTY,
-  which is the clear.
-end note
-Parser --> Parser : comment
-deactivate Parser
+alt c/COMMENT or c-/COMMENT, the tutor typed text
+  Parser -> Parser : ParserUtil.parseComment(text)
+  activate Parser
+  note right of Parser
+    Comment.isValidComment rejects text longer than MAX_LENGTH
+    or holding control characters, so the comment c carries is
+    already within the limit however it was typed.
+  end note
+  Parser --> Parser : comment
+  deactivate Parser
+
+else c-/ on its own, the clear
+  note right of Parser
+    The comment is Comment.EMPTY. parseComment is not called,
+    because the empty comment is not valid text to parse.
+  end note
+end
 
 Parser --> LogicManager : c
 deactivate Parser
+
+note right of LogicManager
+  c holds the index, the comment and isReplacing, which is
+  false for c/ and true for both forms of c-/.
+end note
 
 LogicManager -> CommentCommand : execute(m)
 activate CommentCommand
@@ -58,9 +76,9 @@ end note
 
 alt isReplacing, from c-/
   note right of CommentCommand
-    The comment is used as it stands. Its length was
-    settled when it was parsed, so nothing can push a
-    replacement over the limit.
+    newComment is the comment c carries, used as it stands.
+    Its length was settled when it was parsed, so nothing
+    can push a replacement over the limit.
   end note
 
 else appending, from c/
@@ -74,23 +92,22 @@ else appending, from c/
   Existing --> CommentCommand : combinedLength
   deactivate Existing
 
-  opt combinedLength > Comment.MAX_LENGTH
+  break combinedLength > Comment.MAX_LENGTH
     CommentCommand --> LogicManager : throws CommandException
     note right of CommentCommand
       Two comments that are each within the limit can exceed
       it once joined, which is why appending is checked again
-      here. The student keeps their current comment and
-      nothing below this point runs.
+      here. The student keeps their current comment.
     end note
   end
 
   CommentCommand -> Existing : append(comment)
   activate Existing
-  Existing --> CommentCommand : updatedComment
+  Existing --> CommentCommand : newComment
   deactivate Existing
 end
 
-CommentCommand -> Person : withComment(updatedComment)
+CommentCommand -> Person : withComment(newComment)
 activate Person
 Person --> CommentCommand : updated
 deactivate Person

@@ -427,15 +427,17 @@ separator itself is never shown as part of a note.
 That limit counts what `String.length()` returns, which is UTF-16 code units rather than characters as a reader
 would count them. A character outside the Basic Multilingual Plane is stored as a surrogate pair and so costs two:
 a comment made only of 😀 is rejected at 251 of them, not 500. An emoji assembled from several code points costs
-two for each, so 👍🏽 costs four and the 👨‍👩‍👧 sequence costs eight. `Comment.normalize` collapses whitespace and
-nothing else — it never applies `java.text.Normalizer` — so `café` costs four written with a precomposed `é` and
-five written as `e` followed by a combining acute. Only ISO control characters are rejected, and a zero-width
-joiner is a format character rather than a control, so every one of these is accepted up to the limit.
+the sum of its parts, two for each code point outside that plane and one for each inside it: 👍🏽 is two
+supplementary code points and costs four, while 👨‍👩‍👧 is three of them joined by two zero-width joiners and
+costs eight. `Comment.normalize` collapses whitespace and nothing else — it never applies
+`java.text.Normalizer` — so `café` costs four written with a precomposed `é` and five written as `e` followed by
+a combining acute. Only ISO control characters are rejected, and a zero-width joiner is a format character rather
+than a control, so every one of these is accepted up to the limit.
 
 `CommentCommandParser` turns the three forms above into a `CommentCommand`, rejecting a bad index, both comment
-prefixes at once, neither of them, and `c/` with no text. It builds the `Comment` through
-`ParserUtil#parseComment`, so the text the tutor typed has already passed the length and control-character checks
-by the time the command exists; an empty `c-/` becomes `Comment.EMPTY`, which is the clear.
+prefixes at once, neither of them, and `c/` with no text. Whenever the tutor typed text, it builds the `Comment`
+through `ParserUtil#parseComment`, so that text has already passed the length and control-character checks by the
+time the command exists. An empty `c-/` skips that call and becomes `Comment.EMPTY`, which is the clear.
 
 `CommentCommand` then resolves the index against the displayed student list. A replacement is applied as it
 stands, since its length was settled during parsing. An append instead reads the existing comment and asks it for
