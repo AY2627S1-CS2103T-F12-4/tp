@@ -86,8 +86,7 @@ public class MarkCommand extends Command {
 
         // The displayed list is left as it is, so that the indexes the TA sees do not change
         model.setPerson(personToMark, markedPerson);
-        logger.fine("Marked " + markedPerson.getMatric() + " as " + status + " for " + group + " week " + week
-                + previousAttendance.map(previous -> " (was " + previous.getStatus() + ")").orElse(""));
+        logger.fine("Updated attendance for one student in " + group + " week " + week);
 
         return new CommandResult(generateSuccessMessage(markedPerson, previousAttendance));
     }

@@ -76,8 +76,7 @@ public class CommentCommand extends Command {
 
         // The displayed list is left as it is, so that the indexes the TA sees do not change.
         model.setPerson(personToComment, personToComment.withComment(updatedComment));
-        logger.fine((isClearing() ? "Cleared the comment of " : "Updated the comment of ")
-                + personToComment.getMatric());
+        logger.fine(isClearing() ? "Cleared a student's comment." : "Updated a student's comment.");
 
         return new CommandResult(successMessage(name, updatedComment));
     }

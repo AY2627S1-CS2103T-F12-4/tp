@@ -1,0 +1,88 @@
+@startuml
+!include style.puml
+skinparam ArrowFontStyle plain
+
+box Logic LOGIC_COLOR_T1
+participant ":LogicManager" as LogicManager LOGIC_COLOR
+participant "c:EditSessionCommand" as EditSessionCommand LOGIC_COLOR
+end box
+
+box Model MODEL_COLOR_T1
+participant "m:Model" as Model MODEL_COLOR
+participant "ab:AddressBook" as AddressBook MODEL_COLOR
+participant "sessions:UniqueSessionList" as Sessions MODEL_COLOR
+participant "persons:UniquePersonList" as Persons MODEL_COLOR
+participant "p:Person" as Person MODEL_COLOR
+end box
+
+note over LogicManager, EditSessionCommand
+  Parsing is omitted. EditSessionCommandParser has already built c
+  with the requested group, week and replacement date.
+end note
+
+[-> LogicManager : execute("editsession grp/T09 w/5 d/2026-09-16")
+activate LogicManager
+
+LogicManager -> EditSessionCommand : execute(m)
+activate EditSessionCommand
+
+EditSessionCommand -> Model : findSession(T09, week 5)
+activate Model
+Model --> EditSessionCommand : original
+deactivate Model
+
+alt session not found
+    EditSessionCommand --> LogicManager : throws CommandException
+else replacement date equals original date
+    EditSessionCommand --> LogicManager : throws CommandException
+else date changed
+    EditSessionCommand -> Model : setSession(original, editedSession)
+    activate Model
+    Model -> AddressBook : setSession(original, editedSession)
+    activate AddressBook
+
+    loop each student in the complete roster
+        AddressBook -> Person : getAttendance(original)
+        activate Person
+        Person --> AddressBook : attendance, if marked
+        deactivate Person
+
+        opt student has attendance for the session
+            AddressBook -> Person : withAttendance(Attendance(editedSession, original status))
+            activate Person
+            Person --> AddressBook : updated student
+            deactivate Person
+        end
+    end
+
+    AddressBook -> Sessions : setSession(original, editedSession)
+    activate Sessions
+    Sessions --> AddressBook
+    deactivate Sessions
+
+    AddressBook -> Persons : setPersons(updated students)
+    activate Persons
+    Persons --> AddressBook
+    deactivate Persons
+    note right of AddressBook
+      Marked students keep their present/absent status.
+      Unmarked students remain unmarked.
+    end note
+
+    AddressBook --> Model
+    deactivate AddressBook
+    Model --> EditSessionCommand
+    deactivate Model
+
+    EditSessionCommand --> LogicManager : CommandResult
+
+    ref over LogicManager, Model
+      Commit one undo step and save the roster
+      (see Architecture sequence)
+    end ref
+end
+deactivate EditSessionCommand
+
+[<-- LogicManager
+deactivate LogicManager
+@enduml

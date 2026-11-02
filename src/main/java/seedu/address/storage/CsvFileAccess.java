@@ -8,7 +8,6 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.LinkOption;
 import java.nio.file.Path;
-import java.util.Locale;
 
 /**
  * Restricts CSV operations to ordinary files inside the application's home folder.
@@ -16,10 +15,12 @@ import java.util.Locale;
 public class CsvFileAccess {
     public static final String MESSAGE_OUTSIDE_HOME = "CSV files must be inside the folder containing Roster's JAR.";
     public static final String MESSAGE_SYMLINK = "CSV paths must not contain symbolic links.";
-    public static final String MESSAGE_INVALID_PATH = "Provide a valid CSV file path ending in .csv.";
 
     private final Path home;
 
+    /**
+     * Creates an access policy rooted at the application's home folder.
+     */
     public CsvFileAccess() {
         this(applicationHome(CsvFileAccess.class.getProtectionDomain().getCodeSource().getLocation()));
     }
@@ -29,13 +30,6 @@ public class CsvFileAccess {
      */
     public CsvFileAccess(Path home) {
         this.home = requireNonNull(home).toAbsolutePath().normalize();
-    }
-
-    /** Returns whether a path has a CSV filename, ignoring the extension's letter case. */
-    public static boolean isCsvPath(Path path) {
-        requireNonNull(path);
-        return path.getFileName() != null
-                && path.getFileName().toString().toLowerCase(Locale.ROOT).endsWith(".csv");
     }
 
     /**

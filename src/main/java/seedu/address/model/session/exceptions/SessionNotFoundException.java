@@ -2,6 +2,9 @@ package seedu.address.model.session.exceptions;
 
 /** Signals that the requested session is not present in the session list. */
 public class SessionNotFoundException extends RuntimeException {
+    /**
+     * Creates an exception describing a missing tutorial session.
+     */
     public SessionNotFoundException() {
         super("The requested tutorial session does not exist");
     }
