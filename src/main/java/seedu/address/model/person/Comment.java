@@ -12,6 +12,13 @@ public class Comment {
     /** The absent comment, so that a Student never holds a null one. */
     public static final Comment EMPTY = new Comment();
 
+    /**
+     * The longest a comment may be, counted in {@code String} units rather than in characters as a
+     * reader would count them. A character outside the Basic Multilingual Plane is a surrogate pair
+     * and so costs two, which makes a comment of single-code-point emoji such as U+1F600 full at
+     * half this number. An emoji built from several code points costs the sum of its parts, so one
+     * joined by zero-width joiners can consume four units or more on its own.
+     */
     public static final int MAX_LENGTH = 500;
 
     public static final String SEPARATOR = "; ";
