@@ -10,9 +10,9 @@ import java.util.stream.Stream;
 
 import seedu.address.logic.parser.exceptions.ParseException;
 
-/** Parses the single-token fields shared by session editing and deletion. */
-final class SessionArgumentsParser {
-    private SessionArgumentsParser() {}
+/** Parses single-token fields shared by tutorial-group and session commands. */
+final class SingleValueArgumentsParser {
+    private SingleValueArgumentsParser() {}
 
     /** Rejects unsupported parameters and extra text before parsing individual field values. */
     static ArgumentMultimap parse(String args, String usage, Prefix... requiredPrefixes) throws ParseException {

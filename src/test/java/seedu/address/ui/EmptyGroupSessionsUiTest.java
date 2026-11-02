@@ -132,11 +132,11 @@ public class EmptyGroupSessionsUiTest {
         }
     }
 
-    private static void assertStudentColumnsVisible(Stage stage, boolean expected) {
+    private static void assertStudentColumnsVisible(Stage stage, boolean shouldBeVisible) {
         var columns = stage.getScene().lookup("#studentColumns");
         assertNotNull(columns);
-        assertEquals(expected, columns.isVisible());
-        assertEquals(expected, columns.isManaged(), "Hidden student headings must not leave an empty row");
+        assertEquals(shouldBeVisible, columns.isVisible());
+        assertEquals(shouldBeVisible, columns.isManaged(), "Hidden student headings must not leave an empty row");
     }
 
     private static Label summary(Stage stage) {

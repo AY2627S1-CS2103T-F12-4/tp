@@ -9,6 +9,8 @@ import static seedu.address.testutil.TypicalPersons.ALICE;
 import static seedu.address.testutil.TypicalPersons.getTypicalAddressBook;
 import static seedu.address.testutil.TypicalSessions.T09_WEEK_1;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -110,6 +112,56 @@ public class AddressBookTest {
 
         assertThrows(DuplicateGroupException.class, () ->
                 addressBook.addGroup(new Group("T09")));
+    }
+
+    @Test
+    public void setGroups_nullList_preservesGroups() {
+        addressBook.addGroup(new Group("T09"));
+
+        assertThrows(NullPointerException.class, () -> addressBook.setGroups(null));
+        assertEquals(List.of(new Group("T09")), addressBook.getGroupList());
+    }
+
+    @Test
+    public void setGroups_nullElement_preservesGroups() {
+        addressBook.addGroup(new Group("T09"));
+
+        assertThrows(NullPointerException.class, () ->
+                addressBook.setGroups(Arrays.asList(new Group("T10"), null)));
+        assertEquals(List.of(new Group("T09")), addressBook.getGroupList());
+    }
+
+    @Test
+    public void setGroups_duplicateGroups_preservesGroups() {
+        addressBook.addGroup(new Group("T09"));
+
+        assertThrows(DuplicateGroupException.class, () ->
+                addressBook.setGroups(List.of(new Group("T10"), new Group("T10"))));
+        assertEquals(List.of(new Group("T09")), addressBook.getGroupList());
+    }
+
+    @Test
+    public void setGroups_ownView_preservesGroups() {
+        addressBook.addGroup(new Group("T09"));
+        addressBook.addGroup(new Group("T10"));
+
+        addressBook.setGroups(addressBook.getGroupList());
+
+        assertEquals(List.of(new Group("T09"), new Group("T10")), addressBook.getGroupList());
+    }
+
+    @Test
+    public void setGroups_validReplacement_updatesExistingViewAndCopiesInput() {
+        addressBook.addGroup(new Group("T09"));
+        ObservableList<Group> view = addressBook.getGroupList();
+        List<Group> replacement = new ArrayList<>(List.of(new Group("T11"), new Group("T10")));
+
+        addressBook.setGroups(replacement);
+        replacement.clear();
+
+        assertEquals(List.of(new Group("T11"), new Group("T10")), view);
+        addressBook.setGroups(List.of());
+        assertTrue(view.isEmpty());
     }
 
     @Test

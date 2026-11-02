@@ -10,7 +10,7 @@ import seedu.address.logic.parser.exceptions.ParseException;
 public class DeleteSessionCommandParser implements Parser<DeleteSessionCommand> {
     @Override
     public DeleteSessionCommand parse(String args) throws ParseException {
-        ArgumentMultimap arguments = SessionArgumentsParser.parse(args, DeleteSessionCommand.MESSAGE_USAGE,
+        ArgumentMultimap arguments = SingleValueArgumentsParser.parse(args, DeleteSessionCommand.MESSAGE_USAGE,
                 PREFIX_GROUP, PREFIX_WEEK);
         return new DeleteSessionCommand(ParserUtil.parseGroup(arguments.getValue(PREFIX_GROUP).orElseThrow()),
                 ParserUtil.parseWeek(arguments.getValue(PREFIX_WEEK).orElseThrow()));

@@ -281,8 +281,9 @@ Attendance is preserved when the student remains in the same tutorial group. Mov
 different group clears every attendance record because those records belong to sessions in the old group.
 After a successful edit, the full student list is restored and sorted by matriculation number, so the edited
 student may move to a different displayed position. `CommandResult` identifies that student for the UI to
-highlight it again. The normal save-and-commit path makes the complete edit, including cleared attendance,
-one undoable change.
+highlight it again. If roster data changed, the normal commit-and-save path makes the complete edit, including
+cleared attendance, one undoable change. An unchanged edit preserves undo/redo history without saving.
+The [command execution activity diagram](#undo-and-redo-feature) covers the shared save-failure rollback.
 
 ![Editing a student, including validation and group changes](images/EditStudentActivityDiagram.png)
 
