@@ -4,6 +4,7 @@ import static seedu.address.logic.Messages.MESSAGE_INVALID_COMMAND_FORMAT;
 import static seedu.address.logic.parser.CliSyntax.KEYWORD_ALL;
 
 import seedu.address.commons.core.index.Index;
+import seedu.address.commons.util.StringUtil;
 import seedu.address.logic.commands.Command;
 import seedu.address.logic.commands.DeleteAllCommand;
 import seedu.address.logic.commands.DeleteCommand;
@@ -22,7 +23,7 @@ public class DeleteCommandParser implements Parser<Command> {
      */
     public Command parse(String args) throws ParseException {
         // Letter case is ignored, as it is for statuses and group codes
-        if (args.trim().equalsIgnoreCase(KEYWORD_ALL)) {
+        if (StringUtil.stripWhitespace(args).equalsIgnoreCase(KEYWORD_ALL)) {
             return new DeleteAllCommand();
         }
         try {

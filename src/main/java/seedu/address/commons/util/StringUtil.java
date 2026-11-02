@@ -22,6 +22,14 @@ public class StringUtil {
     }
 
     /**
+     * Removes surrounding Unicode whitespace without changing whitespace inside the value.
+     */
+    public static String stripWhitespace(String value) {
+        requireNonNull(value);
+        return value.replaceAll("(?U)^\\s+|\\s+$", "");
+    }
+
+    /**
      * Returns true if the {@code sentence} contains the {@code word}.
      *   Ignores case, but a full word match is required.
      *   <br>examples:<pre>
