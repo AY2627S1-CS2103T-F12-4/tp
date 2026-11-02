@@ -94,7 +94,7 @@ public class ParserUtil {
     public static Email parseEmail(String email) throws ParseException {
         requireNonNull(email);
         String normalizedEmail = email.trim().toLowerCase(Locale.ROOT);
-        if (!Email.isValidEmail(normalizedEmail)) {
+        if (normalizedEmail.length() > Email.MAX_LENGTH || !Email.isValidEmail(normalizedEmail)) {
             throw new ParseException(Email.MESSAGE_CONSTRAINTS);
         }
         return new Email(normalizedEmail);
@@ -124,7 +124,7 @@ public class ParserUtil {
     public static Tag parseTag(String tag) throws ParseException {
         requireNonNull(tag);
         String trimmedTag = tag.trim();
-        if (!Tag.isValidTagName(trimmedTag)) {
+        if (trimmedTag.length() > Tag.MAX_LENGTH || !Tag.isValidTagName(trimmedTag)) {
             throw new ParseException(Tag.MESSAGE_CONSTRAINTS);
         }
         return new Tag(trimmedTag);

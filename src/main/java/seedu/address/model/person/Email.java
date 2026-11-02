@@ -9,7 +9,8 @@ import static seedu.address.commons.util.AppUtil.checkArgument;
  */
 public class Email {
 
-    // The longest address a mail server accepts, as set by RFC 5321
+    // The longest address a mail server accepts, as set by RFC 5321.
+    // Only new input is checked against it, so rosters saved before the limit was added still load.
     public static final int MAX_LENGTH = 254;
     private static final String SPECIAL_CHARACTERS = "+_.-";
     public static final String MESSAGE_CONSTRAINTS = "Emails should be of the format local-part@domain, "
@@ -23,15 +24,16 @@ public class Email {
             + "    - end with a domain label at least 2 characters long\n"
             + "    - have each domain label start and end with alphanumeric characters\n"
             + "    - have each domain label consist of alphanumeric characters, separated only by hyphens, if any.";
-    // alphanumeric and special characters
-    private static final String ALPHANUMERIC_NO_UNDERSCORE = "[^\\W_]+"; // alphanumeric characters except underscore
-    private static final String LOCAL_PART_REGEX = "^(?![^@]*\\.\\.)" + ALPHANUMERIC_NO_UNDERSCORE
-            + "([" + SPECIAL_CHARACTERS + "]+"
-            + ALPHANUMERIC_NO_UNDERSCORE + ")*";
-    private static final String DOMAIN_PART_REGEX = ALPHANUMERIC_NO_UNDERSCORE
-            + "(-" + ALPHANUMERIC_NO_UNDERSCORE + ")*";
-    private static final String DOMAIN_LAST_PART_REGEX = "(" + DOMAIN_PART_REGEX + "){2,}$"; // At least two chars
-    private static final String DOMAIN_REGEX = "(" + DOMAIN_PART_REGEX + "\\.)*" + DOMAIN_LAST_PART_REGEX;
+    // The patterns avoid repeating a group, which overflows the stack on very long input
+    private static final String ALPHANUMERIC = "\\p{Alnum}";
+    // Starts and ends with an alphanumeric character, without consecutive periods
+    private static final String LOCAL_PART_REGEX = "^(?![^@]*\\.\\.)" + ALPHANUMERIC
+            + "([\\p{Alnum}" + SPECIAL_CHARACTERS + "]*" + ALPHANUMERIC + ")?";
+    // The last label has at least two alphanumeric characters in a row
+    private static final String DOMAIN_LAST_PART_REGEX = "(?=(.*\\.)?[\\p{Alnum}-]*\\p{Alnum}{2}[\\p{Alnum}-]*$)";
+    // Labels start and end with an alphanumeric character and are joined by single periods or hyphens
+    private static final String DOMAIN_REGEX = DOMAIN_LAST_PART_REGEX + "(?!.*(--|\\.\\.|-\\.|\\.-))"
+            + ALPHANUMERIC + "([\\p{Alnum}.-]*" + ALPHANUMERIC + ")?$";
     public static final String VALIDATION_REGEX = LOCAL_PART_REGEX + "@" + DOMAIN_REGEX;
 
     public final String value;
@@ -51,8 +53,7 @@ public class Email {
      * Returns true if a given string is a valid email.
      */
     public static boolean isValidEmail(String test) {
-        // The length is checked first, as the regex overflows the stack on very long input
-        return test.length() <= MAX_LENGTH && test.matches(VALIDATION_REGEX);
+        return test.matches(VALIDATION_REGEX);
     }
 
     @Override

@@ -67,18 +67,18 @@ public class EmailTest {
     }
 
     @Test
-    public void isValidEmail_length_acceptsUpToMaxLength() {
-        String domain = "@example.com";
-        String longestLocalPart = "a".repeat(Email.MAX_LENGTH - domain.length());
-
-        assertTrue(Email.isValidEmail(longestLocalPart + domain)); // exactly the maximum length
-        assertFalse(Email.isValidEmail("a" + longestLocalPart + domain)); // one character over
+    public void isValidEmail_longerThanMaxLength_returnsTrue() {
+        // Only new input is limited, so saved emails of any length still load
+        assertTrue(Email.isValidEmail("a".repeat(Email.MAX_LENGTH) + "@example.com"));
     }
 
     @Test
-    public void isValidEmail_veryLongRepeatedDomainLabels_returnsFalseWithoutError() {
+    public void isValidEmail_veryLongInput_returnsWithoutError() {
         // Thousands of short labels used to overflow the stack inside the regex
-        assertFalse(Email.isValidEmail("b@" + "a.".repeat(5000) + "com"));
+        assertTrue(Email.isValidEmail("b@" + "a.".repeat(5000) + "com"));
+        assertTrue(Email.isValidEmail("a-".repeat(5000) + "a@" + "b-".repeat(5000) + "bc"));
+        assertFalse(Email.isValidEmail("b@" + "a.".repeat(5000))); // ends with a period
+        assertFalse(Email.isValidEmail("b@" + "a-".repeat(5000) + "a")); // last label lacks two characters in a row
     }
 
     @Test

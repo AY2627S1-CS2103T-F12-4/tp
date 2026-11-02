@@ -143,6 +143,15 @@ public class ParserUtilTest {
     }
 
     @Test
+    public void parseEmail_length_acceptsUpToMaxLength() throws Exception {
+        String domain = "@example.com";
+        String longestEmail = "a".repeat(Email.MAX_LENGTH - domain.length()) + domain;
+
+        assertEquals(new Email(longestEmail), ParserUtil.parseEmail(longestEmail)); // exactly the maximum length
+        assertThrows(ParseException.class, () -> ParserUtil.parseEmail("a" + longestEmail)); // one character over
+    }
+
+    @Test
     public void parseMatric_lowerCaseValueWithWhitespace_returnsUpperCaseTrimmedMatric() throws Exception {
         String matricWithWhitespace = WHITESPACE + VALID_MATRIC.toLowerCase() + WHITESPACE;
         assertEquals(new Matric(VALID_MATRIC), ParserUtil.parseMatric(matricWithWhitespace));
@@ -220,6 +229,14 @@ public class ParserUtilTest {
         String tagWithWhitespace = WHITESPACE + VALID_TAG_1 + WHITESPACE;
         Tag expectedTag = new Tag(VALID_TAG_1);
         assertEquals(expectedTag, ParserUtil.parseTag(tagWithWhitespace));
+    }
+
+    @Test
+    public void parseTag_length_acceptsUpToMaxLength() throws Exception {
+        String longestTag = "a".repeat(Tag.MAX_LENGTH);
+
+        assertEquals(new Tag(longestTag), ParserUtil.parseTag(longestTag)); // exactly the maximum length
+        assertThrows(ParseException.class, () -> ParserUtil.parseTag(longestTag + "a")); // one character over
     }
 
     @Test

@@ -57,16 +57,16 @@ public class TagTest {
     }
 
     @Test
-    public void isValidTagName_length_acceptsUpToMaxLength() {
-        assertTrue(Tag.isValidTagName("a")); // shortest
-        assertTrue(Tag.isValidTagName("a".repeat(Tag.MAX_LENGTH))); // exactly the maximum length
-        assertFalse(Tag.isValidTagName("a".repeat(Tag.MAX_LENGTH + 1))); // one character over
+    public void isValidTagName_longerThanMaxLength_returnsTrue() {
+        // Only new input is limited, so saved tags of any length still load
+        assertTrue(Tag.isValidTagName("a".repeat(Tag.MAX_LENGTH + 1)));
     }
 
     @Test
-    public void isValidTagName_veryLongHyphenatedTag_returnsFalseWithoutError() {
+    public void isValidTagName_veryLongHyphenatedTag_returnsWithoutError() {
         // Thousands of hyphenated parts used to overflow the stack inside the regex
-        assertFalse(Tag.isValidTagName("a" + "-a".repeat(5000)));
+        assertTrue(Tag.isValidTagName("a" + "-a".repeat(5000)));
+        assertFalse(Tag.isValidTagName("a" + "-a".repeat(5000) + "-")); // ends with a hyphen
     }
 
 }
