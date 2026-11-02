@@ -283,6 +283,8 @@ context-dependent lowercasing errors such as Greek final sigma. Accents and punc
 The active group is cleared because even a group-filtered search may display only part of a group.
 The observable list reflects additions and removals while the search predicate is active. A modifying
 command can subsequently choose another view; its own command specification defines that behavior.
+A search that finds nobody also offers close names, described under
+[Name suggestions for an empty search](#name-suggestions-for-an-empty-search).
 
 The sequence below follows `find n/John grp/T09` after parsing. An unknown group is rejected before
 the model is updated. A valid search replaces the predicate and clears the active-group selection.
@@ -302,6 +304,79 @@ without rewriting the roster file or copying the roster for undo history. Other 
 approach, while data-changing commands retain their existing save behaviour.
 Assertions are enabled for Gradle tests and `./gradlew run`. When running a packaged JAR for testing,
 use `java -ea -jar roster.jar`; enable VM option `-ea` in an IDE run configuration as well.
+
+### Name suggestions for an empty search
+
+When a search that supplied `n/` finds nobody, `FindCommand` offers up to three students whose names come closest,
+so a mistyped query such as `find n/sarh` still leads the tutor to Sarah.
+
+Only the name is scored. `m/` and `grp/` stay exact filters that narrow the candidates before any scoring,
+so a search without `n/` produces no suggestions at all: `suggestSimilarStudents` returns as soon as it sees
+that the predicate holds no name.
+
+`NameSimilarityScorer.score` measures the resemblance. Both sides are lowercased and split into words, each query
+word is scored against its best-matching name word, and the mean of those scores is returned. The measure is
+Jaro-Winkler rather than an edit distance normalised by length, because a single typo in a short name costs too
+much under the latter: `sarh` against `Sarah` is one edit in five characters and scores 0.80, while Jaro-Winkler
+scores it 0.95 and separates it cleanly from `sarh` against `Sandra` at 0.80.
+
+`DEFAULT_THRESHOLD` is 0.85, set from measured pairs rather than a round number. Swapping two letters away from the
+start of a name, as in `srah` for `Sarah`, scores 0.865, while a genuinely different student such as `ben` against
+`Bernice` scores 0.848, so the cut sits between them. The measured set, against a roster holding
+`Sarah Tan`, `John Tan`, `Sandra Tan`, `Bernice Tan` and `Amirah Tan`:
+
+| Query   | Closest name  | Score | Suggested |
+|---------|---------------|-------|-----------|
+| `sarh`  | `Sarah Tan`   | 0.953 | yes       |
+| `jonh`  | `John Tan`    | 0.933 | yes       |
+| `jhon`  | `John Tan`    | 0.925 | yes       |
+| `sahra` | `Sarah Tan`   | 0.893 | yes       |
+| `srah`  | `Sarah Tan`   | 0.865 | yes       |
+| `ben`   | `Bernice Tan` | 0.848 | no        |
+| `amy`   | `Amirah Tan`  | 0.733 | no        |
+| `zzzz`  | `Sarah Tan`   | 0.000 | no        |
+
+`srah` and `ben` are the pair the cut separates, and they sit 0.017 apart, so the threshold is tight rather
+than arbitrary. Every query above finds nobody outright, because a name search matches on a substring: `sarah`
+is absent from the table for that reason, since it would reach `Sarah Tan` directly and never be scored at all.
+
+The cost of a tight cut is that a name the tutor did not mean can clear it. `sahra` is aimed at `Sarah Tan` and
+reaches it at 0.893, but `Sandra Tan` also scores 0.858, so both are offered. That is accepted because a
+suggestion is only ever made after an exact search has already found nobody, the list is never displayed, and
+the matriculation number beside each name tells the two apart.
+
+`TopSimilarStudents` collects the near misses. It keeps a heap bounded at `MAX_SUGGESTIONS`, so the best three are
+found in a single pass where sorting every candidate would do far more work for the same three names. Ties are
+broken by matriculation number so that the same roster always produces the same suggestions.
+
+Only students that satisfy the command's other filters are considered, through
+`StudentMatchesFiltersPredicate.matchesExceptName`, so a suggestion never comes from outside the group that was
+searched. The feedback uses `MESSAGE_DID_YOU_MEAN`, or `MESSAGE_FILTER_DID_YOU_MEAN` when filters other than a
+name were supplied, with each student rendered as `Name (MATRIC)` by `FindCommand.describe`:
+
+```text
+No students found matching "srah". Did you mean: Sarah Tan (A0000001X)?
+No students found matching filters: n/"srah" grp/T09. Did you mean: Sarah Tan (A0000001X)?
+```
+
+When nothing clears the threshold, the plain `MESSAGE_NO_RESULTS` or `MESSAGE_FILTER_NO_RESULTS` is used, so a
+search never shows an empty "Did you mean" list.
+
+The sequence below follows `find n/sarh grp/T09` when the search finds nobody. A search that finds someone
+returns before any name is scored.
+
+![Suggesting close names when a search finds nobody](images/FindSuggestionSequenceDiagram.png)
+
+**Design choices**
+
+* Score names only after the search has come back empty. The scan is a second pass over the roster, so a search
+  that finds someone never pays for it; this is the common case.
+* Offer a hint rather than displaying the suggested students. The displayed list stays empty, so an index-based
+  command such as `delete 1` can never act on a student the tutor only saw suggested.
+* Suggest rather than correct the query, so the tutor decides which student was meant.
+* Bound the number of suggestions at three. Beyond a few, a list of guesses stops being a hint.
+* Accept a few false suggestions rather than raise the bar. Missing the student the tutor meant is worse
+  than naming one extra, since a suggestion is only a hint over an already-empty result.
 
 ### Attendance CSV export
 
@@ -857,9 +932,16 @@ requirements and do not describe available commands. Priority records importance
 
       Use case ends.
 
-* 2a. No student matches the given details.
+* 2a. No student matches the given details, and no student's name is close enough to a name the TA gave.
 
     * 2a1. Roster shows a message stating that no students were found.
+
+      Use case ends.
+
+* 2b. No student matches the given details, but the TA gave a name and students matching every other
+  detail given have names close to it.
+
+    * 2b1. Roster names up to three of those students in its message, without displaying them.
 
       Use case ends.
 
