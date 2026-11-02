@@ -2,6 +2,7 @@ package seedu.address.ui;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static seedu.address.testutil.FxTestUtil.onFxThread;
 
@@ -173,6 +174,27 @@ public class StudentDetailPanelTest {
             panel.hide();
             panel.show(second, 2, List.of(WEEK_1));
             assertEquals(0, scroll.getVvalue(), 0.0001);
+            return null;
+        });
+    }
+
+    @Test
+    public void show_sameStudentBeforeAnyLayout_scrollsWithoutQueueingARestore() throws Exception {
+        onFxThread(() -> {
+            Person student = new PersonBuilder().withMatric("A0345678C").withGroup("T09").build();
+            // Deliberately not realised: nothing has been laid out, so the contents have no
+            // measured height and there is no scene to defer a restore to.
+            StudentDetailPanel panel = new StudentDetailPanel(() -> { });
+            assertNull(panel.getRoot().getScene());
+            panel.show(student, 1, List.of(WEEK_1));
+
+            panel.show(student, 1, List.of(WEEK_1, WEEK_2));
+
+            assertTrue(panel.isShowing());
+            assertEquals(student, panel.shownStudent().orElseThrow());
+            // Nothing was queued, so hiding has no listener to cancel.
+            panel.hide();
+            assertFalse(panel.isShowing());
             return null;
         });
     }
