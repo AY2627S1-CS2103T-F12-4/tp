@@ -59,7 +59,7 @@ public class AddressBookParser {
         if ((commandWord.equals(ExitCommand.COMMAND_WORD) || commandWord.equals(HelpCommand.COMMAND_WORD))
                 && !arguments.matches("(?U)\\s*")) {
             String usage = commandWord.equals(ExitCommand.COMMAND_WORD)
-                    ? ExitCommand.MESSAGE_USAGE : HelpCommand.MESSAGE_USAGE;
+                    ? ExitCommand.MESSAGE_USAGE : HelpCommand.MESSAGE_NO_ARGUMENTS;
             throw new ParseException(String.format(MESSAGE_INVALID_COMMAND_FORMAT, usage));
         }
 

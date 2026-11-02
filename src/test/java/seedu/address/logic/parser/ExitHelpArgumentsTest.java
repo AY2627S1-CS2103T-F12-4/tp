@@ -1,8 +1,10 @@
 package seedu.address.logic.parser;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static seedu.address.logic.Messages.MESSAGE_INVALID_COMMAND_FORMAT;
 
 import java.util.List;
 
@@ -26,6 +28,17 @@ public class ExitHelpArgumentsTest {
                     assertTrue(error.getMessage().contains("takes no arguments"));
                 }
             }
+        }
+    }
+
+    @Test
+    public void parseCommand_generalErrors_doNotClaimCommandsTakeNoArguments() {
+        String expected = String.format(MESSAGE_INVALID_COMMAND_FORMAT,
+                "help: Shows program usage instructions.\nExample: help");
+        for (String input : List.of("", "\u00a0\u2003\n", "list grp/\nT81", "add n/Beta\nStudent")) {
+            ParseException error = assertThrows(ParseException.class, () -> parser.parseCommand(input));
+            assertEquals(expected, error.getMessage());
+            assertFalse(error.getMessage().contains("takes no arguments"));
         }
     }
 

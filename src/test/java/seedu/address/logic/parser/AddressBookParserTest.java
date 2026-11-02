@@ -169,7 +169,11 @@ public class AddressBookParserTest {
     public void parseCommand_nonSearchWithLineBreaks_throwsParseException() {
         for (String command : List.of("clear", "exit", "help", "add", "list", "init", "session", "edit", "mark",
                 "unknownCommand")) {
-            String usage = command.equals("exit") ? ExitCommand.MESSAGE_USAGE : HelpCommand.MESSAGE_USAGE;
+            String usage = switch (command) {
+                case "exit" -> ExitCommand.MESSAGE_USAGE;
+                case "help" -> HelpCommand.MESSAGE_NO_ARGUMENTS;
+                default -> HelpCommand.MESSAGE_USAGE;
+            };
             String expectedMessage = String.format(MESSAGE_INVALID_COMMAND_FORMAT, usage);
             for (String lineBreak : List.of("\n", "\r\n", "\u0085", "\u2028", "\u2029")) {
                 assertThrows(ParseException.class, expectedMessage, () ->
