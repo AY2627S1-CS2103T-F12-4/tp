@@ -85,6 +85,8 @@
     -fx-background-color: transparent;
     -fx-background-insets: 0;
     -fx-border-color: transparent;
+    -fx-border-width: 2px;
+    -fx-border-radius: 4px;
     -fx-font-family: "Consolas", monospace;
     -fx-font-size: 13px;
     -fx-text-fill: #243332;
@@ -141,6 +143,9 @@
 .result-message {
     -fx-background-color: transparent;
     -fx-background-insets: 0;
+    -fx-border-color: transparent;
+    -fx-border-width: 2px;
+    -fx-border-radius: 4px;
     -fx-padding: 0;
     -fx-font-size: 12px;
     -fx-text-fill: #46615e;
@@ -151,9 +156,9 @@
     -fx-background-insets: 0;
 }
 
+#commandTextField:focused,
 .result-message:focused {
-    -fx-background-color: transparent;
-    -fx-background-insets: 0;
+    -fx-border-color: #2563eb;
 }
 
 .result-error .result-message {
