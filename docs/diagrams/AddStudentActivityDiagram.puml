@@ -7,7 +7,7 @@ skinparam Shadowing false
 start
 :Parse the name, email, matriculation number,
 tutorial group and any tags;
-if () then ([a prefix is unsupported, missing or repeated])
+if () then ([arguments are invalid])
     :Report a parsing error;
     stop
 else ([arguments are valid])
@@ -38,12 +38,14 @@ endif
 if () then ([the displayed list excludes the new student])
     :Show the student's tutorial group,
     ordered by matriculation number;
-    :Report the student and the group now shown;
+    :Build the success result naming the student
+    and the group now shown;
 else ([the displayed list already includes them])
-    :Report the student;
+    :Build the success result naming the student;
 endif
 
 :Commit and save through
 the command lifecycle;
+:Show the success result;
 stop
 @enduml
