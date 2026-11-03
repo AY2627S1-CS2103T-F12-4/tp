@@ -1195,6 +1195,109 @@ requirements and do not describe available commands. Priority records importance
 
       Use case ends.
 
+**Use case: UC13 - Edit a student**
+
+**MSS**
+
+1.  TA <u>lists students (UC04)</u> or <u>finds students (UC05)</u>.
+2.  TA requests to edit a displayed student, giving their index and one or more fields to change.
+3.  Roster updates the student, keeping details that were not supplied unchanged.
+4.  Roster confirms the updated details and shows the full roster in matriculation-number order,
+    clearing the active group and any search filter. The student's displayed index may change.
+
+    Use case ends.
+
+**Extensions**
+
+* 1a. The list is empty.
+
+  Use case ends.
+
+* 2a. The index or field values are invalid, a parameter is unsupported, a parameter that may appear only once
+  is repeated, or no editable field is given.
+
+    * 2a1. Roster shows an error, leaving the roster and displayed view unchanged.
+
+      Use case resumes at step 2.
+
+* 2b. The new matriculation number or email belongs to another student, or the requested tutorial group does not exist.
+
+    * 2b1. Roster shows an error, leaving the roster and displayed view unchanged.
+
+      Use case resumes at step 2.
+
+* 2c. All supplied values are the same as the student's current details.
+
+    * 2c1. Roster confirms the existing details and shows the full roster as in step 4, without adding an undo
+      step or discarding redo history.
+
+      Use case ends.
+
+* 3a. The edit moves the student to a different registered tutorial group.
+
+    * 3a1. Roster also clears the student's attendance from the old group. Sessions in the new group start
+      unmarked for that student. When records are cleared, the confirmation reports how many and how to undo the move.
+
+      Use case resumes at step 4.
+
+* 3b. Saving the edit fails.
+
+    * 3b1. Roster reports the save error and restores the previous student details, attendance, undo/redo history
+      and displayed view.
+
+      Use case resumes at step 2.
+
+The edited details and any attendance cleared by a group move are restored together
+by <u>undoing the last change (UC11)</u>.
+
+**Use case: UC14 - Edit or delete a tutorial session**
+
+**MSS**
+
+1.  TA requests to change an existing session's date, giving its tutorial group, teaching week and new date.
+2.  Roster changes the session's date across the entire group, retaining each student's attendance status.
+3.  Roster confirms the old and new dates. The current group or search view stays active.
+
+    Use case ends.
+
+**Extensions**
+
+* 1a. A required detail is missing or invalid, a parameter is repeated, or extra input is supplied.
+
+    * 1a1. Roster shows an error without changing data or the displayed view.
+
+      Use case resumes at step 1.
+
+* 1b. No session exists for the given tutorial group and teaching week.
+
+    * 1b1. Roster shows an error without changing data or the displayed view.
+
+      Use case resumes at step 1.
+
+* 1c. The new date is the same as the session's current date.
+
+    * 1c1. Roster reports that the session already has that date, without changing data or undo/redo history.
+
+      Use case ends.
+
+* 1d. TA requests to delete the session instead, giving only its tutorial group and teaching week.
+
+    * 1d1. Roster immediately removes the session and all attendance records for it, including records of students
+      hidden by the current view. Students, tutorial groups, other sessions and unrelated attendance are kept.
+    * 1d2. Roster confirms the deletion and keeps the current group or search view active.
+
+      Use case ends.
+
+* 2a. Saving the date change or deletion fails.
+
+    * 2a1. Roster reports the save error and restores the previous session, attendance, undo/redo history
+      and displayed view.
+
+      Use case resumes at step 1.
+
+Both operations also work for sessions in empty groups. A successful date change or deletion can be reversed
+by <u>undoing the last change (UC11)</u>, restoring the session and its attendance together.
+
 ### Non-Functional Requirements
 
 1. Compatibility: Roster should run on Windows, macOS, and Linux with Java 25 and the required JavaFX runtime, without requiring users to modify or compile its source code.
