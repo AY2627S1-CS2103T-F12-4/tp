@@ -1388,7 +1388,7 @@ by <u>undoing the last change (UC11)</u>, restoring the session and its attendan
 
 * 3c. TA keeps typing instead of accepting a suggestion.
 
-      Use case resumes at step 2.
+  Use case resumes at step 2.
 
 * 4a. TA presses Enter.
 
