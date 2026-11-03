@@ -266,9 +266,32 @@ replacement `Attendance`, and its present or absent status is copied unchanged.
 
 ![Editing a session date while preserving attendance](images/EditSessionSequenceDiagram.png?v=1.6)
 
-**Design choice:** keep group/week as a stable session identity. Rescheduling changes the date while
-retaining marks. Moving attendance to a different teaching week or group would be a separate operation
-with different meaning; these commands do not silently transfer it.
+**Design choices**
+
+* Keep group/week as a stable session identity. Rescheduling changes the date while retaining marks.
+  Moving attendance to a different teaching week or group would be a separate operation with different
+  meaning; these commands do not silently transfer it.
+
+### Adding a student
+
+`add n/NAME e/EMAIL m/MATRIC grp/GROUP [t/TAG]...` takes no index, so unlike `edit` it never resolves a
+position in the displayed list. `AddCommandParser` rejects any unsupported prefix through
+`PrefixValidator#verifySupportedPrefixes`, requires all four mandatory prefixes with an empty preamble, and
+rejects a repeated `n/`, `e/`, `m/` or `grp/`. Tags are optional and may be repeated.
+
+Execution validates in a fixed order, and every check rejects before the roster changes: the tutorial group
+must already be registered, the matriculation number must not belong to an existing student, and neither must
+the email. `Model#hasPerson` compares students by matriculation number alone, so that check is the identity
+check and the email check is separate.
+
+The student is then inserted into the complete roster rather than into the displayed list, which may be
+filtered to another group or to a search. If the displayed list does not contain the new student,
+`Model#showGroup` switches to their tutorial group so they are not added out of sight. That is why `add` has
+two success messages: one reports the student, and one also names the group that was shown.
+[Showing a newly added student](#showing-a-newly-added-student) covers what the UI does next, and the
+[command execution activity diagram](#undo-and-redo-feature) covers the shared save-failure rollback.
+
+![Adding a student, including validation and the view switch](images/AddStudentActivityDiagram.png?v=1.6)
 
 ### Editing a student
 
@@ -459,7 +482,7 @@ changing anything. If any group has no session for that week, the command fails 
 
 <img src="images/MarkAllActivityDiagram.png" width="360" alt="Activity diagram for mark all" />
 
-**Design considerations**
+**Design choices**
 
 * **Aspect: which session a student is marked for**
   * **Alternative 1 (current choice):** use the session of each student's own group for the given week.
@@ -744,7 +767,7 @@ rollback when the data file cannot be saved:
 
 <img src="images/CommitActivityDiagram.png?v=1.5" width="890" alt="Command execution with unchanged-data detection, history commit before saving, and rollback on save failure" />
 
-#### Design considerations:
+**Design choices**
 
 **Aspect: How undo executes:**
 
@@ -1297,6 +1320,111 @@ by <u>undoing the last change (UC11)</u>.
 
 Both operations also work for sessions in empty groups. A successful date change or deletion can be reversed
 by <u>undoing the last change (UC11)</u>, restoring the session and its attendance together.
+
+**Use case: UC15 - Delete every displayed student**
+
+**MSS**
+
+1.  TA <u>lists students (UC04)</u> or <u>finds students (UC05)</u>.
+2.  TA requests to delete every student in the displayed list.
+3.  Roster deletes those students together with their attendance records, and confirms how many were
+    deleted.
+
+    Use case ends.
+
+**Extensions**
+
+* 2a. The displayed list is empty.
+
+    * 2a1. Roster shows an error message and deletes nothing.
+
+      Use case ends.
+
+* 3a. TA wants the deleted students back.
+
+    * 3a1. TA <u>undoes the last change (UC11)</u>.
+
+      Use case ends.
+
+**Use case: UC16 - Complete a command field**
+
+**MSS**
+
+1.  TA begins typing a command in the command box.
+2.  Roster suggests completions for the fragment at the cursor.
+3.  TA selects a suggestion with Up/Down and inserts it with Tab, or clicks it.
+4.  Roster replaces only that fragment, leaving the rest of the command unchanged.
+
+    Steps 2-4 repeat for each field the TA completes.
+
+    Use case ends.
+
+**Extensions**
+
+* 2a. Nothing registered or supported matches what the TA typed.
+
+    * 2a1. Roster offers no suggestion.
+
+      Use case resumes at step 1.
+
+* 2b. The cursor is inside a quoted export path.
+
+    * 2b1. Roster offers no suggestion, so directory names are preserved.
+
+      Use case resumes at step 1.
+
+* 3a. TA presses Escape.
+
+    * 3a1. Roster dismisses the suggestions and leaves the command text unchanged.
+
+      Use case ends.
+
+* 3b. TA presses Shift+Tab.
+
+    * 3b1. Roster dismisses the suggestions and moves focus backwards, leaving the command text
+      unchanged.
+
+      Use case ends.
+
+* 3c. TA keeps typing instead of accepting a suggestion.
+
+      Use case resumes at step 2.
+
+* 4a. TA presses Enter.
+
+    * 4a1. Roster executes the command as it is currently typed.
+
+      Use case ends.
+
+**Use case: UC17 - Redo (Reapply an undone change)**
+
+**MSS**
+
+1.  TA <u>undoes the last change (UC11)</u>.
+2.  TA requests to reapply that change.
+3.  Roster restores its data to the state after the change, and names the command that was reapplied.
+
+    Use case ends.
+
+**Extensions**
+
+* 1a. TA runs a data-changing command before reapplying.
+
+    * 1a1. Roster discards the undone change, which can no longer be reapplied.
+
+      Use case ends.
+
+* 1b. TA runs a command that changes no data before reapplying.
+
+    * 1b1. Roster keeps the undone change available.
+
+      Use case resumes at step 2.
+
+* 2a. There is no undone change to reapply.
+
+    * 2a1. Roster shows an error message.
+
+      Use case ends.
 
 ### Non-Functional Requirements
 
